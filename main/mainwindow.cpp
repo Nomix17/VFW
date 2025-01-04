@@ -26,7 +26,7 @@
 
 MainWindow::MainWindow(QWidget *parent):QMainWindow(parent){
     this->setFocus();
-    this->resize(750,500);
+    this->resize(750,550);
     //elements definition
     player = new QMediaPlayer(this);
     audio = new QAudioOutput(this);
@@ -652,7 +652,6 @@ void MainWindow::setsliderposition(qint64 position){
         //posetioning the sub on the correct spot
         sublabel->setPos((VIEWWIDTH-SUBWIDTH)/2,(VIEWHEIGHT-SUBHEIGHT/2)-submarginbottom);
       
-
       //if the media is in the targeted position we merge the html style with the subtitle and pass it as html script
       sublabel->setHtml(htmlstyle + QString::fromStdString(sublines[i/2]) + "</div>");
       break;
@@ -739,7 +738,7 @@ void MainWindow::subscraper(std::string subpath){
         //checking if the line is empty
         if(nextline.size()>2){
           //if the line is not empty is will add it to a bandal
-          fulltext+=nextline+'\n';
+          fulltext+=nextline+"<br>";
         }else{
           //if the line is empty it will break (so only the subs are added to the variable(fulltext))
           break;

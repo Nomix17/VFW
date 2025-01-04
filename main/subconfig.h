@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <QDialog>
-#include <nlohmann/json.hpp>
+#include "json.hpp"
 #include <QGridLayout>
 #include <QLabel>
 #include <QPushButton>
@@ -30,7 +30,7 @@ public:
 
 private:
 
-  QList <QString>labels={"Margin Bottom:","Padding:",
+  std::vector <QString>labels={"Margin Bottom:","Padding:",
                       "Bg Color:","Bg Opacity:",
                       "Font Size:","Font Familly:",
                       "Font Color:","Font Opacity:"
@@ -64,7 +64,7 @@ public:
             button->setPopupMode(QToolButton::InstantPopup);
             button->setText("Font");
             button->setObjectName(labels[i]);
-            QList <QString> fonts= {"JetBrains","monospace"};
+            QList <QString> fonts= {"Arial","Serif","Sans-Serif","Monospace","Courier New","Cursive","Comic Sans MS"};
             QMenu *font_familly = new QMenu();
             for(int i=0;i<fonts.size();i++){
               QAction * actions = new QAction;

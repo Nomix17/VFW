@@ -107,12 +107,12 @@ private:
     bool changesubposition = true;
     std::chrono::time_point<std::chrono::system_clock> now;
     
-    std::vector<QUrl> playlist;
     QList<QString> mcbuttons = {"BPause","BBack","BStop","BNext","BFullscreen","BPlaylist","BRepeating","BVolumeControl"};
     QList<QString> firstlayoutbuttons = {"Media","Playback","Audio","Video","Subtitle","Tools","View","Help"};
     QList<QList <QString> > actionslist = {{"Open File","Open Folder","Open Media","Quit"},{"Title","Jump Backward","Jump Forward","Jump to Time"},{"Full Volume","Mute"},{"Set Radio"},{"Add Subtitles","Stop Subtitles","Subtitle Settings"}};
 
 public:
+    std::vector<QUrl> playlist;
     QString htmlstyle;
     int subpadding;
     int submarginbottom;
