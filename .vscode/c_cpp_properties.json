@@ -5,12 +5,12 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/usr/include/x86_64-linux-gnu/qt6",
-                "/usr/include/x86_64-linux-gnu/qt6/QtWidgets",
-                "/usr/include/x86_64-linux-gnu/qt6/QtCore",
-                "/usr/include/x86_64-linux-gnu/qt6/QtMultimedia",
-                "/usr/include/x86_64-linux-gnu/qt6/QtMultimediaWidgets",
-                "/usr/include/x86_64-linux-gnu/qt6/QtGui"
+                "/usr/include/qt6",
+                "/usr/include/qt6/QtWidgets",
+                "/usr/include/qt6/QtCore",
+                "/usr/include/qt6/QtMultimedia",
+                "/usr/include/qt6/QtMultimediaWidgets",
+                "/usr/include/qt6/QtGui"
             ],
         
             "defines": [],

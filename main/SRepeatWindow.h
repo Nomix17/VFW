@@ -15,27 +15,32 @@ class SRepeatWindow :public QDialog{
 public:
   SRepeatWindow(QWidget *parent=nullptr):QDialog(parent){
     this->setFocus();
-    QFile file("/home/pain/.config/VFW/cache/styles/jumpwindow.css");
+    this->resize(300,250);
+    QFile file("/home/pain/.config/VFW/cache/styles/srepeat.css");
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&file);
         QString styleSheet = in.readAll();
         this->setStyleSheet(styleSheet);
     }
-    QLabel * FROM = new QLabel("FROM:");
+    QLabel * FROM = new QLabel("From: ");
     QSpinBox *startinghour = new QSpinBox();
     QSpinBox *startingmin = new QSpinBox();
     QSpinBox *startingsec = new QSpinBox();
     
     QLabel *startingseparet1 = new QLabel(":");
+    startingseparet1->setObjectName("separetor");
     QLabel *startingseparet2 = new QLabel(":");
+    startingseparet2->setObjectName("separetor");
 
-    QLabel * TO = new QLabel("TO:");
+    QLabel * TO = new QLabel("To: ");
     QSpinBox *finishinghour = new QSpinBox();
     QSpinBox *finishingmin = new QSpinBox();
     QSpinBox *finishingsec = new QSpinBox();
 
     QLabel *finishingseparet1 = new QLabel(":");
+    finishingseparet1->setObjectName("separetor");
     QLabel *finishingseparet2 = new QLabel(":");
+    finishingseparet2->setObjectName("separetor");
 
     firstlayout->addWidget(FROM);
     firstlayout->addWidget(startinghour);
@@ -44,7 +49,7 @@ public:
     firstlayout->addWidget(startingseparet2);
     firstlayout->addWidget(startingsec);
 
-    firstlayout->addStretch();
+    firstlayout->addSpacing(50);
 
     firstlayout->addWidget(TO);
     firstlayout->addWidget(finishinghour);
@@ -67,7 +72,9 @@ public:
     secondlayout->addWidget(done);
     secondlayout->addWidget(cancel);
 
+    mainlayout->setContentsMargins(20,40,20,20);
     mainlayout->addLayout(firstlayout);
+    mainlayout->addStretch();
     mainlayout->addLayout(secondlayout);
     setLayout(mainlayout);
   }
