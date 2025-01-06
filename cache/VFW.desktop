@@ -1,0 +1,9 @@
+[Desktop Entry]
+
+Name=VFW
+Type=Application
+Exec=/home/pain/Code/qt/SVFW/main/build/VFW %f
+Icon=/home/pain/Code/.config/VFW/cache/Appicons/VFWGrey.png
+MimeType=video/x-matroska;video/x-msvideo;video/mp4;video/x-ms-wmv;video/x-flv;video/x-mpegurl;video/x-m4v;
+NoDisplay=false
+Categories=Video;

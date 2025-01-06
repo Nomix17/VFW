@@ -1,9 +1,10 @@
-//add the ability to show the subtitle on top of the video
+//you change the media position manually alot in this code make a function that do that and call it in line 725, 641, 593, 566 
 #include <QApplication>
 #include <mainwindow.h>
 #include <mediaurl.h>
 #include <jumptotime.h>
 #include <subconfig.h>
+#include <SRepeatWindow.h>
 #include <iomanip>
 #include <iostream>
 #include <QHBoxLayout>
@@ -22,7 +23,9 @@
 #include <QGraphicsVideoItem>
 #include <QGraphicsView>
 #include <QGraphicsScene>
-
+#include <QGraphicsOpacityEffect>
+#include <QPropertyAnimation>
+#include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent):QMainWindow(parent){
     this->setFocus();
@@ -283,9 +286,33 @@ void MainWindow::firstlayoutclick(int buttonindex){
                 player->pause();
                 player->play();
             }
-          break;
+            break;
         }
-        
+        //loop on segment of the video 
+        case LOOPSEGMENT:{
+            SRepeatWindow win;
+            win.exec();
+            if(win.startingpoint>0 && win.finishingpoint>0){
+                repeatfromposition = true;
+                startingpoint=win.startingpoint;
+                finishpoint=win.finishingpoint;
+                player->stop();
+                int volume = audio->volume();
+                delete audio;
+                audio = new QAudioOutput();
+                player->setPosition(startingpoint*1000);
+                player->setAudioOutput(audio);
+                audio->setVolume(volume);
+                player->pause();
+                player->play();
+            }
+            break;
+        }
+        //break the segment loop
+        case BREAKLOOP:{
+            repeatfromposition = false;
+            break;
+        }
         //setting the audio to full volume
         case FULL_VOLUME:{
           volumetoslider(1);
@@ -319,7 +346,26 @@ void MainWindow::firstlayoutclick(int buttonindex){
           sublines.clear();
           break;
         }
-
+        case ADDDELAY:{
+            if(subtimer.size()){
+                for(size_t i=0;i<subtimer.size();i++){
+                    subtimer[i]+=0.1;
+                }
+                subdelay+=0.1;
+            }
+            break;
+        }
+        case REDUCEDELAY:{
+            if(subtimer.size()){
+                for(size_t i=0;i<subtimer.size();i++){
+                    if(subtimer[0]>0){
+                        subtimer[i]-=0.1;
+                    }
+                }
+                subdelay-=0.1;
+            }
+            break;
+        }
         //if the user choose to custumize the sub
         case SUBSETTINGS:{
           SubConfig win;
@@ -331,6 +377,40 @@ void MainWindow::firstlayoutclick(int buttonindex){
           break;
         }
     }
+    //add animation so the user can see that the delay has been changed
+    if(buttonindex==ADDDELAY|| buttonindex==REDUCEDELAY){
+        if(subtimer.size()){
+            //creating the text
+            QGraphicsTextItem * delaytext = new QGraphicsTextItem;
+            //if the delay is less then 0.1 and more then -0.1 I want it to be 0
+            if(-0.1<subdelay && subdelay<0.1){
+                subdelay=0;
+            }
+            //show the state of the delay using the same font config of the subtitles
+            delaytext->setHtml(htmlstyle + "Subtitles Delay:"+QString::number(subdelay*1000) + "ms </div>");
+            
+            //calculating the position that the text should go to
+            int textwidth = delaytext->boundingRect().width();
+            int textheight = delaytext->boundingRect().height();
+            delaytext->setPos((view->size().width()-textwidth)/2,(view->size().height()-textheight)/2);
+            scene->addItem(delaytext);
+            
+            //making an effect for the apearence and deapearence of the text
+            QGraphicsOpacityEffect * opacityEffect = new QGraphicsOpacityEffect(delaytext);
+            delaytext->setGraphicsEffect(opacityEffect);
+            //configuring the animation of the text
+            QPropertyAnimation *animation = new QPropertyAnimation(opacityEffect,"opacity");
+            animation->setDuration(1000);
+            animation->setStartValue(1.0);
+            animation->setEndValue(0.0);
+            animation->start(QPropertyAnimation::DeleteWhenStopped);//start the animation 
+            //after 1s delete the text
+            QTimer::singleShot(1000, [delaytext]() {
+                delete delaytext;
+            });
+        }
+    }
+    
     this->setFocus();
 }
 
@@ -534,7 +614,12 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
     }else if(event->key()==Qt::Key_Down){
         volumetoslider(audio->volume()-0.1);
         volumeslider->setSliderPosition(volumeslider->sliderPosition()-0.1);
+    }else if(event->key()==Qt::Key_G){
+        firstlayoutclick(REDUCEDELAY);
+    }else if(event->key()==Qt::Key_H){
+        firstlayoutclick(ADDDELAY);
     }
+
 }
 
 
@@ -634,6 +719,20 @@ void MainWindow::setsliderposition(qint64 position){
         videoslider->setValue(0);
     }
 
+
+    if(repeatfromposition){
+        if(position>=finishpoint*1000){
+                player->stop();
+                int volume = audio->volume();
+                delete audio;
+                audio = new QAudioOutput();
+                player->setPosition(startingpoint*1000);
+                player->setAudioOutput(audio);
+                audio->setVolume(volume);
+                player->pause();
+                player->play();
+        }
+    }
   //syncing subtitles to the player position 
   //looping all the times that exist in the sub file
   for(size_t i=0;i<subtimer.size();i+=2){
@@ -764,4 +863,5 @@ void MainWindow:: resizeEvent(QResizeEvent * event){
     int SUBWIDTH = sublabel->boundingRect().width();
     int SUBHEIGHT = sublabel->boundingRect().height();
     sublabel->setPos((VIEWWIDTH-SUBWIDTH)/2,(VIEWHEIGHT-SUBHEIGHT/2)-submarginbottom);
+
 }

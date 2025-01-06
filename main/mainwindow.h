@@ -50,12 +50,16 @@ public:
         JUMP_BACKWARD = 5,
         JUMP_FORWARD = 6,
         JUMP_TO_TIME = 7,
-        FULL_VOLUME = 8,
-        MUTE = 9,
-        SET_RADIO = 10,
-        ADDSUB = 11,
-        STOPSUB = 12,
-        SUBSETTINGS = 13,
+        LOOPSEGMENT = 8,
+        BREAKLOOP = 9,
+        FULL_VOLUME = 10,
+        MUTE = 11,
+        SET_RADIO = 12,
+        ADDSUB = 13,
+        STOPSUB = 14,
+        ADDDELAY = 15,
+        REDUCEDELAY = 16,
+        SUBSETTINGS = 17,
     };
     MainWindow(QWidget *parent=nullptr);
     void firstlayoutclick(int buttonindex);
@@ -106,10 +110,16 @@ private:
     qreal oldvolume;
     bool changesubposition = true;
     std::chrono::time_point<std::chrono::system_clock> now;
-    
+    float subdelay=0;
+    bool repeatfromposition = false;
+    int startingpoint;
+    int finishpoint;
+
+
+
     QList<QString> mcbuttons = {"BPause","BBack","BStop","BNext","BFullscreen","BPlaylist","BRepeating","BVolumeControl"};
     QList<QString> firstlayoutbuttons = {"Media","Playback","Audio","Video","Subtitle","Tools","View","Help"};
-    QList<QList <QString> > actionslist = {{"Open File","Open Folder","Open Media","Quit"},{"Title","Jump Backward","Jump Forward","Jump to Time"},{"Full Volume","Mute"},{"Set Radio"},{"Add Subtitles","Stop Subtitles","Subtitle Settings"}};
+    QList<QList <QString> > actionslist = {{"Open File","Open Folder","Open Media","Quit"},{"Title","Jump Backward","Jump Forward","Jump to Time","Loop Segment","Break Loop"},{"Full Volume","Mute"},{"Set Radio"},{"Add Subtitles","Stop Subtitles","Add Delay","Reduce Delay","Subtitle Settings",}};
 
 public:
     std::vector<QUrl> playlist;
