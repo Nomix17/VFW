@@ -88,11 +88,4 @@ private:
   QHBoxLayout * secondlayout = new QHBoxLayout();
 };
 
-
-
-
-
-
-
-
 #endif

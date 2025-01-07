@@ -74,7 +74,7 @@ public:
     void volumetoslider(qreal position);
     void subscraper(std::string subpath);
     QString fixhtml(QString test);
-
+    void changefarposition(int newpos);
     void resizeEvent(QResizeEvent * event);
     //turnning off the tab focusing
     bool focusNextPrevChild(bool next) override{
@@ -108,14 +108,11 @@ private:
     QLabel *currenttimer;
     QLabel *totaltimer;
     qreal oldvolume;
-    bool changesubposition = true;
     std::chrono::time_point<std::chrono::system_clock> now;
     float subdelay=0;
     bool repeatfromposition = false;
     int startingpoint;
     int finishpoint;
-
-
 
     QList<QString> mcbuttons = {"BPause","BBack","BStop","BNext","BFullscreen","BPlaylist","BRepeating","BVolumeControl"};
     QList<QString> firstlayoutbuttons = {"Media","Playback","Audio","Video","Subtitle","Tools","View","Help"};
@@ -128,9 +125,6 @@ public:
     int submarginbottom;
     std::vector <float> subtimer;
     std::vector <std::string> sublines;
-    bool displayed=false;
-    int subcounter=0;
-
 };
 
 #endif

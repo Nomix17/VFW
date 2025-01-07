@@ -1,4 +1,3 @@
-//you change the media position manually alot in this code make a function that do that and call it in line 725, 641, 593, 566 
 #include <QApplication>
 #include <mainwindow.h>
 #include <mediaurl.h>
@@ -276,15 +275,7 @@ void MainWindow::firstlayoutclick(int buttonindex){
             JumpTime x;
             x.exec();
             if (x.targettime>=0){
-                player->stop();
-                int volume = audio->volume();
-                delete audio;
-                audio = new QAudioOutput();
-                player->setPosition(x.targettime*1000);
-                player->setAudioOutput(audio);
-                audio->setVolume(volume);
-                player->pause();
-                player->play();
+                changefarposition(x.targettime*1000);
             }
             break;
         }
@@ -292,19 +283,11 @@ void MainWindow::firstlayoutclick(int buttonindex){
         case LOOPSEGMENT:{
             SRepeatWindow win;
             win.exec();
-            if(win.startingpoint>0 && win.finishingpoint>0){
+            if(win.startingpoint>=0 && win.finishingpoint>=0 && win.finishingpoint!=win.startingpoint ){
                 repeatfromposition = true;
                 startingpoint=win.startingpoint;
                 finishpoint=win.finishingpoint;
-                player->stop();
-                int volume = audio->volume();
-                delete audio;
-                audio = new QAudioOutput();
-                player->setPosition(startingpoint*1000);
-                player->setAudioOutput(audio);
-                audio->setVolume(volume);
-                player->pause();
-                player->play();
+                changefarposition(startingpoint*1000);
             }
             break;
         }
@@ -368,13 +351,13 @@ void MainWindow::firstlayoutclick(int buttonindex){
         }
         //if the user choose to custumize the sub
         case SUBSETTINGS:{
-          SubConfig win;
-          win.gui();
-          win.exec();
-          htmlstyle = win.makehtml();
-          subpadding = win.padding;
-          submarginbottom = win.marginbottom;
-          break;
+            SubConfig win;
+            win.gui();
+            win.exec();
+            htmlstyle = win.makehtml();
+            subpadding = win.padding;
+            submarginbottom = win.marginbottom;
+            break;
         }
     }
     //add animation so the user can see that the delay has been changed
@@ -559,21 +542,14 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
         if(time.count()<0.5){
             player->setPosition(player->position()+5000);
             player->pause();
-            player->play();
+            if(!paused){
+                player->play();
+                paused=false;
+    }
         //if the time is more then 500 ms 
         }else{
             //saving the position of the player
-            int myposition = player->position();
-            player->stop();
-            //resetting the audio carrier so the audio will not break 
-            delete audio;
-            audio = new QAudioOutput(this);
-            //increasing the position of the player
-            player->setPosition(myposition+5000);
-            player->setAudioOutput(audio);
-            //pause and play the player to reset the player
-            player->pause();
-            player->play();
+            changefarposition(player->position()+5000);
 
         }
         now = std::chrono::system_clock::now();
@@ -586,24 +562,14 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
         if(time.count()<0.5){
             player->setPosition(player->position()-5000);
             player->pause();
-            player->play();
+            if(!paused){
+                player->play();
+                paused=false;
+    }
         //if the time is more then 500 ms 
         }else{
             //saving the position of the player
-            int myposition = player->position();
-            player->stop();
-            //resetting the audio carrier so the audio will not break 
-            int volume = audio->volume(); //saving the volume state1
-            delete audio;
-            audio = new QAudioOutput(this);
-            //decreasing the position of the player
-            player->setPosition(myposition-5000);
-            //addting the audio carrier to the player
-            player->setAudioOutput(audio);
-            audio->setVolume(volume);
-            //pause and play the player to reset the player
-            player->pause();
-            player->play();
+            changefarposition(player->position()-5000);
 
         }
         now = std::chrono::system_clock::now();
@@ -630,25 +596,17 @@ void MainWindow::mediaposition(int position){
 
     //calculate the time of the between the last change of position and now
     std::chrono::duration<double> time = std::chrono::system_clock::now()-now;
-    //if the time is less then 500 ms  it will only change the position
+    //if the time is less then 500 ms  it will only change the position (to avoid the audio gliching when moving the slider fast)
     if(time.count()<0.5){
         player->setPosition(position);
         player->pause();
-        player->play();
+        if(!paused){
+            player->play();
+            paused=false;
+    }
     //if the time is more then 500 ms 
     }else{
-        //saving the position of the player
-        player->stop();
-        //resetting the audio carrier so the audio will not break 
-        delete audio;
-        audio = new QAudioOutput(this);
-        //change the position of the player
-        player->setPosition(position);
-        player->setAudioOutput(audio);
-        //pause and play the player to reset the player
-        player->pause();
-        player->play();
-
+        changefarposition(position);
     }
     now = std::chrono::system_clock::now();
     this->setFocus();
@@ -722,15 +680,7 @@ void MainWindow::setsliderposition(qint64 position){
 
     if(repeatfromposition){
         if(position>=finishpoint*1000){
-                player->stop();
-                int volume = audio->volume();
-                delete audio;
-                audio = new QAudioOutput();
-                player->setPosition(startingpoint*1000);
-                player->setAudioOutput(audio);
-                audio->setVolume(volume);
-                player->pause();
-                player->play();
+            changefarposition(startingpoint*1000);
         }
     }
   //syncing subtitles to the player position 
@@ -759,6 +709,21 @@ void MainWindow::setsliderposition(qint64 position){
       sublabel->setHtml("");
     }
   }
+}
+
+void MainWindow::changefarposition(int newpos){
+    player->stop();
+    float oldvol = audio->volume();
+    delete audio;
+    audio = new QAudioOutput();
+    player->setPosition(newpos);
+    player->setAudioOutput(audio);
+    audio->setVolume(oldvol);
+    player->pause();
+    if(!paused){
+        player->play();
+        paused=false;
+    }
 }
 
 
