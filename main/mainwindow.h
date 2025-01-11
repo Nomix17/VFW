@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "qevent.h"
+#include "CustomObjects.h"
 #include <QMainWindow>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -23,6 +25,8 @@
 #include <QGraphicsScene>
 
 
+
+// main window class
 class MainWindow: public QMainWindow{
     Q_OBJECT
 public:
@@ -75,7 +79,7 @@ public:
     void subscraper(std::string subpath);
     QString fixhtml(QString test);
     void changefarposition(int newpos);
-    void resizeEvent(QResizeEvent * event);
+    void resizeEvent(QResizeEvent * event) override;
     //turnning off the tab focusing
     bool focusNextPrevChild(bool next) override{
         if(next){}
@@ -103,8 +107,8 @@ private:
     QGraphicsVideoItem *video;
     QGraphicsView *view;
     QGraphicsScene *scene;
-    QSlider *videoslider;
-    QSlider *volumeslider;
+    CustomSlider *videoslider;
+    CustomSlider *volumeslider;
     QLabel *currenttimer;
     QLabel *totaltimer;
     qreal oldvolume;
@@ -126,6 +130,11 @@ public:
     std::vector <float> subtimer;
     std::vector <std::string> sublines;
 };
+
+
+
+
+
 
 #endif
 //https://vo-live.cdb.cdn.orange.com/Content/Channel/NationalGeographicHDChannel/HLS/index.m3u8

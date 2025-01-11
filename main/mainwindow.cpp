@@ -16,7 +16,6 @@
 #include <QAudioOutput>
 #include <QLabel>
 #include <QKeyEvent>
-#include <QFileDialog>
 #include <chrono>
 #include <QGraphicsTextItem>
 #include <QGraphicsVideoItem>
@@ -25,6 +24,7 @@
 #include <QGraphicsOpacityEffect>
 #include <QPropertyAnimation>
 #include <QTimer>
+#include <QFileDialog>
 
 MainWindow::MainWindow(QWidget *parent):QMainWindow(parent){
     this->setFocus();
@@ -43,7 +43,7 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent){
     videolayout = new QGridLayout();
     thirdlayout = new QHBoxLayout();
     fourthlayout = new QHBoxLayout();
-    videoslider = new QSlider(Qt::Horizontal);
+    videoslider = new CustomSlider(Qt::Horizontal);
 
     QFont font;
     sublabel = new QGraphicsTextItem();
@@ -53,7 +53,7 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent){
     
     currenttimer = new QLabel("--:--:--");
     totaltimer = new QLabel("--:--:--");
-    volumeslider = new QSlider(Qt::Horizontal);
+    volumeslider = new CustomSlider(Qt::Horizontal);
 
     sublabel->setObjectName("sublabel");
     volumeslider->setObjectName("volumeslider");
