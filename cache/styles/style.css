@@ -18,13 +18,8 @@ QLabel{
   color:white;
 }
 QLabel#sublabel{
-  /* background-color: red; */
   font-size:20px;
   background-color: rgba(0, 0, 0, 0);
-
-}
-QLabel#testlabel{
-  background-color: yellow;
 
 }
 QPushButton{
@@ -44,7 +39,7 @@ QSlider{
 
 /*video slider*/
 QSlider::sub-page:horizontal {
-  background: #0f353a;
+  background: #3572a5;
   border-radius: 5px;
 }
 
@@ -53,12 +48,10 @@ QSlider::groove:horizontal{
   height: 5px;
 }
 QSlider::handle::pressed{
-  background-color: #484949;
-
+  width:0px;
 }
 QSlider::handle{
-  background-color: #0f353a;
-  width:10px;
+  width:0px;
 }   
 
 /*slider volume*/
@@ -79,9 +72,7 @@ QSlider::groove:horizontal#volumeslider {
 }
 
 QSlider#volumeslider::handle{
-  background-color: #484949;
-  width:5px;
-  border-radius: 30px;
+  width:0px;
 }
 
 QMenu{

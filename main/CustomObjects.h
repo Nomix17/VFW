@@ -18,8 +18,9 @@ public:
       if(buttonpressed){
         int slider_range = this->maximum();//the media to slider range 
         int slider_size = size().width();//the size of the slider
-        int target_position = mouse_position*slider_range/slider_size;//calculating where should the slider move relativly to it's size and range
+        double target_position = static_cast<double>(mouse_position)*slider_range/slider_size;//calculating where should the slider move relativly to it's size and range
         this->setSliderPosition(target_position);
+        emit sliderMoved(mouse_position);
       }
   }
   
@@ -34,6 +35,7 @@ public:
     int mousexposition = event->pos().rx();
     movetoposition(mousexposition);
   }
+  
   void mouseReleaseEvent(QMouseEvent *event){
     //if the cursor is not holding the slider we set the boolean variable to false
     buttonpressed = false;

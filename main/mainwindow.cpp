@@ -25,7 +25,9 @@
 #include <QPropertyAnimation>
 #include <QTimer>
 #include <QFileDialog>
+#include <QDir>
 
+QString homedir = QDir::homePath();
 MainWindow::MainWindow(QWidget *parent):QMainWindow(parent){
     this->setFocus();
     this->resize(750,550);
@@ -109,7 +111,7 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent){
         }
         QPushButton *button = new QPushButton(this);
         button->setObjectName(mcbuttons[j]);
-        QPixmap pix("/home/pain/.config/VFW/cache/icons/"+mcbuttons[j]+".png");
+        QPixmap pix(homedir+"/.config/VFW/cache/icons/"+mcbuttons[j]+".png");
         button->setIcon(pix);
         if (button->objectName() == "BVolumeControl"){
             button->setIconSize(QSize(20,20));
@@ -132,7 +134,10 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent){
     //connecting the slider and media with there logic
     connect(player,&QMediaPlayer::positionChanged,this,&MainWindow::setsliderposition);
     connect(player,&QMediaPlayer::durationChanged,this,&MainWindow::setsliderrange);
-    connect(videoslider,&QSlider::sliderMoved,this,&MainWindow::mediaposition);
+    connect(videoslider,&QSlider::sliderMoved,[this](){
+        mediaposition(videoslider->sliderPosition());
+    });
+
 
     //setting QGraphics parametres
     video->setSize(view->size());
@@ -172,20 +177,17 @@ void MainWindow::mediaplayer(QString url){
         player->setSource(QUrl("blackscreen"));
         currenttimer->setText("--:--:--");
         totaltimer ->setText("--:--:--");
-        videoslider->setStyleSheet("QSlider::handle{background-color: #1e1e1e;}");
-        }
+    }
     
     //if pass "play a list" as an argunent a video from the playlist will play
     else if(url=="play a list"){
         player->setSource(QUrl(playlist[videoindex]));
-        videoslider->setStyleSheet("QSlider::handle{background-color: #0f353a;}");
-        }
+    }
     
     //if we pass a url, a video with the url will play and the playlist will be cleared
     else{
         player->setSource(QUrl(url));
-        videoslider->setStyleSheet("QSlider::handle{background-color: #0f353a;}");
-        }
+    }
 
     //mediaplayer setup (sound and video widget)
 
@@ -207,7 +209,7 @@ void MainWindow::firstlayoutclick(int buttonindex){
         
         //if the user choose to open a file
         case Open_file:{
-          url = QFileDialog::getOpenFileName(this,tr("Select Video File"),"/home/pain/Downloads",tr("Mp4 files (*.mp4)"));
+          url = QFileDialog::getOpenFileName(this,tr("Select Video File"),homedir,tr("Mp4 files (*.mp4)"));
           if(!url.isEmpty()){
               mediaplayer(url);
               playertype = "vid";
@@ -218,7 +220,7 @@ void MainWindow::firstlayoutclick(int buttonindex){
 
         //if the user choose to open a directory (playlist)
         case Open_folder:{
-          url = QFileDialog::getExistingDirectory(this,tr("Setect Playlist Directory","/home/pain/Downloads", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks));
+          url = QFileDialog::getExistingDirectory(this,tr("Setect Playlist Directory","", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks),homedir);
           if(!url.isEmpty()){
               
               playlist.clear(); //clearing the playlist
@@ -316,7 +318,7 @@ void MainWindow::firstlayoutclick(int buttonindex){
         
         //if the user choose to open a sub file
         case ADDSUB:{
-          suburl = QFileDialog::getOpenFileName(this,tr("Select Subtitle file"),"/home/pain",tr("Srt files (*.srt)"));
+          suburl = QFileDialog::getOpenFileName(this,tr("Select Subtitle file"),homedir,tr("Srt files (*.srt)"));
           if(!suburl.isEmpty()){
             subscraper(suburl.toStdString());
           }
@@ -405,10 +407,10 @@ void MainWindow::fourthlayoutclick(int buttonindex){
         case PAUSE_BUTTON:
             {QPushButton *searchbutton = this->findChild<QPushButton *>("BPause");
             if(paused){
-                searchbutton->setIcon(QPixmap("/home/pain/.config/VFW/cache/icons/BPause.png"));
+                searchbutton->setIcon(QPixmap(homedir+"/.config/VFW/cache/icons/BPause.png"));
                 player->play();
             }else{
-                searchbutton->setIcon(QPixmap("/home/pain/.config/VFW/cache/icons/BPlay.png"));
+                searchbutton->setIcon(QPixmap(homedir+"/.config/VFW/cache/icons/BPlay.png"));
                 player->pause();
             }
             paused=!paused;
@@ -492,15 +494,15 @@ void MainWindow::fourthlayoutclick(int buttonindex){
             {QPushButton * sb = this->findChild<QPushButton*>("BRepeating");
             if(rep==PlaylistRepeat){
                 //repeat playlist
-                sb->setIcon(QPixmap("/home/pain/.config/VFW/cache/icons/BRepeatingone.png"));
+                sb->setIcon(QPixmap(homedir+"/.config/VFW/cache/icons/BRepeatingone.png"));
                 rep=VideoRepeat;
             }else if (rep==VideoRepeat){
                 //repeating one video
-                sb->setIcon(QPixmap("/home/pain/.config/VFW/cache/icons/BSuffle.png"));
+                sb->setIcon(QPixmap(homedir+"/.config/VFW/cache/icons/BSuffle.png"));
                 rep=Shuffle;
             }else if (rep==Shuffle){
                 //shuffle
-                sb->setIcon(QPixmap("/home/pain/.config/VFW/cache/icons/BRepeating.png"));
+                sb->setIcon(QPixmap(homedir+"/.config/VFW/cache/icons/BRepeating.png"));
                 rep=PlaylistRepeat;
             }
             break;
@@ -591,7 +593,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
 
 // slider and player relationship
 
-//setting the player position basing on the slider position
+// //setting the player position basing on the slider position
 void MainWindow::mediaposition(int position){
 
     //calculate the time of the between the last change of position and now
@@ -729,24 +731,24 @@ void MainWindow::changefarposition(int newpos){
 
 //volume logic 
 void MainWindow::slidertovolume(int position){
-    audio->setVolume(position/1000.0);
+    audio->setVolume(position*1000);
 }
 void MainWindow::volumetoslider(qreal position){
     QPushButton *searchbutton = this->findChild<QPushButton*>("BVolumeControl");
-    audio->setVolume(position);
+    // audio->setVolume(position);
     //changing the volume button icon basing on the volume state
     if(position*1000 == 0){
-        searchbutton->setIcon(QPixmap("/home/pain/.config/VFW/cache/icons/BMute.png"));
+        searchbutton->setIcon(QPixmap(homedir+"/.config/VFW/cache/icons/BMute.png"));
         volumeslider->setStyleSheet("QSlider#volumeslider::handle{background:#1e1e1e;}");
     }else if (position*1000<=333 && position*1000>0){
-        searchbutton->setIcon(QPixmap("/home/pain/.config/VFW/cache/icons/BVolumeLow.png"));
+        searchbutton->setIcon(QPixmap(homedir+"/.config/VFW/cache/icons/BVolumeLow.png"));
         volumeslider->setStyleSheet("QSlider#volumeslider::handle{background:#484949;}");
 
     }else if(position*1000>=333 && position*1000<=666){
-        searchbutton->setIcon(QPixmap("/home/pain/.config/VFW/cache/icons/BVolumeMid.png"));
+        searchbutton->setIcon(QPixmap(homedir+"/.config/VFW/cache/icons/BVolumeMid.png"));
 
     }else if(position*1000>=666){
-        searchbutton->setIcon(QPixmap("/home/pain/.config/VFW/cache/icons/BVolumeControl.png"));
+        searchbutton->setIcon(QPixmap(homedir+"/.config/VFW/cache/icons/BVolumeControl.png"));
 
     }
     volumeslider->setSliderPosition(static_cast<int>(position*1000));
