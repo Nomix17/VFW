@@ -52,7 +52,7 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent){
     sublabel->setDefaultTextColor(Qt::white);
     font.setPointSize(24);
     sublabel->setFont(font);
-    
+
     currenttimer = new QLabel("--:--:--");
     totaltimer = new QLabel("--:--:--");
     volumeslider = new CustomSlider(Qt::Horizontal);
@@ -83,7 +83,7 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent){
       //creat a menu for eachbutton
       QMenu *menu = new QMenu(this);
       if(actionslist.size()>i){
-      //loop the elements in actionslist of the i button 
+      //loop the elements in actionslist of the i button
         for(qsizetype j=0;j<actionslist[i].size();j++){
             QAction *action = new QAction(this);
             action->setObjectName(actionslist[i][j]);
@@ -102,11 +102,11 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent){
 
     //setting fourthlayout pushbuttons
     for(int j=0;j<mcbuttons.size();j++){
-        //adding space for the style 
+        //adding space for the style
         if(j==1 || j==4){
             fourthlayout->addSpacing(20);
         }else if(j==7){
-            //adding space for the style between buttons and volume parameters 
+            //adding space for the style between buttons and volume parameters
             fourthlayout->addStretch(100);
         }
         QPushButton *button = new QPushButton(this);
@@ -161,7 +161,7 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent){
 
     //showing a blackscreen
     mediaplayer("blackscreen");
-    
+
     //load the sub style
     SubConfig win;
     htmlstyle = win.makehtml();
@@ -178,12 +178,12 @@ void MainWindow::mediaplayer(QString url){
         currenttimer->setText("--:--:--");
         totaltimer ->setText("--:--:--");
     }
-    
+
     //if pass "play a list" as an argunent a video from the playlist will play
     else if(url=="play a list"){
         player->setSource(QUrl(playlist[videoindex]));
     }
-    
+
     //if we pass a url, a video with the url will play and the playlist will be cleared
     else{
         player->setSource(QUrl(url));
@@ -206,7 +206,7 @@ void MainWindow::firstlayoutclick(int buttonindex){
     QString url;
     QString suburl;
     switch(buttonindex){
-        
+
         //if the user choose to open a file
         case Open_file:{
           url = QFileDialog::getOpenFileName(this,tr("Select Video File"),homedir,tr("Mp4 files (*.mp4)"));
@@ -222,7 +222,7 @@ void MainWindow::firstlayoutclick(int buttonindex){
         case Open_folder:{
           url = QFileDialog::getExistingDirectory(this,tr("Setect Playlist Directory","", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks),homedir);
           if(!url.isEmpty()){
-              
+
               playlist.clear(); //clearing the playlist
               //saving all the urls in a list
               for(auto i : std::filesystem::directory_iterator(url.toStdString())){
@@ -254,24 +254,24 @@ void MainWindow::firstlayoutclick(int buttonindex){
           QApplication::quit();
           break;
         }
-        
+
         //getting the title of the video
         case Title:{
           break;
         }
-        
+
         //jump backward (player)
         case JUMP_BACKWARD:{
           player->setPosition(player->position()-5000);
           break;
         }
-        
+
         //jump forward (player)
         case JUMP_FORWARD:{
           player->setPosition(player->position()+5000);
           break;
         }
-        
+
         //jump to a specific time
         case JUMP_TO_TIME:{
             JumpTime x;
@@ -281,7 +281,7 @@ void MainWindow::firstlayoutclick(int buttonindex){
             }
             break;
         }
-        //loop on segment of the video 
+        //loop on segment of the video
         case LOOPSEGMENT:{
             SRepeatWindow win;
             win.exec();
@@ -303,19 +303,19 @@ void MainWindow::firstlayoutclick(int buttonindex){
           volumetoslider(1);
           break;
         }
-        
+
         //setting the audio to mute
         case MUTE:{
           volumetoslider(0);
           break;
         }
-        
+
         //set a video radio
         case SET_RADIO:{
           //setting a whole new window
           break;
         }
-        
+
         //if the user choose to open a sub file
         case ADDSUB:{
           suburl = QFileDialog::getOpenFileName(this,tr("Select Subtitle file"),homedir,tr("Srt files (*.srt)"));
@@ -324,8 +324,8 @@ void MainWindow::firstlayoutclick(int buttonindex){
           }
           break;
         }
-        
-        //if the user choose to not show a sub 
+
+        //if the user choose to not show a sub
         case STOPSUB:{
           subtimer.clear();
           sublines.clear();
@@ -359,6 +359,7 @@ void MainWindow::firstlayoutclick(int buttonindex){
             htmlstyle = win.makehtml();
             subpadding = win.padding;
             submarginbottom = win.marginbottom;
+            player->setPosition(player->position()+1);
             break;
         }
     }
@@ -373,13 +374,13 @@ void MainWindow::firstlayoutclick(int buttonindex){
             }
             //show the state of the delay using the same font config of the subtitles
             delaytext->setHtml(htmlstyle + "Subtitles Delay:"+QString::number(subdelay*1000) + "ms </div>");
-            
+
             //calculating the position that the text should go to
             int textwidth = delaytext->boundingRect().width();
             int textheight = delaytext->boundingRect().height();
             delaytext->setPos((view->size().width()-textwidth)/2,(view->size().height()-textheight)/2);
             scene->addItem(delaytext);
-            
+
             //making an effect for the apearence and deapearence of the text
             QGraphicsOpacityEffect * opacityEffect = new QGraphicsOpacityEffect(delaytext);
             delaytext->setGraphicsEffect(opacityEffect);
@@ -388,14 +389,14 @@ void MainWindow::firstlayoutclick(int buttonindex){
             animation->setDuration(1000);
             animation->setStartValue(1.0);
             animation->setEndValue(0.0);
-            animation->start(QPropertyAnimation::DeleteWhenStopped);//start the animation 
+            animation->start(QPropertyAnimation::DeleteWhenStopped);//start the animation
             //after 1s delete the text
             QTimer::singleShot(1000, [delaytext]() {
                 delete delaytext;
             });
         }
     }
-    
+
     this->setFocus();
 }
 
@@ -415,14 +416,14 @@ void MainWindow::fourthlayoutclick(int buttonindex){
             }
             paused=!paused;
             break;}
-        
+
         //if the prevous video button is clicked
         case BACK_BUTTON:
             {if(playertype=="playlist" && videoindex>0){
             videoindex--;
             mediaplayer("play a list");}
             break;}
-            
+
 
         //if the stop button is clicked
         case STOP_BUTTON:
@@ -432,7 +433,7 @@ void MainWindow::fourthlayoutclick(int buttonindex){
             playlist.clear();
             playertype="video";
             break;}
-        
+
         //if the next video button is clicked
         case NEXT_BUTTON:
             {if(playertype=="playlist"){
@@ -484,12 +485,12 @@ void MainWindow::fourthlayoutclick(int buttonindex){
             fullscreened=!fullscreened;
             break;
         }
-        
+
         case PLAYLIST_BUTTON:{
             //showing the full playlist that is playing
         }
-        
-        //if reloading behavior is clicked 
+
+        //if reloading behavior is clicked
         case REPETITION_BUTTON:
             {QPushButton * sb = this->findChild<QPushButton*>("BRepeating");
             if(rep==PlaylistRepeat){
@@ -507,7 +508,7 @@ void MainWindow::fourthlayoutclick(int buttonindex){
             }
             break;
         }
-        
+
         //mute and unmute
         case BVolumeControl:
             {if (audio->volume()){
@@ -548,7 +549,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
                 player->play();
                 paused=false;
     }
-        //if the time is more then 500 ms 
+        //if the time is more then 500 ms
         }else{
             //saving the position of the player
             changefarposition(player->position()+5000);
@@ -567,8 +568,9 @@ void MainWindow::keyPressEvent(QKeyEvent *event){
             if(!paused){
                 player->play();
                 paused=false;
-    }
-        //if the time is more then 500 ms 
+            }
+        
+        //if the time is more then 500 ms
         }else{
             //saving the position of the player
             changefarposition(player->position()-5000);
@@ -606,7 +608,7 @@ void MainWindow::mediaposition(int position){
             player->play();
             paused=false;
     }
-    //if the time is more then 500 ms 
+    //if the time is more then 500 ms
     }else{
         changefarposition(position);
     }
@@ -624,7 +626,7 @@ void MainWindow::setsliderrange(qint64 position){
 void MainWindow::setsliderposition(qint64 position){
     videoslider->setValue(position);
 
-    //if the video is still playing (position != video duration) 
+    //if the video is still playing (position != video duration)
     if(position!=player->duration()){
 
         //setting the current timer basing on the player position
@@ -638,7 +640,7 @@ void MainWindow::setsliderposition(qint64 position){
         currenttimer->setText(QString::fromStdString(osshour.str())+":"+
             QString::fromStdString(ossmin.str())+":"+
             QString::fromStdString(osssecond.str()));
-        
+
         //setting the total timer basing on the player duration
         int thour = player->duration()/(1000*60*60);
         int tmin = (player->duration()/1000-thour*60*60)/60;
@@ -685,7 +687,7 @@ void MainWindow::setsliderposition(qint64 position){
             changefarposition(startingpoint*1000);
         }
     }
-  //syncing subtitles to the player position 
+  //syncing subtitles to the player position
   //looping all the times that exist in the sub file
   for(size_t i=0;i<subtimer.size();i+=2){
     //checking if the player position is between the 2 times
@@ -702,7 +704,7 @@ void MainWindow::setsliderposition(qint64 position){
         int SUBHEIGHT = sublabel->boundingRect().height();
         //posetioning the sub on the correct spot
         sublabel->setPos((VIEWWIDTH-SUBWIDTH)/2,(VIEWHEIGHT-SUBHEIGHT/2)-submarginbottom);
-      
+
       //if the media is in the targeted position we merge the html style with the subtitle and pass it as html script
       sublabel->setHtml(htmlstyle + QString::fromStdString(sublines[i/2]) + "</div>");
       break;
@@ -721,6 +723,7 @@ void MainWindow::changefarposition(int newpos){
     player->setPosition(newpos);
     player->setAudioOutput(audio);
     audio->setVolume(oldvol);
+    player->play();
     player->pause();
     if(!paused){
         player->play();
@@ -729,7 +732,7 @@ void MainWindow::changefarposition(int newpos){
 }
 
 
-//volume logic 
+//volume logic
 void MainWindow::slidertovolume(int position){
     audio->setVolume(position*1000);
 }
@@ -762,7 +765,7 @@ void MainWindow::subscraper(std::string subpath){
   //clearing the sub lists (so i can load a sub even when another is loaded)
   subtimer.clear();
   sublines.clear();
-  
+
   //looping the lines in the file
   while(getline(file,line)){
     int lettercounter=0;
@@ -782,7 +785,7 @@ void MainWindow::subscraper(std::string subpath){
         double smin = ((line[20]-'0')*10 + (line[21]-'0'))*60;
         double ssec = (line[23]-'0')*10 + (line[24]-'0') +(line[26]-'0')*0.1 + (line[27]-'0')*0.01 + (line[28]-'0')*0.001;
         double secondtime = shour+smin+ssec;
-      
+
         //adding the starting time and the end time in a list
         subtimer.push_back(firsttime);
         subtimer.push_back(secondtime);
@@ -822,11 +825,11 @@ void MainWindow:: resizeEvent(QResizeEvent * event){
     QMainWindow::resizeEvent(event);
     int VIEWWIDTH = view->size().width();
     int VIEWHEIGHT = view->size().height();
-    
+
     video->setSize(QSize(VIEWWIDTH+2,VIEWHEIGHT+2));
     scene->setSceneRect(0,0,VIEWWIDTH-1,VIEWHEIGHT-1);
     view->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
-    
+
     int SUBWIDTH = sublabel->boundingRect().width();
     int SUBHEIGHT = sublabel->boundingRect().height();
     sublabel->setPos((VIEWWIDTH-SUBWIDTH)/2,(VIEWHEIGHT-SUBHEIGHT/2)-submarginbottom);
