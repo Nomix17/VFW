@@ -18,9 +18,9 @@ public:
     this->resize(300,250);
     QFile file(QString::fromStdString(projectpath)+"srepeat.css");
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream in(&file);
-        QString styleSheet = in.readAll();
-        this->setStyleSheet(styleSheet);
+      QTextStream in(&file);
+      QString styleSheet = in.readAll();
+      this->setStyleSheet(styleSheet);
     }
     QLabel * FROM = new QLabel("From: ");
     QSpinBox *startinghour = new QSpinBox();

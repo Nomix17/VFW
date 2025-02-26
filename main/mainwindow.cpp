@@ -178,9 +178,10 @@ void MainWindow::mediaplayer(QString url) {
 
   } else if (url == "play a list") {  // if pass "play a list" as an argunent a video from the playlist will play
     currenturl = playlist[videoindex].toString();
-
+  
   } else {  // if we pass a url, a video with the url will play and the playlist will be cleared
     currenturl = url;
+    
   }
 
   // getting the title of the video that is currently playing for later uses (this loop gonna return the text reversed)
@@ -812,7 +813,7 @@ void MainWindow::subscraper(std::string subpath) {
   }
 }
 
-//resizing window logic 
+//resizing window logic
 void MainWindow::resizeEvent(QResizeEvent *event) {
   QMainWindow::resizeEvent(event);
   int VIEWWIDTH = view->size().width();

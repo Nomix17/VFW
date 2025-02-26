@@ -5,7 +5,7 @@ set -e
 BASE_NAME=$(basename *.pro .pro)
 
 if [ ! -d "build" ]; then
-    mkdir build
+  mkdir build
 fi
 
 cd build

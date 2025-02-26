@@ -115,9 +115,9 @@ public:
   void loadstylefiles(){
     QFile file(QString::fromStdString(StyleDirectory)+"subconfig.css");
       if (file.open(QIODevice::ReadOnly | QIODevice::Text)){
-          QTextStream in(&file);
-          QString styleSheet = in.readAll();
-          this->setStyleSheet(styleSheet);
+        QTextStream in(&file);
+        QString styleSheet = in.readAll();
+        this->setStyleSheet(styleSheet);
       }
   }
 
@@ -172,7 +172,7 @@ public:
     Configsdirectory = Configspath;
     std::string jsonpath = Configspath+"subconfig.json";
     if(!std::filesystem::exists(jsonpath)){
-          createdefaultjson();
+      createdefaultjson();
     }
 
     json settings;

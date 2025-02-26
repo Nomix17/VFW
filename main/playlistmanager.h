@@ -76,8 +76,8 @@ class PlaylistManager:public QDialog{
         std::string video_title=""; 
         int counter = media_url.size();
         while(media_url[counter]!='/'){
-            video_title+=media_url[counter].toLatin1();
-            counter--;
+          video_title+=media_url[counter].toLatin1();
+          counter--;
         }
         std::reverse(video_title.begin(),video_title.end());//reversing the text so it look correct
 
