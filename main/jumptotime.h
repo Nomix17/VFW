@@ -12,15 +12,15 @@ class JumpTime : public QDialog{
   Q_OBJECT;
 
 public:
-  JumpTime(QWidget*parent=nullptr):QDialog(parent){
+  JumpTime(QWidget*parent,std::string projectpath):QDialog(parent){
     this->setFocus();
-      QFile file("/home/pain/.config/VFW/cache/styles/jumpwindow.css");
-      if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-          QTextStream in(&file);
-          QString styleSheet = in.readAll();
-          this->setStyleSheet(styleSheet);
-      }
-      this->setFixedSize(250,100);
+    QFile file(QString::fromStdString(projectpath)+"jumpwindow.css");
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+      QTextStream in(&file);
+      QString styleSheet = in.readAll();
+      this->setStyleSheet(styleSheet);
+    }
+    this->setFixedSize(250,100);
     QSpinBox *hour = new QSpinBox();
     QSpinBox *min = new QSpinBox();
     QSpinBox *sec = new QSpinBox();

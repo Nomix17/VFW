@@ -3,15 +3,27 @@
 #include <QFile>
 #include <iostream>
 #include <QUrl>
+#include <cstdlib>
+#include <QString>
+#include <iostream>
+#include <filesystem>
+#include <string>
+#include <fstream>
+
 
 int main(int argc,char* argv[]){
     QApplication a(argc, argv);
-    QFile file("/home/pain/.config/VFW/cache/styles/style.css");
-    if(file.open(QIODevice::ReadOnly | QIODevice::Text)){
-        QString script = file.readAll();
-        a.setStyleSheet(script);
-        file.close();
-    }
+    PATHS path;
+    std::string projectdir = path.Projectdir();
+    std::ifstream stylefile(projectdir+"cache/styles/mainwindow.css");
+    if(stylefile){
+        std::string script;
+        std::ostringstream ssrt;
+        ssrt << stylefile.rdbuf();
+        script = ssrt.str();
+        a.setStyleSheet(QString::fromStdString(script));
+    }   
+
     MainWindow w;
     w.show();
     //if the user pass video paths as arguments

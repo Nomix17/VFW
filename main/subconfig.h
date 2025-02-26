@@ -39,77 +39,82 @@ private:
   QGridLayout * gridlayout;
   QHBoxLayout * buttonlayout;
   
-public:  
-  void gui(){
+public: 
+  std::string Configsdirectory = "";
+  std::string StyleDirectory = "";
+
+  void gui(std::string Configspath,std::string StylePath){
+    StyleDirectory = StylePath;
+    Configsdirectory = Configspath;
     mainlayout = new QVBoxLayout(this);
-        gridlayout = new QGridLayout();
-        buttonlayout = new QHBoxLayout();
-        for(size_t i=0;i<labels.size();i++){
-          QLabel *label = new QLabel;
-          label->setText(labels[i]);
-          gridlayout->addWidget(label,i/2,(i%2)*2);
-          if(i==2||i==6){
-            QPushButton *colorpicker = new QPushButton();
-            colorpicker->setObjectName(labels[i].replace(":","").replace(" ",""));
-            connect(colorpicker,&QPushButton::clicked,[this,colorpicker](){
-              QColor color = QColorDialog::getColor(Qt::white,this,"Pick your color");
-              if(color.isValid()){
-                colorpicker->setStyleSheet("background-color:"+color.name()+";");
-              }
-            });
-            gridlayout->addWidget(colorpicker,i/2,(i%2)*2+1);
-          
-          }else if(i==5){
-            QToolButton *button = new QToolButton;
-            button->setPopupMode(QToolButton::InstantPopup);
-            button->setText("Font");
-            button->setObjectName(labels[i]);
-            QList <QString> fonts= {"Arial","Serif","Sans-Serif","Monospace","Courier New","Cursive","Comic Sans MS"};
-            QMenu *font_familly = new QMenu();
-            for(int i=0;i<fonts.size();i++){
-              QAction * actions = new QAction;
-              actions->setText(fonts[i]);
-              font_familly->addAction(actions);
-              button->setMenu(font_familly);
-              connect(actions,&QAction::triggered,[this,i,fonts,button](){
-                selected_font = fonts[i];
-                button->setText(fonts[i]);
-              });
-            }
-            gridlayout->addWidget(button,i/2,(i%2)*2+1);
-          }else{
-            QSpinBox* number_picker = new QSpinBox();
-            number_picker->setObjectName(labels[i]);
-
-            number_picker->setRange(0,100);
-            gridlayout->addWidget(number_picker,i/2,(i%2)*2+1);
+    gridlayout = new QGridLayout();
+    buttonlayout = new QHBoxLayout();
+    for(size_t i=0;i<labels.size();i++){
+      QLabel *label = new QLabel;
+      label->setText(labels[i]);
+      gridlayout->addWidget(label,i/2,(i%2)*2);
+      if(i==2||i==6){
+        QPushButton *colorpicker = new QPushButton();
+        colorpicker->setObjectName(labels[i].replace(":","").replace(" ",""));
+        connect(colorpicker,&QPushButton::clicked,[this,colorpicker](){
+          QColor color = QColorDialog::getColor(Qt::white,this,"Pick your color");
+          if(color.isValid()){
+            colorpicker->setStyleSheet("background-color:"+color.name()+";");
           }
+        });
+        gridlayout->addWidget(colorpicker,i/2,(i%2)*2+1);
+      
+      }else if(i==5){
+        QToolButton *button = new QToolButton;
+        button->setPopupMode(QToolButton::InstantPopup);
+        button->setText("Font");
+        button->setObjectName(labels[i]);
+        QList <QString> fonts= {"Arial","Serif","Sans-Serif","Monospace","Courier New","Cursive","Comic Sans MS"};
+        QMenu *font_familly = new QMenu();
+        for(int i=0;i<fonts.size();i++){
+          QAction * actions = new QAction;
+          actions->setText(fonts[i]);
+          font_familly->addAction(actions);
+          button->setMenu(font_familly);
+          connect(actions,&QAction::triggered,[this,i,fonts,button](){
+            selected_font = fonts[i];
+            button->setText(fonts[i]);
+          });
         }
+        gridlayout->addWidget(button,i/2,(i%2)*2+1);
+      }else{
+        QSpinBox* number_picker = new QSpinBox();
+        number_picker->setObjectName(labels[i]);
 
-        QPushButton *done = new QPushButton(this);
-        done->setText("done");
-        QPushButton *cancel = new QPushButton(this);
-        cancel->setText("cancel");
-        connect(done,&QPushButton::clicked,[this](){
-          saveconfig();
-          QDialog::accept();
-        });
-        connect(cancel,&QPushButton::clicked,[this](){
-          QDialog::accept();
-        });
-        buttonlayout->addWidget(done);
-        buttonlayout->addWidget(cancel);
-        mainlayout->addLayout(gridlayout);
-        mainlayout->addLayout(buttonlayout);
-        setLayout(mainlayout);
+        number_picker->setRange(0,100);
+        gridlayout->addWidget(number_picker,i/2,(i%2)*2+1);
+      }
+    }
 
-        loadstylefiles();
-        loadconfig();
+      QPushButton *done = new QPushButton(this);
+      done->setText("done");
+      QPushButton *cancel = new QPushButton(this);
+      cancel->setText("cancel");
+      connect(done,&QPushButton::clicked,[this](){
+        saveconfig();
+        QDialog::accept();
+      });
+      connect(cancel,&QPushButton::clicked,[this](){
+        QDialog::accept();
+      });
+      buttonlayout->addWidget(done);
+      buttonlayout->addWidget(cancel);
+      mainlayout->addLayout(gridlayout);
+      mainlayout->addLayout(buttonlayout);
+      setLayout(mainlayout);
+
+      loadstylefiles();
+      loadconfig();
   }
 
   void loadstylefiles(){
-    QFile file("/home/pain/.config/VFW/cache/styles/subconfig.css");
-      if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    QFile file(QString::fromStdString(StyleDirectory)+"subconfig.css");
+      if (file.open(QIODevice::ReadOnly | QIODevice::Text)){
           QTextStream in(&file);
           QString styleSheet = in.readAll();
           this->setStyleSheet(styleSheet);
@@ -134,15 +139,15 @@ public:
    
 
 
-  std::ofstream file("/home/pain/.config/VFW/cache/styles/subconfig.json");
-  file << settings.dump(10);
+  std::ofstream file(Configsdirectory+"subconfig.json");
+  file << settings.dump(4);
   file.close();
 
   }
   
   void loadconfig(){
     json configfile;
-    std::ifstream file("/home/pain/.config/VFW/cache/styles/subconfig.json");
+    std::ifstream file(Configsdirectory+"subconfig.json");
     file>>configfile;
 
     this->findChild<QSpinBox*>("Margin Bottom:")->setValue(configfile["margin-bottom"]);
@@ -163,9 +168,15 @@ public:
     file.close();
   }
 
-  QString makehtml(){
+  QString makehtml(std::string Configspath){
+    Configsdirectory = Configspath;
+    std::string jsonpath = Configspath+"subconfig.json";
+    if(!std::filesystem::exists(jsonpath)){
+          createdefaultjson();
+    }
+
     json settings;
-    std::ifstream file("/home/pain/.config/VFW/cache/styles/subconfig.json");
+    std::ifstream file(jsonpath);
     file>>settings;
     QColor bgcolor(QString::fromStdString(settings["bg-color"]));
     QColor fontcolor(QString::fromStdString(settings["font-color"]));
@@ -183,6 +194,25 @@ public:
 
     file.close();
     return HtmlScript;
+  }
+
+  void createdefaultjson(){
+    json defaultsettings;
+
+      defaultsettings["bg-color"] = "#000000";
+      defaultsettings["bg-opacity"]= 20;
+      defaultsettings["font-color"]= "#ffffff";
+      defaultsettings["font-familly"]="monospace";
+      defaultsettings["font-opacity"]= 100;
+      defaultsettings["font-size"]= 24;
+      defaultsettings["margin-bottom"]= 61;
+      defaultsettings["padding"]= 26;
+    
+    std::ofstream file(Configsdirectory+"subconfig.json");
+    if(file){
+      file << defaultsettings.dump(4);
+      file.close();
+    }
   }
 };
 

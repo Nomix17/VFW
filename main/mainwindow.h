@@ -23,8 +23,15 @@
 #include <QGraphicsVideoItem>
 #include <QGraphicsView>
 #include <QGraphicsScene>
+#include <string>
 
-
+#ifdef _WIN32
+    #include <windows.h>
+#elif __APPLE__
+    #include <mach-o/dyld.h>
+#else
+    #include <unistd.h>
+#endif
 
 // main window class
 class MainWindow: public QMainWindow{
@@ -35,7 +42,7 @@ public:
         VideoRepeat=1,
         Shuffle=2,
     };
-    enum FIRSTLAYOUT_LABEL_ELEMENTS{
+    enum topbarlayout_LABEL_ELEMENTS{
         PAUSE_BUTTON = 0,
         BACK_BUTTON = 1,
         STOP_BUTTON = 2,
@@ -45,31 +52,32 @@ public:
         REPETITION_BUTTON = 6,
         BVolumeControl = 7,
     };
-    enum FOURTHLAYOUT_LABEL_ELEMENTS{
+    enum controlbuttonslayout_LABEL_ELEMENTS{
         Open_file = 0,
         Open_folder = 1,
         Open_media = 2,
         Quit = 3,
-        Title = 4,
-        JUMP_BACKWARD = 5,
-        JUMP_FORWARD = 6,
-        JUMP_TO_TIME = 7,
-        LOOPSEGMENT = 8,
-        BREAKLOOP = 9,
-        FULL_VOLUME = 10,
-        MUTE = 11,
-        SET_RADIO = 12,
-        ADDSUB = 13,
-        STOPSUB = 14,
-        ADDDELAY = 15,
-        REDUCEDELAY = 16,
-        SUBSETTINGS = 17,
+        JUMP_BACKWARD = 4,
+        JUMP_FORWARD = 5,
+        JUMP_TO_TIME = 6,
+        LOOPSEGMENT = 7,
+        BREAKLOOP = 8,
+        FULL_VOLUME = 9,
+        MUTE = 10,
+        SET_RADIO = 11,
+        ADDSUB = 12,
+        STOPSUB = 13,
+        ADDDELAY = 14,
+        REDUCEDELAY = 15,
+        SUBSETTINGS = 16,
+        TITLE = 17,
+        SHORTCUTS = 18,
     };
     MainWindow(QWidget *parent=nullptr);
-    void firstlayoutclick(int buttonindex);
-    void fourthlayoutclick(int buttonindex);
+    void topbarlayoutclick(int buttonindex);
+    void controlbuttonslayoutclick(int buttonindex);
     void setsliderrange(qint64 position);
-    void setsliderposition(qint64 position);
+    void playertimeline(qint64 position);
     void mediaposition(int position);
     void keyPressEvent(QKeyEvent *event)override;
     void mediaplayer(QString url="blackscreen");
@@ -80,6 +88,9 @@ public:
     QString fixhtml(QString test);
     void changefarposition(int newpos);
     void resizeEvent(QResizeEvent * event) override;
+    void showingthings(std::string texttoshow, int xposition, int yposition,int animationduration);
+    void topbarlayoutvisibility(std::string status);
+    void controllayoutvisibility(std::string status);
     //turnning off the tab focusing
     bool focusNextPrevChild(bool next) override{
         if(next){}
@@ -97,10 +108,10 @@ private:
     QWidget *mainwidget;
     QStackedLayout *stackedlayout;
     QVBoxLayout *mainlayout;
-    QHBoxLayout *firstlayout;
+    QHBoxLayout *topbarlayout;
     QGridLayout *videolayout;
     QHBoxLayout *thirdlayout;
-    QHBoxLayout *fourthlayout;
+    QHBoxLayout *controlbuttonslayout;
     QMediaPlayer *player;
     QGraphicsTextItem *sublabel;
     QAudioOutput *audio;
@@ -119,8 +130,8 @@ private:
     int finishpoint;
 
     QList<QString> mcbuttons = {"BPause","BBack","BStop","BNext","BFullscreen","BPlaylist","BRepeating","BVolumeControl"};
-    QList<QString> firstlayoutbuttons = {"Media","Playback","Audio","Video","Subtitle","Tools","View","Help"};
-    QList<QList <QString> > actionslist = {{"Open File","Open Folder","Open Media","Quit"},{"Title","Jump Backward","Jump Forward","Jump to Time","Loop Segment","Break Loop"},{"Full Volume","Mute"},{"Set Radio"},{"Add Subtitles","Stop Subtitles","Add Delay","Reduce Delay","Subtitle Settings",}};
+    QList<QString> topbarlayoutbuttons = {"Media","Playback","Audio","Video","Subtitle","Tools","View","Help"};
+    QList<QList <QString> > actionslist = {{"Open File","Open Folder","Open Media","Quit"},{"Jump Backward","Jump Forward","Jump to Time","Loop Segment","Break Loop"},{"Full Volume","Mute"},{"Set Radio"},{"Add Subtitles","Stop Subtitles","Add Delay","Reduce Delay","Subtitle Settings",},{},{"Video Title"},{"Shortcuts Instructions"}};
 
 public:
     std::vector<QUrl> playlist;
@@ -129,12 +140,46 @@ public:
     int submarginbottom;
     std::vector <float> subtimer;
     std::vector <std::string> sublines;
+    std::string current_video_title="";
+    QString currenturl = "";
+};
+
+class PATHS {
+    public:
+        QString homedir = QString::fromStdString(std::getenv(
+                #ifdef _WIN32
+                    "USERPROFILE"
+                #else
+                    "HOME"
+                #endif
+            ));
+
+        std::string Projectdir(){
+            std::string projectpath;
+            #ifdef _WIN32
+                wchar_t path[1024];
+                GetModuleFileName(NULL,path,sizeof(path)/sizeof(wchar_t));
+                std::wstring ws(path);
+                std::string str(ws.begin(),ws.end());
+                projectpath = str;
+            #elif __APPLE__
+                char path[102];
+                uint32_t size = sizeof(path);
+                NSGetModuleFileName(path,&size);
+                projectpath = path;
+            #else
+                char path[102];
+                ssize_t len = readlink("/proc/self/exe",path,sizeof(path)-1);
+                if(len != -1) path[len]='\0';
+                projectpath = path;
+            #endif
+            projectpath = projectpath.erase(projectpath.size()-14);
+            return projectpath ;
+        }
+
 };
 
 
 
 
-
-
 #endif
-//https://vo-live.cdb.cdn.orange.com/Content/Channel/NationalGeographicHDChannel/HLS/index.m3u8

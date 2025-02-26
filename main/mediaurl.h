@@ -16,9 +16,9 @@ class UrlWindow : public QDialog {
 public:
 
     //constructor for the url window input
-    UrlWindow(QWidget *parent = nullptr):QDialog(parent){
+    UrlWindow(QWidget *parent,std::string projectpath):QDialog(parent){
         this->setFocus();
-        QFile file("/home/pain/.config/VFW/cache/styles/mediaurl.css");
+        QFile file(QString::fromStdString(projectpath)+"mediaurl.css");
         if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             QTextStream in(&file);
             QString styleSheet = in.readAll();

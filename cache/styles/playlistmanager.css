@@ -1,0 +1,14 @@
+QPushButton{
+  text-align:left;
+  min-width: 500px;
+  padding-left:20px;
+}
+#donebutton{
+  text-align:center;
+  padding-left:0px;
+
+  min-width: 0px;
+}
+#currentlyplayingbutton{
+  background-color: #888888;
+}

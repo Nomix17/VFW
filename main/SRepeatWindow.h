@@ -13,10 +13,10 @@ class SRepeatWindow :public QDialog{
   Q_OBJECT;
   
 public:
-  SRepeatWindow(QWidget *parent=nullptr):QDialog(parent){
+  SRepeatWindow(QWidget *parent,std::string projectpath):QDialog(parent){
     this->setFocus();
     this->resize(300,250);
-    QFile file("/home/pain/.config/VFW/cache/styles/srepeat.css");
+    QFile file(QString::fromStdString(projectpath)+"srepeat.css");
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&file);
         QString styleSheet = in.readAll();
