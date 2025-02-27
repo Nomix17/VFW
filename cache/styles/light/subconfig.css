@@ -1,0 +1,47 @@
+QLabel {
+  font-size: 20px;
+  margin: 10px;
+}
+
+QPushButton#BorderColor,
+#BgColor,
+#FontColor {
+  background-color: #e0e0e0;
+  min-height: 30px;
+  min-width: 65px;
+  max-height: 30px;
+  max-width: 65px;
+  border: 1px solid rgb(180, 180, 180);
+  border-radius: 5px;
+}
+
+QSpinBox {
+  background-color: #ffffff;
+  min-height: 30px;
+  min-width: 60px;
+  max-height: 30px;
+  max-width: 60px;
+  font-size: 20px;
+}
+
+QPushButton {
+  font-size: 13px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  min-height: 40px;
+  min-width: 60px;
+  max-height: 40px;
+  max-width: 60px;
+}
+
+QToolButton {
+  background-color: #e0e0e0;
+  height: 30px;
+  width: 65px;
+  border-radius: 5px;
+  margin: 0px;
+}
+
+QToolButton:pressed {
+  background-color: #b0b0b0;
+}

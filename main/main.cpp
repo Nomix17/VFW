@@ -10,12 +10,18 @@
 #include <string>
 #include <fstream>
 
+PATHS path;
+QString homedir = path.homedir;
+std::string projectdir = path.Projectdir();
+std::string CONFIGSDIRECTORY = projectdir + "cache/configs/";
+std::string theme = path.GETTHEME(CONFIGSDIRECTORY);
+QString ICONSDIRECTORY = QString::fromStdString(projectdir + "cache/icons/"+theme+"/");
+std::string STYLESDIRECTORY = projectdir + "cache/styles/"+theme+"/";
+
 
 int main(int argc,char* argv[]){
   QApplication a(argc, argv);
-  PATHS path;
-  std::string projectdir = path.Projectdir();
-  std::ifstream stylefile(projectdir+"cache/styles/mainwindow.css");
+  std::ifstream stylefile(STYLESDIRECTORY+"mainwindow.css");
   if(stylefile){
     std::string script;
     std::ostringstream ssrt;

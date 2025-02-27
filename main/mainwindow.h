@@ -24,6 +24,7 @@
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <string>
+#include <fstream>
 
 #ifdef _WIN32
   #include <windows.h>
@@ -38,41 +39,45 @@ class MainWindow: public QMainWindow{
   Q_OBJECT
 public:
   enum RepeatMode{
-    PlaylistRepeat=0,
-    VideoRepeat=1,
-    Shuffle=2,
+    PlaylistRepeat,
+    VideoRepeat,
+    Shuffle,
   };
+  
   enum topbarlayout_LABEL_ELEMENTS{
-    PAUSE_BUTTON = 0,
-    BACK_BUTTON = 1,
-    STOP_BUTTON = 2,
-    NEXT_BUTTON = 3,
-    FULLSCREEN_BUTTON = 4,
-    PLAYLIST_BUTTON = 5,
-    REPETITION_BUTTON = 6,
-    BVolumeControl = 7,
+    PAUSE_BUTTON,
+    BACK_BUTTON,
+    STOP_BUTTON,
+    NEXT_BUTTON,
+    FULLSCREEN_BUTTON,
+    PLAYLIST_BUTTON,
+    REPETITION_BUTTON,
+    BVolumeControl
   };
+  
   enum controlbuttonslayout_LABEL_ELEMENTS{
-    Open_file = 0,
-    Open_folder = 1,
-    Open_media = 2,
-    Quit = 3,
-    JUMP_BACKWARD = 4,
-    JUMP_FORWARD = 5,
-    JUMP_TO_TIME = 6,
-    LOOPSEGMENT = 7,
-    BREAKLOOP = 8,
-    FULL_VOLUME = 9,
-    MUTE = 10,
-    SET_RADIO = 11,
-    ADDSUB = 12,
-    STOPSUB = 13,
-    ADDDELAY = 14,
-    REDUCEDELAY = 15,
-    SUBSETTINGS = 16,
-    TITLE = 17,
-    SHORTCUTS = 18,
+    Open_file,
+    Open_folder,
+    Open_media,
+    Quit,
+    JUMP_BACKWARD,
+    JUMP_FORWARD,
+    JUMP_TO_TIME,
+    LOOPSEGMENT,
+    BREAKLOOP,
+    FULL_VOLUME,
+    MUTE,
+    SET_RADIO,
+    ADDSUB,
+    STOPSUB,
+    ADDDELAY,
+    REDUCEDELAY,
+    SUBSETTINGS,
+    TITLE,
+    THEME,
+    SHORTCUTS,
   };
+  
   MainWindow(QWidget *parent=nullptr);
   void topbarlayoutclick(int buttonindex);
   void controlbuttonslayoutclick(int buttonindex);
@@ -103,7 +108,7 @@ private:
   QString playertype;
   size_t videoindex=0;
   RepeatMode  rep = PlaylistRepeat ;
-  
+
   QLabel* image;
   QWidget *mainwidget;
   QStackedLayout *stackedlayout;
@@ -131,7 +136,7 @@ private:
 
   QList<QString> mcbuttons = {"BPause","BBack","BStop","BNext","BFullscreen","BPlaylist","BRepeating","BVolumeControl"};
   QList<QString> topbarlayoutbuttons = {"Media","Playback","Audio","Video","Subtitle","Tools","View","Help"};
-  QList<QList <QString> > actionslist = {{"Open File","Open Folder","Open Media","Quit"},{"Jump Backward","Jump Forward","Jump to Time","Loop Segment","Break Loop"},{"Full Volume","Mute"},{"Set Radio"},{"Add Subtitles","Stop Subtitles","Add Delay","Reduce Delay","Subtitle Settings",},{},{"Video Title"},{"Shortcuts Instructions"}};
+  QList<QList <QString> > actionslist = {{"Open File","Open Folder","Open Media","Quit"},{"Jump Backward","Jump Forward","Jump to Time","Loop Segment","Break Loop"},{"Full Volume","Mute"},{"Set Radio"},{"Add Subtitles","Stop Subtitles","Add Delay","Reduce Delay","Subtitle Settings",},{},{"Video Title","change theme"},{"Shortcuts Instructions"}};
 
 public:
   std::vector<QUrl> playlist;
@@ -176,8 +181,25 @@ public:
     projectpath = projectpath.erase(projectpath.size()-14);
     return projectpath ;
   }
+  
+  std::string GETTHEME(std::string configDirectory){
+    std::ifstream themefile(configDirectory+"/theme");
+    std::string theme = "light";
+    if(themefile){
+      getline(themefile,theme);
+    }
+    return theme;
+  }
 
 };
+
+extern PATHS path;
+extern QString homedir;
+extern std::string projectdir;
+extern std::string theme;
+extern std::string CONFIGSDIRECTORY;
+extern std::string STYLESDIRECTORY;
+extern QString ICONSDIRECTORY;
 
 
 

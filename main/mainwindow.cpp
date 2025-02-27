@@ -1,3 +1,4 @@
+//I don't like the actions style (in the topbarlayout), find a way to make them look better
 #include <SRepeatWindow.h>
 #include <jumptotime.h>
 #include <mainwindow.h>
@@ -5,6 +6,7 @@
 #include <playlistmanager.h>
 #include <shortcutsinstructions.h>
 #include <subconfig.h>
+#include <ChangeThemeWindow.h>
 
 #include <QAction>
 #include <QApplication>
@@ -29,13 +31,6 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-
-PATHS path;
-QString homedir = path.homedir;
-std::string projectdir = path.Projectdir();
-QString ICONSDIRECTORY = QString::fromStdString(projectdir) + "cache/icons/";
-std::string STYLESDIRECTORY = projectdir + "cache/styles/";
-std::string CONFIGSDIRECTORY = projectdir + "cache/configs/";
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   this->setFocus();
@@ -71,7 +66,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
   // adding margin for style
   mainlayout->setContentsMargins(10, 10, 10, 10);
-
+  
   // align the buttons for  style
   topbarlayout->setAlignment(Qt::AlignLeft);
   controlbuttonslayout->setAlignment(Qt::AlignLeft);
@@ -118,7 +113,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     QPixmap pix(ICONSDIRECTORY + mcbuttons[j] + ".png");
     button->setIcon(pix);
     if (button->objectName() == "BVolumeControl") {
-      button->setIconSize(QSize(20, 20));
+      button->setIconSize(QSize(24, 24));
     } else {
       button->setIconSize(QSize(16, 16));
     }
@@ -178,10 +173,10 @@ void MainWindow::mediaplayer(QString url) {
 
   } else if (url == "play a list") {  // if pass "play a list" as an argunent a video from the playlist will play
     currenturl = playlist[videoindex].toString();
-  
+
   } else {  // if we pass a url, a video with the url will play and the playlist will be cleared
     currenturl = url;
-    
+
   }
 
   // getting the title of the video that is currently playing for later uses (this loop gonna return the text reversed)
@@ -231,7 +226,9 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
         playlist.clear();  // clearing the playlist
         // saving all the urls in a list
         for (auto i : std::filesystem::directory_iterator(url.toStdString())) {
-          playlist.push_back(QUrl(QString::fromStdString(i.path().string())));
+          if(i.path().extension() == ".mp4" || i.path().extension() == ".mp3"){
+            playlist.push_back(QUrl(QString::fromStdString(i.path().string())));
+          }
         }
         if (playlist.size()) {
           playertype = "playlist";
@@ -396,6 +393,18 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
         int xposition = view->size().width() / 2;
         int yposition = view->size().height() - submarginbottom;
         showingthings(current_video_title, xposition, yposition, 3000);
+      }
+      break;
+    }
+
+    //changing the theme of the app
+    case THEME:{
+      ChangeThemeWindow win(nullptr,CONFIGSDIRECTORY,projectdir+"cache/styles",STYLESDIRECTORY);
+      win.exec();
+      int xposition = view->size().width() / 2;
+      int yposition = view->size().height()/2 ;
+      if(win.changetotheme!=""){
+        showingthings("You Need to reset the Application to apply the new Theme",xposition,yposition,4000);
       }
       break;
     }
@@ -647,7 +656,7 @@ void MainWindow::playertimeline(qint64 position) {
       ":" + QString::fromStdString(tosssecond.str()));
 
   }
-  
+
   // if the video is finished
   else if (position == player->duration()) {
     // if the reloading button is in the "reload full playlist" mode
@@ -675,13 +684,13 @@ void MainWindow::playertimeline(qint64 position) {
     videoslider->setValue(0);
   }
 
-  //if the user created a loop 
+  //if the user created a loop
   if (repeatfromposition) {
     if (position >= finishpoint * 1000) {
       changefarposition(startingpoint * 1000);
     }
   }
-  
+
   // syncing subtitles to the player position
   // looping all the times that exist in the sub file
   for (size_t i = 0; i < subtimer.size(); i += 2) {
@@ -726,8 +735,8 @@ void MainWindow::changefarposition(int newpos) {
 }
 
 // volume logic
-void MainWindow::slidertovolume(int position) { 
-  audio->setVolume((float)position / 1000); 
+void MainWindow::slidertovolume(int position) {
+  audio->setVolume((float)position / 1000);
 }
 
 void MainWindow::volumetoslider(qreal position) {

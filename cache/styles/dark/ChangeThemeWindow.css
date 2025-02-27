@@ -1,0 +1,17 @@
+QToolButton{
+  background-color:#1e1e1e;
+  min-width: 500px;
+  min-height: 40px;
+}
+QPushButton{
+  margin-left:10px;
+  background-color:#1e1e1e;
+  min-width: 100px;
+  min-height: 40px;
+}
+
+QMenu,QAction{
+  min-width: 500px;
+  min-height:40px;
+  border:2px solid #101010;
+}

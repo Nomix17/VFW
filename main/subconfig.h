@@ -75,12 +75,12 @@ public:
           QAction * actions = new QAction;
           actions->setText(fonts[i]);
           font_familly->addAction(actions);
-          button->setMenu(font_familly);
           connect(actions,&QAction::triggered,[this,i,fonts,button](){
             selected_font = fonts[i];
             button->setText(fonts[i]);
           });
         }
+        button->setMenu(font_familly);
         gridlayout->addWidget(button,i/2,(i%2)*2+1);
       }else{
         QSpinBox* number_picker = new QSpinBox();

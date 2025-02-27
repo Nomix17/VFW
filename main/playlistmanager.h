@@ -1,5 +1,6 @@
 #ifndef PLAYLISTMANAGER_H
 #define PLAYLISTMANAGER_H
+#include "qsizepolicy.h"
 #include <iostream>
 #include <QDialog>
 #include <QVBoxLayout>
@@ -28,7 +29,6 @@ class PlaylistManager:public QDialog{
     int new_video_index = -1;
 
     PlaylistManager(QWidget *parent,std::string styledirectory,std::string icondirectory,std::vector<QUrl> playlist_vector,QString currenturl):QDialog(parent){
-      this->setFixedSize(640,480);
 
       //load style file
       std::ifstream stylefile(styledirectory+"playlistmanager.css");
@@ -60,8 +60,8 @@ class PlaylistManager:public QDialog{
 
 
     void createbuttons(std::string icondirectory,std::vector<QUrl> playlist_vector,QString currenturl){
-      
-      //clearing old buttons 
+
+      //clearing old buttons
       for(int i=0;i<medialayout->count();i++){
         QLayoutItem *item = medialayout->itemAt(i);
         if(item->widget()){
@@ -71,9 +71,9 @@ class PlaylistManager:public QDialog{
       //create buttons based on the medias loaded into the playlist
       for(size_t i=0;i<playlist_vector.size();i++){
         QString media_url = playlist_vector[i].toString();
-        
+
         //getting the video title
-        std::string video_title=""; 
+        std::string video_title="";
         int counter = media_url.size();
         while(media_url[counter]!='/'){
           video_title+=media_url[counter].toLatin1();
@@ -89,9 +89,9 @@ class PlaylistManager:public QDialog{
         }else{
           Video_Button->setIcon(QPixmap(QString::fromStdString(icondirectory+"BPlay.png")));
         }
-        
+
         connect(Video_Button,&QPushButton::clicked,[this,icondirectory,playlist_vector,currenturl,i](){
-          new_video_index = i;            
+          new_video_index = i;
           QDialog::accept();
 
         });

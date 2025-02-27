@@ -1,0 +1,11 @@
+QLabel{
+  border: 1px solid #b0b0b0;
+  font-size:16px;
+  padding:10px 10px 10px 10px;
+}
+QPushButton{
+  min-width: 50px;
+}
+#tablehead{
+  background-color: #dcdcdc;
+}

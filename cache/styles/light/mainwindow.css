@@ -1,26 +1,28 @@
+QGraphicsVideoItem,QGraphicsScene,QGraphicsView{
+  background-color: #000000;
+}
 QWidget{
-  background:  #101010;
-  color:white;
+  background:  #f0f0f0;
+  color: black;
 }
 
 QToolButton{
   width:80px;
   margin-left:10px;
   border:solid;
-  color:#ffffff;
-  background-color:#0e0e0e;
+  color:#000000;
+  background-color:#e0e0e0;
 }
 QToolButton:pressed{
-  background-color: #313131;
+  background-color: #d0d0d0;
 }
 
 QLabel{
-  color:white;
+  color:black;
 }
 QLabel#sublabel{
   font-size:20px;
-  background-color: rgba(0, 0, 0, 0);
-
+  background-color: rgba(255, 255, 255, 0);
 }
 QPushButton{
   min-width:30px;
@@ -30,7 +32,7 @@ QPushButton{
 }
 QPushButton#BVolumeControl{
   border:none;
-  background-color: #101010;
+  background-color: #f0f0f0;
 }
 
 QSlider{
@@ -44,7 +46,7 @@ QSlider::sub-page:horizontal {
 }
 
 QSlider::groove:horizontal{
-  background: #1e1e1e;
+  background: #dcdcdc;
   height: 5px;
 }
 QSlider::handle::pressed{
@@ -52,7 +54,7 @@ QSlider::handle::pressed{
 }
 QSlider::handle{
   width:0px;
-}   
+}
 
 /*slider volume*/
 QSlider#volumeslider{
@@ -60,28 +62,12 @@ QSlider#volumeslider{
 }
 
 QSlider::sub-page:horizontal#volumeslider {
-  background: #484949;
+  background: #b0b0b0;
   border-radius: 5px;
 }
 
 QSlider::groove:horizontal#volumeslider {
-  background: #1e1e1e;
+  background: #dcdcdc;
   border-radius: 5px;
   height: 20px;
   border-radius: 30px;
-}
-
-QSlider#volumeslider::handle{
-  width:0px;
-}
-
-QMenu{
-  width: 160px;
-  border: 2px solid #1e1e1e;
-}
-QSlider::handle:vertical{
-  width: 0px;
-}
-QGraphicsView{
-  background-color: #000000;
-}
