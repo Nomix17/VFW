@@ -8,10 +8,15 @@ QToolButton{
   margin-left:10px;
   border:solid;
   color:#ffffff;
-  background-color:#0e0e0e;
+  background-color:#101010;
+  border-radius: 4px;
+
 }
 QToolButton:pressed{
   background-color: #313131;
+}
+QToolButton::menu-indicator{
+  width:0px;
 }
 
 QLabel{
@@ -76,12 +81,20 @@ QSlider#volumeslider::handle{
 }
 
 QMenu{
+  padding: 0px;
+}
+QMenu:item{
   width: 160px;
-  border: 2px solid #1e1e1e;
+  padding:5px;
+  border-radius: 1px;
+  border: 1px solid #484949;
 }
 QSlider::handle:vertical{
   width: 0px;
 }
 QGraphicsView{
   background-color: #000000;
+}
+QMenu:item:selected{
+  background-color: #484949;
 }

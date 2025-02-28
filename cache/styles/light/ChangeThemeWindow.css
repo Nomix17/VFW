@@ -7,21 +7,32 @@ QToolButton {
   min-height: 40px;
 }
 
-QPushButton {
-  margin-left: 10px;
+QPushButton{
+  margin-top:10px;
+  margin-left:10px;
   background-color: #ffffff;
-  color: #333333;
+  min-width: 60px;
   border: 1px solid #cccccc;
-  border-radius: 5px;
-  min-width: 100px;
-  min-height: 40px;
+  min-height: 30px;
 }
 
-QMenu, QAction {
-  min-width: 500px;
+QMenu{
+  padding: 0px;
+}
+QMenu:item{
+  text-align: center;
+  min-width: 492px;
   min-height: 40px;
-  background-color: #ffffff;
-  color: #333333;
-  border: 2px solid #bbbbbb;
-  border-radius: 5px;
+  margin-left:10px;
+  border-radius: 1px;
+  border: 1px solid #b0b0b0;
+}
+QSlider::handle:vertical{
+  width: 0px;
+}
+QGraphicsView{
+  background-color: #000000;
+}
+QMenu:item:selected{
+  background-color: #b0b0b0;
 }
