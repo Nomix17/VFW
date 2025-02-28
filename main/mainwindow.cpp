@@ -66,7 +66,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
   // adding margin for style
   mainlayout->setContentsMargins(10, 10, 10, 10);
-  
+
   // align the buttons for  style
   topbarlayout->setAlignment(Qt::AlignLeft);
   controlbuttonslayout->setAlignment(Qt::AlignLeft);
@@ -262,13 +262,13 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
 
     // jump backward (player)
     case JUMP_BACKWARD: {
-      player->setPosition(player->position() - 5000);
+      changefarposition(player->position() - 5000);
       break;
     }
 
     // jump forward (player)
     case JUMP_FORWARD: {
-      player->setPosition(player->position() + 5000);
+      changefarposition(player->position() + 5000);
       break;
     }
 
