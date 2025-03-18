@@ -179,12 +179,8 @@ public:
       projectpath = path;
     #endif
 
-    int counter=projectpath.size();
-    std::string temp;
-    std::cout<<projectpath<<std::endl;
     size_t position = projectpath.rfind("bin");
     projectpath = projectpath.substr(0,position);
-    std::cout<<projectpath<<std::endl;
     return projectpath ;
   }
 
