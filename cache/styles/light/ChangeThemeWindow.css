@@ -1,0 +1,42 @@
+QToolButton {
+  background-color: #ffffff;
+  color: #333333;
+  border: 1px solid #cccccc;
+  border-radius: 5px;
+  min-width: 500px;
+  min-height: 40px;
+}
+
+QPushButton{
+  margin-top:10px;
+  margin-left:10px;
+  min-width: 60px;
+  min-height: 30px;
+  background-color:#dcdcdc;
+  border: 1px solid #cccccc;
+  border-radius:4px;
+}
+QPushButton:pressed{
+  background-color:#ffffff;
+}
+
+QMenu{
+  padding: 0px;
+}
+QMenu:item{
+  text-align: center;
+  min-width: 492px;
+  min-height: 40px;
+  margin-left:10px;
+  border-radius: 1px;
+  border: 1px solid #b0b0b0;
+}
+QSlider::handle:vertical{
+  width: 0px;
+}
+QGraphicsView{
+  background-color: #000000;
+}
+QMenu:item:selected{
+  background-color: #b0b0b0;
+}

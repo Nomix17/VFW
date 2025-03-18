@@ -1,0 +1,28 @@
+QWidget{
+  background-color: #f0f0f0;
+}
+QSpinBox{
+  min-height: 40px;
+  max-height:40px;
+  font-size:30px;
+  background-color: #ffffff;
+}
+QPushButton{
+  max-height: 40px;
+  max-width: 60px;
+  min-height: 40px;
+  min-width: 60px;
+  background-color:#dcdcdc;
+  border: 1px solid #cccccc;
+  border-radius:4px;
+}
+QPushButton:pressed{
+  background-color:#ffffff;
+}
+QLabel{
+  font-family: monospace;
+  font-size: 20px;
+}
+QLabel#separetor{
+  font-size:30px;
+}

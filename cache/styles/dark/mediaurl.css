@@ -1,0 +1,46 @@
+/* Style for the overall window */
+QDialog {
+  background-color: #101010;      
+  color: white;                   
+  border-radius: 10px;
+}
+
+QLabel {
+  color: #ffffff;
+  font-size: 30px;
+  padding: 10px;
+}
+
+QTextEdit {
+  background-color: #1e1e1e;
+  color: white;
+  border: 1px solid #555555;
+  border-radius: 5px;        
+  padding: 5px;
+  font-size: 20px;
+  min-width: 100px;
+  max-height: 30px;
+  margin:20px 50px 20px 20px;
+}
+QPushButton{
+  min-width: 85px;
+  min-height: 40px;
+  max-width: 85px;
+  max-height: 40px;
+  margin-left:10px;
+
+  color: white;
+}
+
+QPushButton#okbutton{
+  margin-left:450px;
+}
+
+QHBoxLayout {
+  margin: 10px;
+}
+
+QVBoxLayout {
+  padding: 10px;
+  spacing: 20px;
+}
