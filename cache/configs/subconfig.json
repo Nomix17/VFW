@@ -1,0 +1,10 @@
+{
+    "bg-color": "#000000",
+    "bg-opacity": 0,
+    "font-color": "#ffffff",
+    "font-familly": "Monospace",
+    "font-opacity": 100,
+    "font-size": 30,
+    "margin-bottom": 50,
+    "padding": 26
+}

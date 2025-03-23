@@ -1,0 +1,20 @@
+QPushButton {
+  text-align: left;
+  max-width: 600px;
+  min-width: 600px;
+  padding-left: 20px;
+  background-color:#161616;
+  border: 1px solid #313131;
+  border-radius:4px;
+}
+QPushButton:pressed{
+  background-color:#101010;
+}
+#donebutton {
+  text-align: center;
+  padding-left: 0px;
+}
+
+#currentlyplayingbutton {
+  background-color: #1e1e1e;
+}
