@@ -11,16 +11,26 @@ QPushButton#BorderColor,#BgColor,#FontColor{
   max-width: 65px;
   border: 1px solid rgb(148, 148, 148);
   border-radius: 5px;
-
 }
 
 QSpinBox{
   background-color: #1e1e1e;
+  border:1px solid #888888;
+  color:#ffffff;
+  border-radius: 5px;
   min-height: 30px;
   min-width: 60px;
   max-height: 30px;
   max-width: 60px;
   font-size:20px;
+}
+
+QSpinBox::up-button,
+QSpinBox::down-button { 
+  background-color: #101010;
+  border: 1px solid #000000;
+  border-radius: 2px;
+  margin:1px;
 }
 
 QPushButton{

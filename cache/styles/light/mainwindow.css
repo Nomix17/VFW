@@ -90,18 +90,6 @@ QSlider::groove:horizontal#volumeslider {
 QSlider#volumeslider::handle{
   width:0px;
 }
-
-QMenu{
-  padding: 0px;
-}
-
-QMenu:item{
-  width: 160px;
-  padding:5px;
-  border-radius: 1px;
-  border: 1px solid #b0b0b0;
-}
-
 QSlider::handle:vertical{
   width: 0px;
 }
@@ -110,6 +98,18 @@ QGraphicsView{
   background-color: #000000;
 }
 
+QMenu{
+  padding: 0px;
+  border-top: 1px solid #b0b0b0;
+}
+QMenu:item{
+  width: 160px;
+  padding:5px;
+  border-radius: 1px;
+  border: 1px solid #b0b0b0;
+  border-top:none ;
+}
 QMenu:item:selected{
-  background-color: #b0b0b0;
+  background-color: #308cc6;
+  color:#ffffff;
 }
