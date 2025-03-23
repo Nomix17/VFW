@@ -95,15 +95,14 @@ QGraphicsView{
 }
 
 QMenu{
-  padding: 0px;
-  border-top: 1px solid #343636;
+  padding: 5px;
+  border: 1px solid #343636;
+  border-radius:5px;
 }
 QMenu:item{
   width: 160px;
   padding:5px;
-  border-radius: 1px;
-  border: 1px solid #343636;
-  border-top:none ;
+  border-radius: 5px;
 }
 QMenu:item:selected{
   background-color: #262727;

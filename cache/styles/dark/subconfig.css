@@ -62,3 +62,17 @@ QToolButton{
 QToolButton:pressed{
   background-color: #636363;
 }
+
+QMenu{
+  padding: 5px;
+  border: 1px solid #343636;
+  border-radius:5px;
+}
+QMenu:item{
+  width: 160px;
+  padding:5px;
+  border-radius: 5px;
+}
+QMenu:item:selected{
+  background-color: #262727;
+}

@@ -17,23 +17,24 @@ QPushButton:pressed{
 }
 
 
-QMenu{
-  padding: 0px;
-}
-QMenu:item{
-  text-align: center;
-  min-width: 492px;
-  min-height: 40px;
-  margin-left:10px;
-  border-radius: 1px;
-  border: 1px solid #484949;
-}
 QSlider::handle:vertical{
   width: 0px;
 }
 QGraphicsView{
   background-color: #000000;
 }
+QMenu{
+  padding: 5px;
+  border: 1px solid #343636;
+  border-radius:5px;
+    qproperty-alignment: AlignCenter;
+
+}
+QMenu:item{
+   min-width: 492px;  
+  padding:5px;
+  border-radius: 5px;
+}
 QMenu:item:selected{
-  background-color: #484949;
+  background-color: #262727;
 }
