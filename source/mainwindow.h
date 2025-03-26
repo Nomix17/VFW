@@ -96,11 +96,10 @@ public:
   void keyPressEvent(QKeyEvent *event)override;
   void mediaplayer(QString url="blackscreen");
   void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
-  void slidertovolume(int position);
-  void volumetoslider(qreal position);
+  void slidermanagement(qreal position);
   void subfileparsing(std::string subpath);
   QString fixhtml(QString test);
-  void movetofarposition(int newpos);
+  void changingposition(int newpos);
   void resizelements(std::string elementtorezise="all");
   void resizeEvent(QResizeEvent * event) override;
   void showingthings(std::string texttoshow, int xposition, int yposition,int animationduration);

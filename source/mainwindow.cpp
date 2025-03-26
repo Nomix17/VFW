@@ -132,13 +132,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   controlbuttonslayout->addWidget(volumeslider);
 
   // connecting volume slider and the audiooutput volume
-  connect(volumeslider, &QSlider::valueChanged, this, &MainWindow::slidertovolume);
-  connect(audio, &QAudioOutput::volumeChanged, this, &MainWindow::volumetoslider);
+  connect(volumeslider, &QSlider::valueChanged,[ this]() {audio->setVolume((float)volumeslider->value() / 1000);});
+  connect(audio, &QAudioOutput::volumeChanged, this, &MainWindow::slidermanagement);
 
   // connecting the slider and media with there logic
   connect(player, &QMediaPlayer::positionChanged, this, &MainWindow::playertimeline);
   connect(player, &QMediaPlayer::durationChanged, this, &MainWindow::setsliderrange);
-  connect(videoslider, &QSlider::sliderMoved, [this]() { mediaposition(videoslider->sliderPosition()); });
+  connect(videoslider, &QSlider::sliderMoved, [this]() {changingposition(videoslider->sliderPosition());this->setFocus();});
 
   // setting QGraphics parametres
   video->setSize(view->size());
@@ -304,13 +304,13 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
 
     // jump backward (player)
     case JUMP_BACKWARD: {
-      movetofarposition(player->position() - 5000);
+      changingposition(player->position() - 5000);
       break;
     }
 
     // jump forward (player)
     case JUMP_FORWARD: {
-      movetofarposition(player->position() + 5000);
+      changingposition(player->position() + 5000);
       break;
     }
 
@@ -319,7 +319,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
       JumpTime x(nullptr, STYLESDIRECTORY);
       x.exec();
       if (x.targettime >= 0) {
-        movetofarposition(x.targettime * 1000);
+        changingposition(x.targettime * 1000);
       }
       break;
     }
@@ -332,7 +332,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
         repeatfromposition = true;
         startingpoint = win.startingpoint;
         finishpoint = win.finishingpoint;
-        movetofarposition(startingpoint * 1000);
+        changingposition(startingpoint * 1000);
       }
       break;
     }
@@ -345,13 +345,13 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
 
     // setting the audio to full volume
     case FULL_VOLUME: {
-      volumetoslider(1);
+      slidermanagement(1);
       break;
     }
 
     // setting the audio to mute
     case MUTE: {
-      volumetoslider(0);
+      slidermanagement(0);
       break;
     }
 
@@ -550,7 +550,6 @@ void MainWindow::controlbuttonslayoutclick(int buttonindex) {
       if (win.new_video_index != (int)videoindex && win.new_video_index != -1) {
         videoindex = win.new_video_index;
         mediaplayer("play a list");
-        controlbuttonslayoutclick(PAUSE_BUTTON);
       }
       break;
     }
@@ -576,7 +575,7 @@ void MainWindow::controlbuttonslayoutclick(int buttonindex) {
     
     // Continue from last position you stoped
     case CONTINUEFROMLASTPOS_BUTTON:{
-      movetofarposition(lastsavedposition);
+      changingposition(lastsavedposition);
       QPushButton *skipbutton = this->findChild<QPushButton *>("BContinueFLP");
       skipbutton->hide();
       break;
@@ -585,9 +584,9 @@ void MainWindow::controlbuttonslayoutclick(int buttonindex) {
     case BVolumeControl: {
       if (audio->volume()) {
         oldvolume = audio->volume();
-        volumetoslider(0);
+        slidermanagement(0);
       } else {
-        volumetoslider(oldvolume);
+        slidermanagement(oldvolume);
       }
       break;
     }
@@ -609,46 +608,14 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
   } else if (event->key() == Qt::Key_Space) {
     controlbuttonslayoutclick(0);
   } else if (event->key() == Qt::Key_Right) {
-    // calculating when was the last click (left or right)
-    std::chrono::duration<double> time = std::chrono::system_clock::now() - now;
-    // if the time is less then 500 ms  it will only increasing the position
-    if (time.count() < 0.5) {
-      player->setPosition(player->position() + 5000);
-      player->pause();
-      if (!paused) {
-        player->play();
-        paused = false;
-      }
-      // if the time is more then 500 ms
-    } else {
-      // saving the position of the player
-      movetofarposition(player->position() + 5000);
-    }
-    now = std::chrono::system_clock::now();
-
+    changingposition(player->position() + 5000);
   } else if (event->key() == Qt::Key_Left) {
-    // calculating when was the last click (left or right)
-    std::chrono::duration<double> time = std::chrono::system_clock::now() - now;
-    // if the time is less then 500 ms  it will only decrease the position
-    if (time.count() < 0.5) {
-      player->setPosition(player->position() - 5000);
-      player->pause();
-      if (!paused) {
-        player->play();
-        paused = false;
-      }
-      // if the time is more then 500 ms
-    } else {
-      // saving the position of the player
-      movetofarposition(player->position() - 5000);
-    }
-    now = std::chrono::system_clock::now();
-
+    changingposition(player->position() - 5000);
   } else if (event->key() == Qt::Key_Up) {
-    volumetoslider(audio->volume() + 0.1);
+    slidermanagement(audio->volume() + 0.1);
     volumeslider->setSliderPosition(volumeslider->sliderPosition() + 0.1);
   } else if (event->key() == Qt::Key_Down) {
-    volumetoslider(audio->volume() - 0.1);
+    slidermanagement(audio->volume() - 0.1);
     volumeslider->setSliderPosition(volumeslider->sliderPosition() - 0.1);
   } else if (event->key() == Qt::Key_G) {
     topbarlayoutclick(REDUCEDELAY);
@@ -658,27 +625,6 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 }
 
 // slider and player relationship
-
-// //setting the player position basing on the slider position
-void MainWindow::mediaposition(int position) {
-  // calculate the time of the between the last change of position and now
-  std::chrono::duration<double> time = std::chrono::system_clock::now() - now;
-  // if the time is less then 500 ms  it will only change the position (to avoid the audio gliching when moving the slider fast)
-  if (time.count() < 0.5) {
-    player->setPosition(position);
-    player->pause();
-    if (!paused) {
-      player->play();
-      paused = false;
-    }
-    // if the time is more then 500 ms
-  } else {
-    movetofarposition(position);
-  }
-  now = std::chrono::system_clock::now();
-  this->setFocus();
-}
-
 // setting the range of the slider basing on the player
 void MainWindow::setsliderrange(qint64 position) { videoslider->setRange(0, position); }
 
@@ -745,7 +691,7 @@ void MainWindow::playertimeline(qint64 position) {
   //if the user created a loop
   if (repeatfromposition) {
     if (position >= finishpoint * 1000) {
-      movetofarposition(startingpoint * 1000);
+      changingposition(startingpoint * 1000);
     }
   }
 
@@ -772,8 +718,14 @@ void MainWindow::playertimeline(qint64 position) {
   }
   
 }
-//solving the bug of audio breaking when moving into a far position, by deleting the audio output widget and create a new one, every time we change position
-void MainWindow::movetofarposition(int newpos) {
+
+/*
+  solving the bug when the audio breaks when changing position,
+  by deleting the audio output widget and create a new one
+  every time we change position.
+*/
+
+void MainWindow::changingposition(int newpos) {
   float oldvol = audio->volume();
   player->stop();
   delete audio;
@@ -788,14 +740,11 @@ void MainWindow::movetofarposition(int newpos) {
   }
 }
 
-// volume logic
-void MainWindow::slidertovolume(int position) {
-  audio->setVolume((float)position / 1000);
-}
 
-void MainWindow::volumetoslider(qreal position) {
+// managing the interactions with the volume slider
+void MainWindow::slidermanagement(qreal position) {
   QPushButton *searchbutton = this->findChild<QPushButton *>("BVolumeControl");
-  // audio->setVolume(position);
+  
   // changing the volume button icon basing on the volume state
   if (position * 1000 == 0) {
     searchbutton->setIcon(QPixmap(ICONSDIRECTORY + "BMute.png"));
