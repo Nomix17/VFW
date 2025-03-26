@@ -378,8 +378,11 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
 
     // if the user choose to not show a sub
     case STOPSUB: {
+      for (SubObject* ptr:subslist){
+        delete ptr;
+      }
       subslist.clear();
-      subslist.clear();
+
       break;
     }
 
@@ -767,8 +770,10 @@ void MainWindow::subfileparsing(std::string subpath) {
   std::ifstream file(subpath);
   std::string line;
 
-  // clearing the sub lists (so i can load a sub even when another is loaded)
-  subslist.clear();
+  // clearing the subs list (so if the user loaded a new subtitle the old one is gonna be deleted)
+  for (SubObject* ptr:subslist){
+    delete ptr;
+  }
   subslist.clear();
 
   // looping the lines in the file
@@ -793,7 +798,7 @@ void MainWindow::subfileparsing(std::string subpath) {
         // calculating the ending time from the string line (hour, minutes, seconds)
         double secondtime = h2*60*60 + min2*60 + sec2 + milsec2*0.001;
 
-        // adding the starting time and the end time in a list
+        // saving the starting time and the end time in a SubObject (a custom defined in mainwindow.h)
         subobject = new SubObject;
         subobject->starttime = firsttime;
         subobject->endtime = secondtime;
@@ -939,8 +944,7 @@ void MainWindow::getlastsavedposition(){
 //distractor
 MainWindow::~MainWindow(){
   savevideoposition();
-  for (size_t i=0;subslist.size();i++){
-    delete subslist[i];
+  for (SubObject* ptr:subslist){
+    delete ptr;
   }
-  delete subobject;
 }
