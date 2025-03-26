@@ -29,12 +29,12 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 
-#include <chrono>
-#include <fstream>
-#include <sstream>
-#include <iomanip>
 #include <iostream>
 #include <string>
+#include <sstream>
+#include <fstream>
+#include <chrono>
+#include <iomanip>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   this->setFocus();
