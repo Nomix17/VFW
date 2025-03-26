@@ -28,8 +28,10 @@
 #include <QTimer>
 #include <QToolButton>
 #include <QVBoxLayout>
+
 #include <chrono>
 #include <fstream>
+#include <sstream>
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -217,18 +219,9 @@ void MainWindow::mediaplayer(QString url) {
   video->show();
   player->play();
   
-  
-  int VIEWWIDTH = view->size().width();
-  int VIEWHEIGHT = view->size().height();
 
-  video->setSize(QSize(VIEWWIDTH + 2, VIEWHEIGHT + 2));
-  scene->setSceneRect(0, 0, VIEWWIDTH - 1, VIEWHEIGHT - 1);
-  view->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
+  resizelements();
 
-  int SUBWIDTH = sublabel->boundingRect().width();
-  int SUBHEIGHT = sublabel->boundingRect().height();
-  sublabel->setPos((VIEWWIDTH - SUBWIDTH) / 2, (VIEWHEIGHT - SUBHEIGHT / 2) - submarginbottom);
-  
   //load the last saved position if it's availble 
   if (url != "blackscreen"){
     getlastsavedposition();
@@ -378,23 +371,25 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
       }
       suburl = QFileDialog::getOpenFileName(this, tr("Select Subtitle file"), displaydir, tr("Srt files (*.srt)"));
       if (!suburl.isEmpty()) {
-        subscraper(suburl.toStdString());
+        subfileparsing(suburl.toStdString());
       }
       break;
     }
 
     // if the user choose to not show a sub
     case STOPSUB: {
-      subtimer.clear();
-      sublines.clear();
+      subslist.clear();
+      subslist.clear();
       break;
     }
 
     // add delay to the subtitles time
     case ADDDELAY: {
-      if (subtimer.size()) {
-        for (size_t i = 0; i < subtimer.size(); i++) {
-          subtimer[i] += 0.1;
+      if (subslist.size()) {
+        for (size_t i = 0; i < subslist.size(); i++) {
+          subslist[i]->starttime += 0.1;
+          subslist[i]->endtime += 0.1;
+
         }
         subdelay += 0.1;
         if (-0.1 < subdelay && subdelay < 0.1) {
@@ -411,10 +406,12 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
 
     // reducing delay to the subtitles time
     case REDUCEDELAY: {
-      if (subtimer.size()) {
-        for (size_t i = 0; i < subtimer.size(); i++) {
-          if (subtimer[0] > 0) {
-            subtimer[i] -= 0.1;
+      if (subslist.size()) {
+        for (size_t i = 0; i < subslist.size(); i++) {
+          if (subslist[0]->starttime > 0) {
+            subslist[i]->starttime -= 0.1;
+            subslist[i]->endtime -= 0.1;
+
           }
         }
         subdelay -= 0.1;
@@ -582,6 +579,7 @@ void MainWindow::controlbuttonslayoutclick(int buttonindex) {
       movetofarposition(lastsavedposition);
       QPushButton *skipbutton = this->findChild<QPushButton *>("BContinueFLP");
       skipbutton->hide();
+      break;
     }
     // mute and unmute
     case BVolumeControl: {
@@ -752,31 +750,27 @@ void MainWindow::playertimeline(qint64 position) {
   }
 
   // syncing subtitles to the player position
-  // looping all the times that exist in the sub file
-  for (size_t i = 0; i < subtimer.size(); i += 2) {
+  for(size_t i=0;i<subslist.size();i++){
     // checking if the player position is between the 2 times
-    if (subtimer[i] * 1000 <= position && subtimer[i + 1] * 1000 >= position) {
+    if (subslist[i]->starttime * 1000 <= position && position <= subslist[i]->endtime * 1000) {
       // getting the size of the view and the sub
       sublabel->setOpacity(1);
-      // adding 100ms delay to the sub apearence until the sub is fully randered
-      if (subtimer[i] * 1000 <= position && subtimer[i] * 1000 + 100 > position) {
+      // adding 100ms delay to the sub apearence until the sub is fully randered to hide the animation
+      if (position <= subslist[i]->starttime * 1000 + 100 ) {
         sublabel->setOpacity(0);
       }
-      int VIEWWIDTH = view->size().width();
-      int VIEWHEIGHT = view->size().height();
-      int SUBWIDTH = sublabel->boundingRect().width();
-      int SUBHEIGHT = sublabel->boundingRect().height();
-      // posetioning the sub on the correct spot
-      sublabel->setPos((VIEWWIDTH - SUBWIDTH) / 2, (VIEWHEIGHT - SUBHEIGHT / 2) - submarginbottom);
+
+      resizelements("sub");
 
       // if the media is in the targeted position we merge the html style with the subtitle and pass it as html script
-      sublabel->setHtml(htmlstyle + QString::fromStdString(sublines[i / 2]) + "</div>");
+      sublabel->setHtml(htmlstyle + QString::fromStdString(subslist[i]->textcontaint) + "</div>");
       break;
-    }else if (i == subtimer.size() - 2) {
+    }else if (i == subslist.size() - 2) {
       // if the media is not in a target position we pass an empty string
       sublabel->setHtml("");
     }
   }
+  
 }
 //solving the bug of audio breaking when moving into a far position, by deleting the audio output widget and create a new one, every time we change position
 void MainWindow::movetofarposition(int newpos) {
@@ -820,13 +814,13 @@ void MainWindow::volumetoslider(qreal position) {
 }
 
 // scraping the subtitles from the sub file
-void MainWindow::subscraper(std::string subpath) {
+void MainWindow::subfileparsing(std::string subpath) {
   std::ifstream file(subpath);
   std::string line;
 
   // clearing the sub lists (so i can load a sub even when another is loaded)
-  subtimer.clear();
-  sublines.clear();
+  subslist.clear();
+  subslist.clear();
 
   // looping the lines in the file
   while (getline(file, line)) {
@@ -835,22 +829,25 @@ void MainWindow::subscraper(std::string subpath) {
     // looping the characters in the line
     while (line[lettercounter] != '\0') {
       // if the line content the set of characters "-->"
-      if (line[lettercounter] == '-' && line[lettercounter + 1] == '-' && line[lettercounter + 2] == '>') {
+      if (line.find("-->")!=std::string::npos) {
+        std::istringstream ss(line);
+        int h1, min1, sec1, milsec1, h2, min2, sec2, milsec2;
+        std::string arrow;
+        char step;
+        ss>>h1>>step>>min1>>step>>sec1>>step>>milsec1;
+        ss>>std::ws>>arrow>>std::ws;
+        ss>>h2>>step>>min2>>step>>sec2>>step>>milsec2;
+
         // calculating the starting time from the string line (hour, minutes, seconds)
-        double fhour = ((line[0] - '0') * 10 + (line[1] - '0')) * 60 * 60;
-        double fmin = ((line[3] - '0') * 10 + (line[4] - '0')) * 60;
-        double fsec = (line[6] - '0') * 10 + (line[7] - '0') + (line[9] - '0') * 0.1 + (line[10] - '0') * 0.01 + (line[11] - '0') * 0.001;
-        double firsttime = fhour + fmin + fsec;
+        double firsttime = h1*60*60 + min1*60 + sec1 + milsec1*0.001;
 
         // calculating the ending time from the string line (hour, minutes, seconds)
-        double shour = ((line[17] - '0') * 10 + (line[18] - '0')) * 60 * 60;
-        double smin = ((line[20] - '0') * 10 + (line[21] - '0')) * 60;
-        double ssec = (line[23] - '0') * 10 + (line[24] - '0') + (line[26] - '0') * 0.1 + (line[27] - '0') * 0.01 + (line[28] - '0') * 0.001;
-        double secondtime = shour + smin + ssec;
+        double secondtime = h2*60*60 + min2*60 + sec2 + milsec2*0.001;
 
         // adding the starting time and the end time in a list
-        subtimer.push_back(firsttime);
-        subtimer.push_back(secondtime);
+        subobject = new SubObject;
+        subobject->starttime = firsttime;
+        subobject->endtime = secondtime;
 
         // bool variable to know what does the line content (times in this case)
         timefound = true;
@@ -876,7 +873,8 @@ void MainWindow::subscraper(std::string subpath) {
         }
       }
       // adding the subs to the list
-      sublines.push_back(fulltext);
+      subobject->textcontaint = fulltext;
+      subslist.push_back(subobject);
       timefound = false;
     }
   }
@@ -885,16 +883,22 @@ void MainWindow::subscraper(std::string subpath) {
 //resizing window logic
 void MainWindow::resizeEvent(QResizeEvent *event) {
   QMainWindow::resizeEvent(event);
+  resizelements();
+}
+
+void MainWindow::resizelements(std::string elementtorezise){
   int VIEWWIDTH = view->size().width();
   int VIEWHEIGHT = view->size().height();
-
-  video->setSize(QSize(VIEWWIDTH + 2, VIEWHEIGHT + 2));
-  scene->setSceneRect(0, 0, VIEWWIDTH - 1, VIEWHEIGHT - 1);
-  view->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
-
   int SUBWIDTH = sublabel->boundingRect().width();
   int SUBHEIGHT = sublabel->boundingRect().height();
-  sublabel->setPos((VIEWWIDTH - SUBWIDTH) / 2, (VIEWHEIGHT - SUBHEIGHT / 2) - submarginbottom);
+  if(elementtorezise=="video" || elementtorezise=="all"){
+    video->setSize(QSize(VIEWWIDTH + 2, VIEWHEIGHT + 2));
+    scene->setSceneRect(0, 0, VIEWWIDTH - 1, VIEWHEIGHT - 1);
+    view->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
+  }
+  if(elementtorezise=="sub" || elementtorezise=="all"){
+    sublabel->setPos((VIEWWIDTH - SUBWIDTH) / 2, (VIEWHEIGHT - SUBHEIGHT / 2) - submarginbottom);
+  }
 }
 
 //function that display text on the top of the video with fading animation
@@ -985,4 +989,8 @@ void MainWindow::getlastsavedposition(){
 //distractor
 MainWindow::~MainWindow(){
   savevideoposition();
+  for (size_t i=0;subslist.size();i++){
+    delete subslist[i];
+  }
+  delete subobject;
 }

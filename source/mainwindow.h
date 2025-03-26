@@ -34,6 +34,13 @@
   #include <unistd.h>
 #endif
 
+
+struct SubObject{
+  int starttime;
+  std::string textcontaint;
+  int endtime;
+};
+
 // main window class
 class MainWindow: public QMainWindow{
   Q_OBJECT
@@ -91,9 +98,10 @@ public:
   void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
   void slidertovolume(int position);
   void volumetoslider(qreal position);
-  void subscraper(std::string subpath);
+  void subfileparsing(std::string subpath);
   QString fixhtml(QString test);
   void movetofarposition(int newpos);
+  void resizelements(std::string elementtorezise="all");
   void resizeEvent(QResizeEvent * event) override;
   void showingthings(std::string texttoshow, int xposition, int yposition,int animationduration);
   void topbarlayoutvisibility(std::string status);
@@ -148,8 +156,8 @@ public:
   QString htmlstyle;
   int subpadding;
   int submarginbottom;
-  std::vector <float> subtimer;
-  std::vector <std::string> sublines;
+  SubObject* subobject;
+  std::vector <SubObject*> subslist;
   std::string current_video_title="";
   QString currenturl = "";
   std::string currentworkdirectory;
@@ -202,6 +210,7 @@ class PATHS {
       return theme;
     }
 };
+
 
 extern PATHS path;
 extern QString homedir;

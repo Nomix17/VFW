@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'shortcutsinstructions.h'
 **
-** Created by: The Qt Meta Object Compiler version 68 (Qt 6.8.2)
+** Created by: The Qt Meta Object Compiler version 68 (Qt 6.6.2)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
@@ -10,16 +10,19 @@
 #include <QtGui/qtextcursor.h>
 #include <QtCore/qmetatype.h>
 
+#if __has_include(<QtCore/qtmochelpers.h>)
 #include <QtCore/qtmochelpers.h>
+#else
+QT_BEGIN_MOC_NAMESPACE
+#endif
+
 
 #include <memory>
 
-
-#include <QtCore/qxptype_traits.h>
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'shortcutsinstructions.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 68
-#error "This file was generated using the moc from 6.8.2. It"
+#error "This file was generated using the moc from 6.6.2. It"
 #error "cannot be used with the include files from this version of Qt."
 #error "(The moc has changed too much.)"
 #endif
@@ -32,19 +35,30 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 QT_WARNING_DISABLE_GCC("-Wuseless-cast")
 namespace {
-struct qt_meta_tag_ZN13ShortcutsInstE_t {};
-} // unnamed namespace
-
 
 #ifdef QT_MOC_HAS_STRINGDATA
-static constexpr auto qt_meta_stringdata_ZN13ShortcutsInstE = QtMocHelpers::stringData(
+struct qt_meta_stringdata_CLASSShortcutsInstENDCLASS_t {};
+constexpr auto qt_meta_stringdata_CLASSShortcutsInstENDCLASS = QtMocHelpers::stringData(
     "ShortcutsInst"
 );
-#else  // !QT_MOC_HAS_STRINGDATA
-#error "qtmochelpers.h not found or too old."
-#endif // !QT_MOC_HAS_STRINGDATA
+#else  // !QT_MOC_HAS_STRING_DATA
+struct qt_meta_stringdata_CLASSShortcutsInstENDCLASS_t {
+    uint offsetsAndSizes[2];
+    char stringdata0[14];
+};
+#define QT_MOC_LITERAL(ofs, len) \
+    uint(sizeof(qt_meta_stringdata_CLASSShortcutsInstENDCLASS_t::offsetsAndSizes) + ofs), len 
+Q_CONSTINIT static const qt_meta_stringdata_CLASSShortcutsInstENDCLASS_t qt_meta_stringdata_CLASSShortcutsInstENDCLASS = {
+    {
+        QT_MOC_LITERAL(0, 13)   // "ShortcutsInst"
+    },
+    "ShortcutsInst"
+};
+#undef QT_MOC_LITERAL
+#endif // !QT_MOC_HAS_STRING_DATA
+} // unnamed namespace
 
-Q_CONSTINIT static const uint qt_meta_data_ZN13ShortcutsInstE[] = {
+Q_CONSTINIT static const uint qt_meta_data_CLASSShortcutsInstENDCLASS[] = {
 
  // content:
       12,       // revision
@@ -62,11 +76,11 @@ Q_CONSTINIT static const uint qt_meta_data_ZN13ShortcutsInstE[] = {
 
 Q_CONSTINIT const QMetaObject ShortcutsInst::staticMetaObject = { {
     QMetaObject::SuperData::link<QDialog::staticMetaObject>(),
-    qt_meta_stringdata_ZN13ShortcutsInstE.offsetsAndSizes,
-    qt_meta_data_ZN13ShortcutsInstE,
+    qt_meta_stringdata_CLASSShortcutsInstENDCLASS.offsetsAndSizes,
+    qt_meta_data_CLASSShortcutsInstENDCLASS,
     qt_static_metacall,
     nullptr,
-    qt_incomplete_metaTypeArray<qt_meta_tag_ZN13ShortcutsInstE_t,
+    qt_incomplete_metaTypeArray<qt_meta_stringdata_CLASSShortcutsInstENDCLASS_t,
         // Q_OBJECT / Q_GADGET
         QtPrivate::TypeAndForceComplete<ShortcutsInst, std::true_type>
     >,
@@ -75,10 +89,9 @@ Q_CONSTINIT const QMetaObject ShortcutsInst::staticMetaObject = { {
 
 void ShortcutsInst::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
-    auto *_t = static_cast<ShortcutsInst *>(_o);
-    (void)_t;
-    (void)_c;
+    (void)_o;
     (void)_id;
+    (void)_c;
     (void)_a;
 }
 
@@ -90,7 +103,7 @@ const QMetaObject *ShortcutsInst::metaObject() const
 void *ShortcutsInst::qt_metacast(const char *_clname)
 {
     if (!_clname) return nullptr;
-    if (!strcmp(_clname, qt_meta_stringdata_ZN13ShortcutsInstE.stringdata0))
+    if (!strcmp(_clname, qt_meta_stringdata_CLASSShortcutsInstENDCLASS.stringdata0))
         return static_cast<void*>(this);
     return QDialog::qt_metacast(_clname);
 }

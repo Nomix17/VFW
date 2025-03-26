@@ -10,7 +10,7 @@ fi
 
 cd ../bin
 
-qmake6 ../source/*.pro
+qmake ../source/*.pro
 make clean
 make
 ./"$BASE_NAME"
