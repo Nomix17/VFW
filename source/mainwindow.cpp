@@ -818,16 +818,16 @@ void MainWindow::subfileparsing(std::string subpath) {
       // checking if there is a next line
       while (getline(file, nextline)) {
         // checking if the line is empty
-        if (nextline.size() > 2) {
+        if (nextline.size() > 2 && nextline.find("-->")==std::string::npos) {
           // if the line is not empty is will add it to a bandal
           fulltext += nextline + "<br>";
         } else {
-          // if the line is empty it will break (so only the subs are added to the variable(fulltext))
+          // if the line is empty or it's a time line,it will break (so only the subs are added to the variable(fulltext))
           break;
         }
       }
       // adding the subs to the list
-      subobject->textcontaint = fulltext;
+      subobject->textcontaint = fulltext.erase(fulltext.size()-4,4); //removing the <br> in the end of the fulltext (if you don't remove it it will appeare as a empty new line in the subs)
       subslist.push_back(subobject);
       timefound = false;
     }
