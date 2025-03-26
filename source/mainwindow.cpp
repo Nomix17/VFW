@@ -219,7 +219,7 @@ void MainWindow::mediaplayer(QString url) {
   video->show();
   player->play();
   
-
+  //resize some ui elements based on the media opened
   resizelements();
 
   //load the last saved position if it's availble 
@@ -880,12 +880,7 @@ void MainWindow::subfileparsing(std::string subpath) {
   }
 }
 
-//resizing window logic
-void MainWindow::resizeEvent(QResizeEvent *event) {
-  QMainWindow::resizeEvent(event);
-  resizelements();
-}
-
+//function to resize ui elements
 void MainWindow::resizelements(std::string elementtorezise){
   int VIEWWIDTH = view->size().width();
   int VIEWHEIGHT = view->size().height();
@@ -899,6 +894,12 @@ void MainWindow::resizelements(std::string elementtorezise){
   if(elementtorezise=="sub" || elementtorezise=="all"){
     sublabel->setPos((VIEWWIDTH - SUBWIDTH) / 2, (VIEWHEIGHT - SUBHEIGHT / 2) - submarginbottom);
   }
+}
+
+//resizing window logic
+void MainWindow::resizeEvent(QResizeEvent *event) {
+  QMainWindow::resizeEvent(event);
+  resizelements();
 }
 
 //function that display text on the top of the video with fading animation
