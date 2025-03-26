@@ -140,7 +140,6 @@ private:
   QLabel *currenttimer;
   QLabel *totaltimer;
   qreal oldvolume;
-  std::chrono::time_point<std::chrono::system_clock> now;
   float subdelay=0;
   bool repeatfromposition = false;
   int startingpoint;
