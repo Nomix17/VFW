@@ -2,17 +2,17 @@
 #define CHANGETHEME_W
 
 
-#include "qnamespace.h"
-#include <QPushButton>
-#include <QDialog>
 #include <fstream>
-#include <vector>
+#include <sstream>
 #include <filesystem>
+#include <vector>
+
+#include <QDialog>
 #include <QGridLayout>
+#include <QPushButton>
 #include <QToolButton>
 #include <QMenu>
 #include <QAction>
-#include <sstream>
 
 class ChangeThemeWindow:public QDialog{
 
@@ -21,12 +21,15 @@ class ChangeThemeWindow:public QDialog{
     std::string changetotheme="";
 
     ChangeThemeWindow(QWidget* parent, std::string ConfigDirectory, std::string ProjectDirectory, std::string StyleDirectory):QDialog(parent){
+      
+      //load style file
       std::ifstream stylefile(StyleDirectory+"/ChangeThemeWindow.css");
       if(stylefile){
         std::ostringstream sstr;
         stylefile>>sstr.rdbuf();
         std::string script = sstr.str();
         this->setStyleSheet(QString::fromStdString(script));
+        stylefile.close();
       }
       
       //creating ui elements

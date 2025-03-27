@@ -1,21 +1,25 @@
 #ifndef SUBCONFIG
 #define SUBCONFIG
 
-#include <iostream>
-#include <QDialog>
 #include "json.hpp"
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
+
+#include <QDialog>
 #include <QGridLayout>
-#include <QLabel>
-#include <QPushButton>
-#include <QMenu>
-#include <QSpinBox>
-#include <QColorDialog>
-#include <QList>
-#include <QFile>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QPushButton>
 #include <QToolButton>
-#include <fstream>
+#include <QSpinBox>
+#include <QLabel>
+#include <QMenu>
+#include <QAction>
+#include <QColorDialog>
+#include <QList>
 
 using namespace nlohmann;
 
@@ -113,12 +117,16 @@ public:
   }
 
   void loadstylefiles(){
-    QFile file(QString::fromStdString(StyleDirectory)+"subconfig.css");
-      if (file.open(QIODevice::ReadOnly | QIODevice::Text)){
-        QTextStream in(&file);
-        QString styleSheet = in.readAll();
-        this->setStyleSheet(styleSheet);
-      }
+    //load style file
+    std::ifstream stylefile(StyleDirectory+"subconfig.css");
+    if(stylefile){
+      std::ostringstream sstr;
+      std::string script;
+      sstr<<stylefile.rdbuf();
+      script = sstr.str();
+      this->setStyleSheet(QString::fromStdString(script));
+      stylefile.close();
+    }
   }
 
   void saveconfig(){

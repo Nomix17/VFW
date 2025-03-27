@@ -1,27 +1,35 @@
 #ifndef LOOPSEGMENT_WINDOW
 #define LOOPSEGMENT_WINDOW
 
+#include <fstream>
+#include <sstream>
+
 #include<QDialog>
 #include <QVBoxLayout>
 #include<QHBoxLayout>
+
 #include <QPushButton>
 #include <QLabel>
 #include <QSpinBox>
-#include <QFile>
 
 class SRepeatWindow :public QDialog{
   Q_OBJECT;
   
 public:
-  SRepeatWindow(QWidget *parent,std::string projectpath):QDialog(parent){
-    this->setFocus();
-    this->resize(300,250);
-    QFile file(QString::fromStdString(projectpath)+"srepeat.css");
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-      QTextStream in(&file);
-      QString styleSheet = in.readAll();
-      this->setStyleSheet(styleSheet);
+  SRepeatWindow(QWidget *parent,std::string StyleDirectory):QDialog(parent){
+    // this->resize(300,250);
+    
+    //load style file
+    std::ifstream stylefile(StyleDirectory+"/srepeat.css");
+    if(stylefile){
+      std::ostringstream sstr;
+      std::string script;
+      sstr<<stylefile.rdbuf();
+      script = sstr.str();
+      this->setStyleSheet(QString::fromStdString(script));
+      stylefile.close();
     }
+
     QLabel * FROM = new QLabel("From: ");
     QSpinBox *startinghour = new QSpinBox();
     QSpinBox *startingmin = new QSpinBox();
@@ -49,7 +57,7 @@ public:
     firstlayout->addWidget(startingseparet2);
     firstlayout->addWidget(startingsec);
 
-    firstlayout->addSpacing(50);
+    firstlayout->addSpacing(20);
 
     firstlayout->addWidget(TO);
     firstlayout->addWidget(finishinghour);

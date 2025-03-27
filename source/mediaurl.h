@@ -1,14 +1,16 @@
 #ifndef URLWINDOW_H
 #define URLWINDOW_H
 
+#include <fstream>
+#include <sstream>
+
 #include <QDialog>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QString>
 #include <QLabel>
 #include <QTextEdit>
 #include <QPushButton>
-#include <QString>
-#include <QFile>
 
 class UrlWindow : public QDialog {
   Q_OBJECT
@@ -16,14 +18,19 @@ class UrlWindow : public QDialog {
 public:
 
   //constructor for the url window input
-  UrlWindow(QWidget *parent,std::string projectpath):QDialog(parent){
-    this->setFocus();
-    QFile file(QString::fromStdString(projectpath)+"mediaurl.css");
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-      QTextStream in(&file);
-      QString styleSheet = in.readAll();
-      this->setStyleSheet(styleSheet);
+  UrlWindow(QWidget *parent,std::string StyleDirectory):QDialog(parent){
+
+    //load style file
+    std::ifstream stylefile(StyleDirectory+"/mediaurl.css");
+    if(stylefile){
+      std::string script;
+      std::ostringstream ss;
+      ss<<stylefile.rdbuf();
+      script = ss.str();
+      this->setStyleSheet(QString::fromStdString(script));
+      stylefile.close();
     }
+
     // this->setFixedSize(800,500);
     mainlayout = new QVBoxLayout;
     firstlayout = new QHBoxLayout;

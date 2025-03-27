@@ -1,18 +1,18 @@
 #ifndef PLAYLISTMANAGER_H
 #define PLAYLISTMANAGER_H
-#include "qsizepolicy.h"
+
 #include <iostream>
-#include <QDialog>
-#include <QVBoxLayout>
-#include <QPushButton>
 #include <vector>
-#include <QUrl>
-#include <QString>
 #include <fstream>
 #include <sstream>
-#include <QPushButton>
-#include <QPixmap>
+
+#include <QDialog>
+#include <QVBoxLayout>
 #include <QScrollArea>
+#include <QPushButton>
+#include <QString>
+#include <QUrl>
+#include <QPixmap>
 
 class PlaylistManager:public QDialog{
   Q_OBJECT;
@@ -28,10 +28,10 @@ class PlaylistManager:public QDialog{
   public:
     int new_video_index = -1;
 
-    PlaylistManager(QWidget *parent,std::string styledirectory,std::string icondirectory,std::vector<QUrl> playlist_vector,QString currenturl):QDialog(parent){
+    PlaylistManager(QWidget *parent,std::string StyleDirectory,std::string IconDirectory,std::vector<QUrl> playlist_vector,QString currenturl):QDialog(parent){
 
       //load style file
-      std::ifstream stylefile(styledirectory+"playlistmanager.css");
+      std::ifstream stylefile(StyleDirectory+"playlistmanager.css");
       if(stylefile){
         std::string script;
         std::ostringstream sstr;
@@ -41,7 +41,7 @@ class PlaylistManager:public QDialog{
       }
 
       //calling function to create buttons
-      createbuttons(icondirectory,playlist_vector,currenturl);
+      createbuttons(IconDirectory,playlist_vector,currenturl);
 
 
       //configuring the scrollarea
@@ -59,7 +59,7 @@ class PlaylistManager:public QDialog{
     }
 
 
-    void createbuttons(std::string icondirectory,std::vector<QUrl> playlist_vector,QString currenturl){
+    void createbuttons(std::string IconDirectory,std::vector<QUrl> playlist_vector,QString currenturl){
 
       //clearing old buttons
       for(int i=0;i<medialayout->count();i++){
@@ -84,13 +84,13 @@ class PlaylistManager:public QDialog{
         //creating a button that represent video
         QPushButton *Video_Button= new QPushButton(QString::fromStdString("  "+video_title));
         if(media_url == currenturl){
-          Video_Button->setIcon(QPixmap(QString::fromStdString(icondirectory+"BPause.png")));
+          Video_Button->setIcon(QPixmap(QString::fromStdString(IconDirectory+"BPause.png")));
           Video_Button->setObjectName("currentlyplayingbutton");
         }else{
-          Video_Button->setIcon(QPixmap(QString::fromStdString(icondirectory+"BPlay.png")));
+          Video_Button->setIcon(QPixmap(QString::fromStdString(IconDirectory+"BPlay.png")));
         }
 
-        connect(Video_Button,&QPushButton::clicked,[this,icondirectory,playlist_vector,currenturl,i](){
+        connect(Video_Button,&QPushButton::clicked,[this,IconDirectory,playlist_vector,currenturl,i](){
           new_video_index = i;
           QDialog::accept();
 

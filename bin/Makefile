@@ -650,16 +650,16 @@ main.o: ../source/main.cpp ../source/mainwindow.h \
 		../source/CustomObjects.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../source/main.cpp
 
-mainwindow.o: ../source/mainwindow.cpp ../source/SRepeatWindow.h \
-		../source/jumptotime.h \
-		../source/mainwindow.h \
+mainwindow.o: ../source/mainwindow.cpp ../source/mainwindow.h \
 		../source/CustomObjects.h \
-		../source/mediaurl.h \
+		../source/SRepeatWindow.h \
+		../source/jumptotime.h \
 		../source/playlistmanager.h \
 		../source/shortcutsinstructions.h \
+		../source/ChangeThemeWindow.h \
+		../source/mediaurl.h \
 		../source/subconfig.h \
-		../source/json.hpp \
-		../source/ChangeThemeWindow.h
+		../source/json.hpp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o ../source/mainwindow.cpp
 
 moc_mainwindow.o: moc_mainwindow.cpp 

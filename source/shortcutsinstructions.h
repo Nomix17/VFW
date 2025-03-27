@@ -1,14 +1,16 @@
 #ifndef SHORTCUTS_INST
 #define SHORTCUTS_INST
-#include <QDialog>
-#include <QGridLayout>
-#include <QWidget>
-#include <QLabel>
-#include <QPushButton>
+
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <vector>
+
+#include <QDialog>
+#include <QGridLayout>
+#include <QWidget>
+#include <QPushButton>
+#include <QLabel>
 
 class ShortcutsInst:public QDialog{
   Q_OBJECT;
@@ -19,13 +21,10 @@ class ShortcutsInst:public QDialog{
     QPushButton *donebutton = new QPushButton("OK");
 
   public:
-    ShortcutsInst(QWidget *parent,std::string stylepath,std::string configpath):QDialog(parent){
-      this->setFocus();
-      std::ifstream stylefile(stylepath+"shortcutsinstructions.css");
-      std::ifstream shortcutfile(stylepath+"Shortcuts_Instructions");
-      std::string shortcutsfilecontent;
-      std::vector <std::string> elements;
-
+    ShortcutsInst(QWidget *parent,std::string StyleDirectory,std::string ConfigDirectory):QDialog(parent){
+    
+      //load style file
+      std::ifstream stylefile(StyleDirectory+"shortcutsinstructions.css");
       if(stylefile){
         std::ostringstream sstr;
         std::string script;
@@ -34,6 +33,11 @@ class ShortcutsInst:public QDialog{
         this->setStyleSheet(QString::fromStdString(script));
         stylefile.close();
       }
+      
+      std::ifstream shortcutfile(ConfigDirectory+"Shortcuts_Instructions");
+      std::string shortcutsfilecontent;
+      std::vector <std::string> elements;
+
 
 
       //checking if the file exist
@@ -45,7 +49,7 @@ class ShortcutsInst:public QDialog{
         }
       }else{
         //if it's not found we create a new one 
-        std::ofstream defaultshortcutsfile(configpath+"Shortcuts_Instructions");
+        std::ofstream defaultshortcutsfile(ConfigDirectory+"Shortcuts_Instructions");
 
         //put the default configs into the vector
         elements={"Functionality:Shortcut",

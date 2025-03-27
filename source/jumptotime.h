@@ -1,25 +1,33 @@
 #ifndef JUMPTIME
 #define JUMPTIME
 
+#include <fstream>
+#include <sstream>
+
 #include <QDialog>
 #include <QVBoxLayout>
-#include <QSpinBox>
-#include <QLabel>
 #include <QPushButton>
-#include <QFile>
+#include <QLabel>
+#include <QSpinBox>
 
 class JumpTime : public QDialog{
   Q_OBJECT;
 
 public:
-  JumpTime(QWidget*parent,std::string projectpath):QDialog(parent){
-    this->setFocus();
-    QFile file(QString::fromStdString(projectpath)+"jumpwindow.css");
-    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-      QTextStream in(&file);
-      QString styleSheet = in.readAll();
-      this->setStyleSheet(styleSheet);
+  JumpTime(QWidget*parent,std::string StyleDirectory):QDialog(parent){
+
+    //load style file
+    std::ifstream stylefile(StyleDirectory+"/jumpwindow.css");
+    if(stylefile){
+      std::string script;
+      std::ostringstream ss;
+      ss<<stylefile.rdbuf();
+      script = ss.str();
+      this->setStyleSheet(QString::fromStdString(script));
+      stylefile.close();
     }
+
+
     this->setFixedSize(250,100);
     QSpinBox *hour = new QSpinBox();
     QSpinBox *min = new QSpinBox();

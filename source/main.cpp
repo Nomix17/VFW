@@ -1,15 +1,13 @@
 #include "mainwindow.h"
-#include <QApplication>
-#include <QFile>
-#include <iostream>
-#include <QUrl>
-#include <cstdlib>
-#include <QString>
+
 #include <iostream>
 #include <filesystem>
-#include <string>
 #include <fstream>
 #include <sstream>
+
+#include <QApplication>
+#include <QUrl>
+#include <QString>
 
 PATHS path;
 QString homedir = path.homedir;
@@ -23,6 +21,9 @@ std::string STYLESDIRECTORY = projectdir + "cache/styles/"+theme+"/";
 int main(int argc,char* argv[]){
   QApplication a(argc, argv);
   std::ifstream stylefile(STYLESDIRECTORY+"mainwindow.css");
+  
+  //load style file#include <QFile>
+
   if(stylefile){
     std::string script;
     std::ostringstream ssrt;

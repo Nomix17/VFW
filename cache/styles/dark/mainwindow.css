@@ -1,7 +1,6 @@
 QWidget{
   background:  #101010;
   color:white;
-  border:none;
 }
 
 QToolButton{
@@ -106,4 +105,7 @@ QMenu:item{
 }
 QMenu:item:selected{
   background-color: #262727;
+}
+QGraphicsView{
+  border:0px;
 }

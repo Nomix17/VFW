@@ -1,40 +1,41 @@
-#include <SRepeatWindow.h>
-#include <cstddef>
-#include <cstdio>
-#include <jumptotime.h>
 #include <mainwindow.h>
-#include <mediaurl.h>
+#include <SRepeatWindow.h>
+#include <jumptotime.h>
 #include <playlistmanager.h>
 #include <shortcutsinstructions.h>
-#include <subconfig.h>
 #include <ChangeThemeWindow.h>
-
-#include <QAction>
-#include <QApplication>
-#include <QAudioOutput>
-#include <QDir>
-#include <QFileDialog>
-#include <QGraphicsOpacityEffect>
-#include <QGraphicsScene>
-#include <QGraphicsTextItem>
-#include <QGraphicsVideoItem>
-#include <QGraphicsView>
-#include <QHBoxLayout>
-#include <QKeyEvent>
-#include <QLabel>
-#include <QMediaPlayer>
-#include <QMenu>
-#include <QPropertyAnimation>
-#include <QTimer>
-#include <QToolButton>
-#include <QVBoxLayout>
+#include <mediaurl.h>
+#include <subconfig.h>
 
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <fstream>
-#include <chrono>
-#include <iomanip>
+
+#include <QApplication>
+
+#include <QLabel>
+#include <QToolButton>
+#include <QMenu>
+#include <QAction>
+
+#include <QAudioOutput>
+#include <QMediaPlayer>
+
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+
+#include <QKeyEvent>
+#include <QPropertyAnimation>
+#include <QFileDialog>
+#include <QTimer>
+
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QGraphicsVideoItem>
+#include <QGraphicsTextItem>
+#include <QGraphicsOpacityEffect>
+
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   this->setFocus();
