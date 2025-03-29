@@ -5,7 +5,6 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
-#include <vector>
 
 #include <QDialog>
 #include <QGridLayout>
@@ -53,7 +52,7 @@ class ChangeThemeWindow:public QDialog{
         });
       }
       themetoolbutton->setMenu(menu);
-      connect(doneButton,&QPushButton::clicked,[this,ConfigDirectory,themetoolbutton](){
+      connect(doneButton,&QPushButton::clicked,[this,ConfigDirectory](){
         //if the user changed the theme
         if(changetotheme!=""){
           //open and clear the theme file
