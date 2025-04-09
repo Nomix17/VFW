@@ -2,8 +2,8 @@
 
 Name=VFW
 Type=Application
-Exec=~/Code/qt/VFW/bin/VFW %f
-Icon=~/Code/qt/VFW/cache/icons/VFW-Squircle-Dark.png
+Exec=~/.VFW/bin/VFW%f
+Icon=~/.VFW/cache/icons/VFW-Squircle-Dark.png
 MimeType=video/x-matroska;video/x-msvideo;video/mp4;video/x-ms-wmv;video/x-flv;video/x-mpegurl;video/x-m4v;
 NoDisplay=false
 Categories=Video;
