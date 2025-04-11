@@ -245,7 +245,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
         displaydir = homedir;
       }
 
-        url = QFileDialog::getOpenFileName(this, tr("Select Video File"), displaydir, tr("Mp4 files (*.mp4 *.mp3)"));
+        url = QFileDialog::getOpenFileName(this, tr("Select Video File"), displaydir, tr("Media files (*.mp4 *.mp3 *.mkv)"));
       
       if (!url.isEmpty()) {
         mediaplayer(url);
@@ -269,7 +269,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
         playlist.clear();  // clearing the playlist
         // saving all the urls in a list
         for (auto i : std::filesystem::directory_iterator(url.toStdString())) {
-          if(i.path().extension() == ".mp4" || i.path().extension() == ".mp3"){
+          if(i.path().extension() == ".mp4" || i.path().extension() == ".mp3" || i.path().extension() == ".mkv"){
             playlist.push_back(QUrl(QString::fromStdString(i.path().string())));
           }
         }
