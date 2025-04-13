@@ -1,2 +1,3 @@
-*main/build/
+*bin
+*./bin
 *.vscode
