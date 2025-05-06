@@ -2,7 +2,7 @@
 
 Name=VFW
 Type=Application
-Exec=~/.VFW/bin/VFW%f
+Exec=/usr/bin/VFW%f
 Icon=~/.VFW/cache/icons/VFW-Squircle-Dark.png
 MimeType=video/x-matroska;video/x-msvideo;video/mp4;video/x-ms-wmv;video/x-flv;video/x-mpegurl;video/x-m4v;
 NoDisplay=false
