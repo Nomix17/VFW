@@ -1,9 +1,13 @@
 [Desktop Entry]
 
-Name=VFW
+Version=1.0
 Type=Application
+Name=VFW
+GenericName=Video File Watcher
+Comment=Watch and manage your video files
 Exec=/usr/bin/VFW %f
 Icon=/opt/VFW/cache/icons/VFW-Squircle-Dark.png
 MimeType=video/x-matroska;video/x-msvideo;video/mp4;video/x-ms-wmv;video/x-flv;video/x-mpegurl;video/x-m4v;
 NoDisplay=false
-Categories=Video;
+Categories=AudioVideo;Video;
+Terminal=false
