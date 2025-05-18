@@ -4,7 +4,7 @@ Before using this code, please ensure you have the following dependencies instal
 
 - **Qt6**: Required for the GUI framework
   
-### Dependencies Installation
+### Installting Dependencies 
 
 #### Ubuntu/Debian
 ```bash
