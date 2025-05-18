@@ -8,7 +8,7 @@ Before using this code, please ensure you have the following dependencies instal
 
 #### Ubuntu/Debian
 ```bash
-sudo apt install qt6-base-dev qtmultimedia6-dev
+sudo apt install qt6-base-dev qt6-qtmultimedia-dev
 ```
 
 #### Fedora
