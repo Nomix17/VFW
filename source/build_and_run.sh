@@ -21,7 +21,7 @@ cp -r ../bin /opt/VFW/
 
 cp ../cache/run.sh /usr/bin/VFW
 
-cp ../cache/VFW.desktop ~/.local/share/applications
+cp ../cache/VFW.desktop /usr/share/applications
 
 VFW
 
