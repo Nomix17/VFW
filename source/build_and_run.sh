@@ -10,7 +10,7 @@ fi
 
 cd ../bin
 
-qmake ../source/*.pro
+qmake6 ../source/*.pro
 make clean
 make
 
