@@ -25,6 +25,7 @@ sudo pacman -S qt6-base qt6-multimedia
 
 ```bash
 git clone https://github.com/Nomix17/VFW
+cd VFW
 chmod +x source/build.sh cache/run.sh
 cd source
 sudo ./build
