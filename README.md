@@ -8,12 +8,12 @@ Before using this code, please ensure you have the following dependencies instal
 
 #### Ubuntu/Debian
 ```bash
-sudo apt install qt6-base-dev qt6-multimedia-dev
+sudo apt install qt6-base-dev qt6-multimedia-dev libgl1-mesa-dev
 ```
 
 #### Fedora
 ```bash
-sudo dnf install qt6-qtbase-devel qt6-qtmultimedia qt6-qtmultimedia-devel
+sudo dnf install qt6-qtbase-devel qt6-qtmultimedia qt6-qtmultimedia-devel mesa-libGL-devel
 ```
 
 #### Arch Linux
