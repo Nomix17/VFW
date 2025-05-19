@@ -8,17 +8,17 @@ Before using this code, please ensure you have the following dependencies instal
 
 #### Ubuntu/Debian
 ```bash
-sudo apt install qt6-base-dev qt6-multimedia-dev libgl1-mesa-dev
+sudo apt install git qt6-base-dev qt6-multimedia-dev libgl1-mesa-dev 
 ```
 
 #### Fedora
 ```bash
-sudo dnf install qt6-qtbase-devel qt6-qtmultimedia qt6-qtmultimedia-devel mesa-libGL-devel
+sudo dnf install git qt6-qtbase-devel qt6-qtmultimedia qt6-qtmultimedia-devel mesa-libGL-devel
 ```
 
 #### Arch Linux
 ```bash
-sudo pacman -S qt6-base qt6-multimedia
+sudo pacman -S git qt6-base qt6-multimedia
 ```
 
 ## Installation
