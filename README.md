@@ -29,4 +29,5 @@ cd VFW
 chmod +x source/build.sh cache/run.sh
 cd source
 sudo ./build.sh $HOME
+sudo chown $(whoami):$(whoami) /opt/VFW
 ```
