@@ -22,4 +22,4 @@ cp -r ../bin /opt/VFW/
 
 cp ../cache/run.sh /usr/bin/VFW
 
-cp ../cache/VFW.desktop $HOME/share/applications
+cp ../cache/VFW.desktop $1/.local/share/applications
