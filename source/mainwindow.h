@@ -4,6 +4,7 @@
 #include "qevent.h"
 #include "CustomObjects.h"
 #include <QMainWindow>
+#include <QStyleHints>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QPushButton>
@@ -201,7 +202,8 @@ class PATHS {
     
     std::string GETTHEME(std::string configDirectory){
       std::ifstream themefile(configDirectory+"/theme");
-      std::string theme = "light";
+      auto defaultcolorscheme = qApp->styleHints()->colorScheme();
+      std::string theme = (defaultcolorscheme == Qt::ColorScheme::Dark)? "dark":"light";
       if(themefile){
         getline(themefile,theme);
       }
