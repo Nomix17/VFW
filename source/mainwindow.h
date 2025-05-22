@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QApplication>
 #include "qevent.h"
 #include "CustomObjects.h"
 #include <QMainWindow>
