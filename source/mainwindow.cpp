@@ -210,8 +210,18 @@ void MainWindow::mediaplayer(QString url) {
 
   //get the current path of directory that the video is playing in
   currentworkdirectory = currenturl.toStdString();
-  currentworkdirectory = currentworkdirectory.substr(0,currentworkdirectory.size()-current_video_title.size()+1);
   
+  // getting the title of the video that is currently playing for later uses (this loop gonna return the text reversed)
+  int counter = currenturl.size();
+  current_video_title.erase();
+  if(counter){
+      while (currenturl[counter] != '/') {
+          current_video_title += currenturl[counter].toLatin1();
+          counter--;
+      }
+  }
+
+  std::reverse(current_video_title.begin(), current_video_title.end());  // reversing the text so it look correct  
   // mediaplayer setup (sound and video widget)
   player->setSource(QUrl(currenturl));
   player->setVideoOutput(video);
