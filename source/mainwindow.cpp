@@ -177,10 +177,12 @@ void MainWindow::mediaplayer(QString url) {
   // if there is no video to play a black image will play (blackscreen)
   video->setSize(view->size());
   if (videoindex > playlist.size() || url == "blackscreen") {
-    player->setSource(QUrl("blackscreen"));
+    player->setSource({});
     currenttimer->setText("--:--:--");
     totaltimer->setText("--:--:--");
     currenturl="";
+    return ;
+
 
   } else if (url == "play a list") {  // if pass "play a list" as an argunent a video from the playlist will play
     currenturl = playlist[videoindex].toString();
@@ -224,9 +226,8 @@ void MainWindow::mediaplayer(QString url) {
   resizelements();
 
   //load the last saved position if it's availble 
-  if (url != "blackscreen"){
-    getlastsavedposition();
-  }
+  getlastsavedposition();
+  
   //save the position of the video what was playing before
   savevideoposition();
 }
