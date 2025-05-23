@@ -183,7 +183,6 @@ void MainWindow::mediaplayer(QString url) {
     currenturl="";
     return ;
 
-
   } else if (url == "play a list") {  // if pass "play a list" as an argunent a video from the playlist will play
     currenturl = playlist[videoindex].toString();
 
@@ -210,7 +209,8 @@ void MainWindow::mediaplayer(QString url) {
 
   //get the current path of directory that the video is playing in
   currentworkdirectory = currenturl.toStdString();
-   
+  currentworkdirectory = currentworkdirectory.substr(0,currentworkdirectory.size()-current_video_title.size()+1);
+  
   // mediaplayer setup (sound and video widget)
   player->setSource(QUrl(currenturl));
   player->setVideoOutput(video);
@@ -225,8 +225,9 @@ void MainWindow::mediaplayer(QString url) {
   resizelements();
 
   //load the last saved position if it's availble 
-  getlastsavedposition();
-  
+  if (url != "blackscreen"){
+    getlastsavedposition();
+  }
   //save the position of the video what was playing before
   savevideoposition();
 }
