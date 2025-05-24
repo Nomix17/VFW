@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QApplication>
-#include <QStyleHints>.
+#include <QStyleHints>
 #include "qevent.h"
 #include "CustomObjects.h"
 #include <QMainWindow>
