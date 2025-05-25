@@ -191,17 +191,10 @@ void MainWindow::mediaplayer(QString url) {
 
   }
 
-  // getting the title of the video that is currently playing for later uses (this loop gonna return the text reversed)
-  int counter = currenturl.size();
-  current_video_title.erase();
-  if(counter){
-      while (currenturl[counter] != '/') {
-          current_video_title += currenturl[counter].toLatin1();
-          counter--;
-      }
-  }
-
-  std::reverse(current_video_title.begin(), current_video_title.end());  // reversing the text so it look correct
+  // getting the title of the video that is currently playing for later uses
+  std::string tempstring = currenturl.toStdString();
+  current_video_title = tempstring.substr(tempstring.rfind("/")+1,tempstring.size());
+  
   // displaying the title for a brief of time
   int xposition = view->size().width() / 2;
   int yposition = view->size().height() - submarginbottom;
