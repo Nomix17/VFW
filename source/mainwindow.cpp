@@ -218,9 +218,8 @@ void MainWindow::mediaplayer(QString url) {
   resizelements();
 
   //load the last saved position if it's availble 
-  if (url != "blackscreen"){
-    getlastsavedposition();
-  }
+  getlastsavedposition();
+  
   //save the position of the video what was playing before
   savevideoposition();
 }
