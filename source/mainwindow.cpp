@@ -191,19 +191,37 @@ void MainWindow::mediaplayer(QString url) {
 
   }
 
+  //getting the path of the video playing as std::string
+  std::string currenturlstring = currenturl.toStdString();
+  std::string searchedChar; // searching character
+  int searchedCharPos; // the position of the searched char
+
+  //if there is no / in the path that mean were in windows
+  if(currenturlstring.rfind("/") == std::string::npos){
+      searchedChar = "%5C"; //windows uses these weird ass characters to symbolize the /
+      while(currenturlstring.rfind(searchedChar) != std::string::npos){ //finding and replacing all %5C with / so we will use it as normal path
+          searchedCharPos = currenturlstring.rfind(searchedChar);
+          currenturlstring.replace(searchedCharPos,searchedChar.size(),"/");
+      }
+  }
+
+  searchedChar = "/"; // searching character
+  searchedCharPos = currenturlstring.rfind(searchedChar); // the position of the searched char
+
   // getting the title of the video that is currently playing for later uses
-  std::string tempstring = currenturl.toStdString();
-  current_video_title = tempstring.substr(tempstring.rfind("/")+1,tempstring.size());
-  
+  current_video_title = currenturlstring.substr(searchedCharPos+1,currenturlstring.size());
+
   // displaying the title for a brief of time
   int xposition = view->size().width() / 2;
   int yposition = view->size().height() - submarginbottom;
-  showingthings(current_video_title, xposition, yposition, 3000);
+  showingthings(current_video_title, xposition, yposition, 2000);
 
   //get the current path of directory that the video is playing in
-  currentworkdirectory = currenturl.toStdString();
-  currentworkdirectory = currentworkdirectory.substr(0,currentworkdirectory.size()-current_video_title.size()+1);
-  
+  currentworkdirectory = currenturlstring.substr(0,currentworkdirectory.size()-current_video_title.size()+1);
+
+  //getting the path of the video playing as QString
+  currenturl = QString::fromStdString(currenturlstring);
+
   // mediaplayer setup (sound and video widget)
   player->setSource(QUrl(currenturl));
   player->setVideoOutput(video);
