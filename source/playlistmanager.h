@@ -19,9 +19,9 @@ class PlaylistManager:public QDialog{
   private:
     QVBoxLayout *mainlayout = new QVBoxLayout(this);
     QScrollArea *scrollarea = new QScrollArea;
-    QVBoxLayout *medialayout = new QVBoxLayout;
+    QGridLayout *medialayout = new QGridLayout;
     QVBoxLayout *scrollarealayoutholder = new QVBoxLayout;
-    QVBoxLayout *doneButtonlayout = new QVBoxLayout;
+    QHBoxLayout *doneButtonHolder = new QHBoxLayout;
     QPushButton *doneButton = new QPushButton("Exit");
     QWidget *holderwidget = new QWidget;
 
@@ -45,16 +45,26 @@ class PlaylistManager:public QDialog{
 
 
       //configuring the scrollarea
-      scrollarea->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+      this->setFixedSize(470,600);
       scrollarea->setWidgetResizable(true);
-      scrollarea->setWidget(holderwidget);
-      scrollarealayoutholder->addWidget(scrollarea);
-
-      doneButton->setObjectName("donebutton");
+      scrollarea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+  
       holderwidget->setLayout(medialayout);
-      doneButtonlayout->addWidget(doneButton);
-      mainlayout->addLayout(scrollarealayoutholder);
-      mainlayout->addLayout(doneButtonlayout);
+      holderwidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+      holderwidget->setMinimumWidth(300);
+  
+      scrollarea->setWidget(holderwidget);
+      // Add scroll area directly to main layout
+      mainlayout->addWidget(scrollarea);
+  
+      // Done button setup
+      doneButton->setObjectName("donebutton");
+      doneButtonHolder->addStretch();
+      doneButtonHolder->addWidget(doneButton);
+      doneButtonHolder->addStretch();
+  
+      mainlayout->addLayout(doneButtonHolder);
+  
       setLayout(mainlayout);
     }
 
@@ -83,6 +93,7 @@ class PlaylistManager:public QDialog{
 
         //creating a button that represent video
         QPushButton *Video_Button= new QPushButton(QString::fromStdString("  "+video_title));
+        Video_Button->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
         if(media_url == currenturl){
           Video_Button->setIcon(QPixmap(QString::fromStdString(IconDirectory+"BPause.png")));
           Video_Button->setObjectName("currentlyplayingbutton");
@@ -93,12 +104,11 @@ class PlaylistManager:public QDialog{
         connect(Video_Button,&QPushButton::clicked,[this,IconDirectory,playlist_vector,currenturl,i](){
           new_video_index = i;
           QDialog::accept();
-
         });
 
-        medialayout->addWidget(Video_Button);
+        medialayout->addWidget(Video_Button,i,0);
+        medialayout->setRowStretch(99, 1);
       }
-      medialayout->addStretch();
 
       connect(doneButton,&QPushButton::clicked,[this](){
         QDialog::accept();
