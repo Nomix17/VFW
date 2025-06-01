@@ -1,1 +1,1 @@
-rm -rf /opt/VFW /usr/bin/VFW ~/.local/share/applications/VFW.desktop
+rm -rf /opt/VFW /usr/bin/VFW ~/.local/share/applications/VFW.desktop ../../VFW
