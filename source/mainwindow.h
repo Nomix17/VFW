@@ -149,8 +149,8 @@ private:
   int finishpoint;
 
   QList<QString> mcbuttons = {"BPause","BBack","BStop","BNext","BFullscreen","BPlaylist","BRepeating","BContinueFLP","BVolumeControl"};
-  QList<QString> topbarlayoutbuttons = {"Media","Playback","Audio","Video","Subtitle","Tools","View","Help"};
-  QList<QList <QString> > actionslist = {{"Open File","Open Folder","Open Media","Quit"},{"Jump Backward","Jump Forward","Jump to Time","Loop Segment","Break Loop"},{"Full Volume","Mute"},{"Set Radio"},{"Add Subtitles","Stop Subtitles","Add Delay","Reduce Delay","Subtitle Settings",},{},{"Video Title","change theme"},{"Shortcuts Instructions"}};
+  QList<QString> topbarlayoutbuttons = {"Media","Playback","Audio","Video","Subtitle","View","Help"};
+  QList<QList <QString> > actionslist = {{"Open File","Open Folder","Open Media","Quit"},{"Jump Backward","Jump Forward","Jump to Time","Loop Segment","Break Loop"},{"Full Volume","Mute"},{"Set Radio"},{"Add Subtitles","Stop Subtitles","Add Delay","Reduce Delay","Subtitle Settings"},{"Video Title","change theme"},{"Shortcuts Instructions"}};
 
 public:
   std::vector<QUrl> playlist;
