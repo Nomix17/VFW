@@ -1,74 +1,94 @@
 #ifndef CHANGETHEME_W
 #define CHANGETHEME_W
 
-
 #include <fstream>
 #include <sstream>
 #include <filesystem>
 
 #include <QDialog>
+#include <QVBoxLayout>
 #include <QGridLayout>
 #include <QPushButton>
-#include <QToolButton>
-#include <QMenu>
-#include <QAction>
+#include <QScrollArea>
 
-class ChangeThemeWindow:public QDialog{
-
+class ChangeThemeWindow : public QDialog {
   Q_OBJECT;
-  public:
-    std::string changetotheme="";
 
-    ChangeThemeWindow(QWidget* parent, std::string ConfigDirectory, std::string ProjectDirectory, std::string StyleDirectory):QDialog(parent){
-      
-      //load style file
-      std::ifstream stylefile(StyleDirectory+"/ChangeThemeWindow.css");
-      if(stylefile){
-        std::ostringstream sstr;
-        stylefile>>sstr.rdbuf();
-        std::string script = sstr.str();
-        this->setStyleSheet(QString::fromStdString(script));
-        stylefile.close();
-      }
-      
-      //creating ui elements
-      QGridLayout* mainlayout= new QGridLayout(this);
-      QToolButton* themetoolbutton = new QToolButton;
-      QPushButton* doneButton = new QPushButton("OK");
-      QMenu* menu = new QMenu(this);
-      themetoolbutton->setText("theme");
-      themetoolbutton->setPopupMode(QToolButton::InstantPopup);
-      
-      //loop the files that exist in the style directory so list all the themes availble
-      for(auto& file : std::filesystem::directory_iterator(ProjectDirectory)){
-        std::string themename = file.path().filename().string();
-        //create action for each theme
-        QAction* themeactions = new QAction;
-        themeactions->setText(QString::fromStdString(themename));
-        menu->addAction(themeactions);
-        connect(themeactions,&QAction::triggered,[this,ConfigDirectory,themename,themetoolbutton](){//changing the value of changetotheme to the new theme value
-          changetotheme = themename;
-          themetoolbutton->setText(QString::fromStdString(changetotheme));
-        });
-      }
-      themetoolbutton->setMenu(menu);
-      connect(doneButton,&QPushButton::clicked,[this,ConfigDirectory](){
-        //if the user changed the theme
-        if(changetotheme!=""){
-          //open and clear the theme file
-          std::ofstream themefile(ConfigDirectory+"/theme",std::ofstream::out | std::ofstream::trunc);
-          themefile<<changetotheme;//write the new theme in the theme file
+  QVBoxLayout *mainlayout = new QVBoxLayout(this);
+  QScrollArea *scrollarea = new QScrollArea;
+  QGridLayout *medialayout = new QGridLayout;
+  QPushButton *doneButton = new QPushButton("Exit");
+  QHBoxLayout *doneButtonHolder = new QHBoxLayout;
+  QWidget *holderwidget = new QWidget;
+
+public:
+  std::string changetotheme = "";
+
+  ChangeThemeWindow(QWidget *parent, std::string ConfigDirectory, std::string ProjectDirectory, std::string StyleDirectory)
+      : QDialog(parent) {
+    this->setFixedSize(460,600);
+    scrollarea->setWidgetResizable(true);
+    scrollarea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+    holderwidget->setLayout(medialayout);
+    holderwidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    holderwidget->setMinimumWidth(300);
+
+    scrollarea->setWidget(holderwidget);
+    // Add scroll area directly to main layout
+    mainlayout->addWidget(scrollarea);
+
+    // Done button setup
+    doneButton->setObjectName("donebutton");
+    doneButtonHolder->addStretch();
+    doneButtonHolder->addWidget(doneButton);
+    doneButtonHolder->addStretch();
+
+    mainlayout->addLayout(doneButtonHolder);
+
+    // Load themes and styles
+    loadthemes(StyleDirectory, ProjectDirectory,ConfigDirectory);
+
+    // Connect done button
+    connect(doneButton, &QPushButton::clicked, [this, ConfigDirectory]() {
+      QDialog::accept();
+    });
+  }
+
+  void loadthemes(std::string StyleDirectory, std::string ProjectDirectory, std::string ConfigDirectory) {
+    // Load stylesheet
+    std::ifstream stylefile(StyleDirectory + "/ChangeThemeWindow.css");
+    if (stylefile) {
+      std::ostringstream sstr;
+      sstr << stylefile.rdbuf();
+      std::string script = sstr.str();
+      this->setStyleSheet(QString::fromStdString(script));
+      stylefile.close();
+    }
+
+    // Load theme buttons
+    int counter = 0;
+    for (auto &file : std::filesystem::directory_iterator(ProjectDirectory)) {
+      std::string themename = file.path().filename().string();
+
+      QPushButton *Theme_Button = new QPushButton(QString::fromStdString(themename));
+      Theme_Button->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+      medialayout->addWidget(Theme_Button, counter, 0);
+      connect(Theme_Button,&QPushButton::clicked, [this, themename, ConfigDirectory](){
+        changetotheme = themename;
+        if (changetotheme != "") {
+          std::ofstream themefile(ConfigDirectory + "/theme", std::ofstream::out | std::ofstream::trunc);
+          themefile << changetotheme;
           themefile.close();
         }
-        QDialog::accept();//close the dialog window
+        QDialog::accept();
       });
-      
-      //connecting ui elements
-      mainlayout->setAlignment(Qt::AlignCenter);
-      mainlayout->addWidget(themetoolbutton,0,0,Qt::AlignCenter);
-      mainlayout->addWidget(doneButton,1,0,Qt::AlignCenter);
-      setLayout(mainlayout);
+      counter++;
     }
+
+    // Add stretch at the end to push buttons to top
+    medialayout->setRowStretch(counter, 1);
+  }
 };
 
 #endif
