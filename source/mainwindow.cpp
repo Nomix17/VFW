@@ -936,6 +936,7 @@ void MainWindow::savevideoposition(){
 
 //load old position of a video if available
 void MainWindow::getlastsavedposition(){
+  if(current_video_title == "") return;
   lastsavedposition = 0;
   std::ifstream possavefile(CONFIGSDIRECTORY+"/.positionsave.csv");
   if (possavefile){
