@@ -21,7 +21,7 @@ std::string STYLESDIRECTORY = projectdir + "cache/styles/"+theme+"/";
 int main(int argc,char* argv[]){
   QApplication a(argc, argv);
   std::ifstream stylefile(STYLESDIRECTORY+"mainwindow.css");
-  
+
   //load style file#include <QFile>
 
   if(stylefile){
@@ -30,7 +30,7 @@ int main(int argc,char* argv[]){
     ssrt << stylefile.rdbuf();
     script = ssrt.str();
     a.setStyleSheet(QString::fromStdString(script));
-  }   
+  }
 
   MainWindow w;
   w.show();
@@ -44,5 +44,6 @@ int main(int argc,char* argv[]){
     w.mediaplayer("play a list");
     w.resize(750,551);
   }
+  a.installEventFilter(&w);
   return a.exec();
 }

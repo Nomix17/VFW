@@ -5,12 +5,7 @@ QSpinBox{
 QPushButton{
   max-height: 20px;
   max-width: 50px;
-  background-color:#161616;
-  border: 1px solid #313131;
   border-radius:4px;
-}
-QPushButton:pressed{
-  background-color:#101010;
 }
 QLabel{
   font-size: 25px;

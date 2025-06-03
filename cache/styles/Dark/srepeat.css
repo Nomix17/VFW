@@ -1,6 +1,3 @@
-QWidget{
-  background-color: #101010;
-}
 QSpinBox{
   max-height: 60px;
   font-size:30px;
@@ -11,13 +8,8 @@ QPushButton{
   max-width: 60px;
   min-height: 40px;
   min-width: 60px;
-  background-color:#161616;
-  border: 1px solid #313131;
   border-radius:4px;
   margin-top:40px;
-}
-QPushButton:pressed{
-  background-color:#101010;
 }
 QLabel{
   font-size: 22px;

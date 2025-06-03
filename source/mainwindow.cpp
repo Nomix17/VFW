@@ -1,3 +1,8 @@
+#include "json.hpp"
+#include "qboxlayout.h"
+#include "qpoint.h"
+#include "qpushbutton.h"
+#include "qtoolbutton.h"
 #include <mainwindow.h>
 #include <SRepeatWindow.h>
 #include <jumptotime.h>
@@ -35,7 +40,7 @@
 #include <QGraphicsVideoItem>
 #include <QGraphicsTextItem>
 #include <QGraphicsOpacityEffect>
-
+#include <QGraphicsProxyWidget>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   this->setFocus();
@@ -50,33 +55,69 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
   mainwidget = new QWidget(this);
   mainlayout = new QVBoxLayout();
-  topbarlayout = new QHBoxLayout();
   videolayout = new QGridLayout();
-  thirdlayout = new QHBoxLayout();
-  controlbuttonslayout = new QHBoxLayout();
-  videoslider = new CustomSlider(Qt::Horizontal);
 
+  createTopLayout();
+  createBottomLayout();
+
+  //creating a floating layout to use it when fullscreening
+  floatingControlPannelWidget = new QWidget;
+  floatingControlPannelContainerLayout = new QVBoxLayout(floatingControlPannelWidget);
+  floatingControlPannelProxy = scene->addWidget(floatingControlPannelWidget);
+  floatingControlPannelProxy->setPos(500,400);
+  floatingControlPannelProxy->setZValue(10);
+
+  //setting up the subtites
   QFont font;
   sublabel = new QGraphicsTextItem();
   sublabel->setDefaultTextColor(Qt::white);
   font.setPointSize(24);
   sublabel->setFont(font);
-
-  currenttimer = new QLabel;
-  totaltimer = new QLabel;
-  volumeslider = new CustomSlider(Qt::Horizontal);
-
   sublabel->setObjectName("sublabel");
-  volumeslider->setObjectName("volumeslider");
+
+  // adding volumeslider to the controlbuttonslayout
+  connect(audio, &QAudioOutput::volumeChanged, this, &MainWindow::slidermanagement);
+  // connecting the slider and media with there logic
+  connect(player, &QMediaPlayer::positionChanged, this, &MainWindow::playertimeline);
+  connect(player, &QMediaPlayer::durationChanged, this, &MainWindow::setsliderrange);
+
+
+  video->setSize(view->size());
+  view->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
+  view->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+  view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  scene->addItem(video);
+  scene->addItem(sublabel);
 
   // adding margin for style
   mainlayout->setContentsMargins(10, 10, 10, 10);
 
-  // align the buttons for  style
-  topbarlayout->setAlignment(Qt::AlignLeft);
-  controlbuttonslayout->setAlignment(Qt::AlignLeft);
+  // adding widgets to there layouts and the layous to the central widget
+  videolayout->addWidget(view);
+  mainlayout->addLayout(topbarlayout);
+  mainlayout->addLayout(videolayout);
+  mainlayout->addLayout(controlbuttonslayout);
+  mainwidget->setLayout(mainlayout);
+  setCentralWidget(mainwidget);
 
-  // setting topbarlayout toolbuttons with it's actions
+  // showing a blackscreen
+  mediaplayer();
+
+  // load the sub style
+  SubConfig win;
+  htmlstyle = win.makehtml(CONFIGSDIRECTORY);
+  subpadding = win.padding;
+  submarginbottom = win.marginbottom;
+
+
+}
+
+void MainWindow::createTopLayout(){
+  if(topbarlayout != nullptr) delete topbarlayout;
+
+  topbarlayout = new QHBoxLayout();
+
   size_t counter = 0;
   for (qsizetype i = 0; i < topbarlayoutbuttons.size(); i++) {
     // making toolbuttons basing on the elements of topbarlayoutbuttons list
@@ -104,72 +145,86 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     topbarlayout->addWidget(button);
   }
 
+  topbarlayout->setAlignment(Qt::AlignLeft);
+
+}
+
+void deletelayout(QLayout* layout){
+  if(!layout) return;
+
+  while(QLayoutItem* item = layout->takeAt(0)){
+    if(QLayout* childlayout = item->layout()){
+      deletelayout(childlayout);
+    }
+
+    if(QWidget* childwidget = item->widget()){
+     delete childwidget;
+    }
+
+    delete item;
+  }
+
+}
+
+void MainWindow::createBottomLayout(){
+  if(controlbuttonslayout != nullptr){
+    deletelayout(controlbuttonslayout),
+    delete controlbuttonslayout;
+  }
+  std::cout<<"failing point 2\n";
+
+  controlbuttonslayout=nullptr;
+  ButtonsObjectList.clear();
+
+  controlbuttonslayout = new QVBoxLayout();
+  QHBoxLayout *firsthalflayout = new QHBoxLayout();
+  QHBoxLayout *secondhalflayout = new QHBoxLayout();
+
+  videoslider = new CustomSlider(Qt::Horizontal);
+  currenttimer = new QLabel("--:--:--");
+  totaltimer = new QLabel("--:--:--");
+  volumeslider = new CustomSlider(Qt::Horizontal);
+  volumeslider->setObjectName("volumeslider");
+
+  connect(videoslider, &QSlider::sliderMoved, [this]() {changingposition(videoslider->sliderPosition());this->setFocus();});
+  firsthalflayout->addWidget(currenttimer);
+  firsthalflayout->addWidget(videoslider);
+  firsthalflayout->addWidget(totaltimer);
+
+  connect(volumeslider, &QSlider::valueChanged,[ this]() {audio->setVolume((float)volumeslider->value() / 1000);});
+  controlbuttonslayout->addLayout(firsthalflayout);
+  controlbuttonslayout->addLayout(secondhalflayout);
+
   // setting controlbuttonslayout pushbuttons
   for (int j = 0; j < mcbuttons.size(); j++) {
     // adding space for the style
     if (j == 1 || j == 4 || j==7) {
-      controlbuttonslayout->addSpacing(20);
+      secondhalflayout->addSpacing(20);
     } else if (j == 8) {
       // adding space for the style between buttons and volume parameters
-      controlbuttonslayout->addStretch(100);
+      secondhalflayout->addStretch(10);
     }
     QPushButton *button = new QPushButton(this);
     button->setObjectName(mcbuttons[j]);
+
     QPixmap pix(ICONSDIRECTORY + mcbuttons[j] + ".png");
     button->setIcon(pix);
-    if (button->objectName() == "BVolumeControl") {
+    if (mcbuttons[j] == "BVolumeControl") {
       button->setIconSize(QSize(24, 24));
     } else {
       button->setIconSize(QSize(16, 16));
     }
-    if(button->objectName() == "BContinueFLP"){
+    if(mcbuttons[j] == "BContinueFLP"){
       button->hide();
     }
-    connect(button, &QPushButton::clicked, [this, j]() { controlbuttonslayoutclick(j); });
-    controlbuttonslayout->addWidget(button);
+    connect(button, &QPushButton::clicked, [this, j]() { controlbuttonslayoutclick(j);});
+
+    ButtonsObjectList.push_back(button);
+
+    secondhalflayout->addWidget(button);
   }
-
-  // adding volumeslider to the controlbuttonslayout
-  controlbuttonslayout->addWidget(volumeslider);
-
-  // connecting volume slider and the audiooutput volume
-  connect(volumeslider, &QSlider::valueChanged,[ this]() {audio->setVolume((float)volumeslider->value() / 1000);});
-  connect(audio, &QAudioOutput::volumeChanged, this, &MainWindow::slidermanagement);
-
-  // connecting the slider and media with there logic
-  connect(player, &QMediaPlayer::positionChanged, this, &MainWindow::playertimeline);
-  connect(player, &QMediaPlayer::durationChanged, this, &MainWindow::setsliderrange);
-  connect(videoslider, &QSlider::sliderMoved, [this]() {changingposition(videoslider->sliderPosition());this->setFocus();});
-
-  // setting QGraphics parametres
-  video->setSize(view->size());
-  view->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
-  view->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-  view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  scene->addItem(video);
-  scene->addItem(sublabel);
-  // adding widgets to there layouts and the layous to the central widget
-  videolayout->addWidget(view);
-  thirdlayout->addWidget(currenttimer);
-  thirdlayout->addWidget(videoslider);
-  thirdlayout->addWidget(totaltimer);
-  mainlayout->addLayout(topbarlayout);
-  mainlayout->addLayout(videolayout);
-  mainlayout->addLayout(thirdlayout);
-  mainlayout->addLayout(controlbuttonslayout);
-  mainwidget->setLayout(mainlayout);
-  setCentralWidget(mainwidget);
-
-  // showing a blackscreen
-  mediaplayer();
-
-  // load the sub style
-  SubConfig win;
-  htmlstyle = win.makehtml(CONFIGSDIRECTORY);
-  subpadding = win.padding;
-  submarginbottom = win.marginbottom;
-
+  secondhalflayout->addWidget(volumeslider);
+  controlbuttonslayout->setAlignment(Qt::AlignLeft);
 
 }
 
@@ -231,13 +286,13 @@ void MainWindow::mediaplayer(QString url) {
   volumeslider->setSliderPosition(500);
   video->show();
   player->play();
-  
+
   //resize some ui elements based on the media opened
   resizelements();
 
-  //load the last saved position if it's availble 
+  //load the last saved position if it's availble
   getlastsavedposition();
-  
+
   //save the position of the video what was playing before
   savevideoposition();
 }
@@ -257,7 +312,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
       }
 
         url = QFileDialog::getOpenFileName(this, tr("Select Video File"), displaydir, tr("Mp4 files (*.mp4 *.mp3)"));
-      
+
       if (!url.isEmpty()) {
         mediaplayer(url);
         playertype = "vid";
@@ -274,7 +329,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
       else{
         displaydir = homedir;
       }
-      
+
       url = QFileDialog::getExistingDirectory(this, tr("Setect Playlist Directory", "", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks), displaydir);
       if (!url.isEmpty()) {
         playlist.clear();  // clearing the playlist
@@ -492,12 +547,12 @@ void MainWindow::controlbuttonslayoutclick(int buttonindex) {
   switch (buttonindex) {
     // if the pause button is clicked
     case PAUSE_BUTTON: {
-      QPushButton *searchbutton = this->findChild<QPushButton *>("BPause");
+      QPushButton *Pause_button = ButtonsObjectList[PAUSE_BUTTON];
       if (paused) {
-        searchbutton->setIcon(QPixmap(ICONSDIRECTORY + "BPause.png"));
+        Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "BPause.png"));
         player->play();
       } else {
-        searchbutton->setIcon(QPixmap(ICONSDIRECTORY + "BPlay.png"));
+        Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "BPlay.png"));
         player->pause();
       }
       paused = !paused;
@@ -532,30 +587,8 @@ void MainWindow::controlbuttonslayoutclick(int buttonindex) {
     }
     // if fullscreen button is clicked
     case FULLSCREEN_BUTTON: {
-      if (fullscreened){
-        this->showMaximized();
-        volumeslider->show();
-        currenttimer->show();
-        totaltimer->show();
-        videoslider->show();
-        topbarlayoutvisibility("show");
-        controllayoutvisibility("show");
-        mainlayout->setContentsMargins(10, 10, 10, 10);
-
-      } else {
-        this->showFullScreen();
-        volumeslider->hide();
-        currenttimer->hide();
-        totaltimer->hide();
-        videoslider->hide();
-        topbarlayoutvisibility("hide");
-        controllayoutvisibility("hide");
-        mainlayout->setContentsMargins(0, 0, 0, 0);
-        video->setSize(this->size());
-        view->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
-      }
-
-      fullscreened = !fullscreened;
+      std::cout<<"failing point 0\n";
+      FullScreen();
       break;
     }
 
@@ -571,27 +604,27 @@ void MainWindow::controlbuttonslayoutclick(int buttonindex) {
 
     // if reloading behavior is clicked
     case REPETITION_BUTTON: {
-      QPushButton *sb = this->findChild<QPushButton *>("BRepeating");
+      QPushButton *Repeatition_button = ButtonsObjectList[REPETITION_BUTTON];
       if (rep == PlaylistRepeat) {
         // repeat playlist
-        sb->setIcon(QPixmap(ICONSDIRECTORY + "BRepeatingone.png"));
+        Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BRepeatingone.png"));
         rep = VideoRepeat;
       } else if (rep == VideoRepeat) {
         // repeating one video
-        sb->setIcon(QPixmap(ICONSDIRECTORY + "BSuffle.png"));
+        Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BSuffle.png"));
         rep = Shuffle;
       } else if (rep == Shuffle) {
         // shuffle
-        sb->setIcon(QPixmap(ICONSDIRECTORY + "BRepeating.png"));
+        Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BRepeating.png"));
         rep = PlaylistRepeat;
       }
       break;
     }
-    
+
     // Continue from last position you stoped
     case CONTINUEFROMLASTPOS_BUTTON:{
       changingposition(lastsavedposition);
-      QPushButton *skipbutton = this->findChild<QPushButton *>("BContinueFLP");
+      QPushButton *skipbutton = ButtonsObjectList[CONTINUEFROMLASTPOS_BUTTON];
       skipbutton->hide();
       break;
     }
@@ -615,9 +648,9 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
     event->ignore();
   } else if (event->key() == Qt::Key_Escape) {
     fullscreened = true;
-    controlbuttonslayoutclick(4);
+    FullScreen();
   } else if (event->key() == Qt::Key_F) {
-    controlbuttonslayoutclick(4);
+    FullScreen();
   } else if (event->key() == Qt::Key_M) {
     controlbuttonslayoutclick(BVolumeControl);
   } else if (event->key() == Qt::Key_Space) {
@@ -731,7 +764,7 @@ void MainWindow::playertimeline(qint64 position) {
       sublabel->setHtml("");
     }
   }
-  
+
 }
 
 /*
@@ -758,21 +791,21 @@ void MainWindow::changingposition(int newpos) {
 
 // managing the interactions with the volume slider
 void MainWindow::slidermanagement(qreal position) {
-  QPushButton *searchbutton = this->findChild<QPushButton *>("BVolumeControl");
-  
+  QPushButton *VolumeControlButton = ButtonsObjectList[BVolumeControl];
+
   // changing the volume button icon basing on the volume state
   if (position * 1000 == 0) {
-    searchbutton->setIcon(QPixmap(ICONSDIRECTORY + "BMute.png"));
+    VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BMute.png"));
     volumeslider->setStyleSheet("QSlider#volumeslider::handle{background:#1e1e1e;}");
   } else if (position * 1000 <= 333 && position * 1000 > 0) {
-    searchbutton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeLow.png"));
+    VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeLow.png"));
     volumeslider->setStyleSheet("QSlider#volumeslider::handle{background:#484949;}");
 
   } else if (position * 1000 >= 333 && position * 1000 <= 666) {
-    searchbutton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeMid.png"));
+    VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeMid.png"));
 
   } else if (position * 1000 >= 666) {
-    searchbutton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeControl.png"));
+    VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeControl.png"));
   }
   volumeslider->setSliderPosition(static_cast<int>(position * 1000));
 }
@@ -868,6 +901,28 @@ void MainWindow::resizeEvent(QResizeEvent *event) {
   resizelements();
 }
 
+void MainWindow::FullScreen(){
+  if (fullscreened){
+    std::cout<<"failing point 1\n";
+    this->showMaximized();
+    topbarlayoutvisibility("show");
+    mainlayout->setContentsMargins(10, 10, 10, 10);
+    createBottomLayout();
+    std::cout<<"failing point 3\n";
+    mainlayout->addLayout(controlbuttonslayout);
+  } else {
+    this->showFullScreen();
+    topbarlayoutvisibility("hide");
+    mainlayout->setContentsMargins(0, 0, 0, 0);
+    video->setSize(this->size());
+    view->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
+    createBottomLayout();
+    floatingControlPannelContainerLayout->addLayout(controlbuttonslayout);
+  }
+  std::cout<<"failing point 4\n";
+  fullscreened = !fullscreened;
+}
+
 //function that display text on the top of the video with fading animation
 void MainWindow::showingthings(std::string texttoshow, int xposition, int yposition, int animationduration) {
   QGraphicsTextItem *toshowtext = new QGraphicsTextItem;
@@ -896,33 +951,19 @@ void MainWindow::showingthings(std::string texttoshow, int xposition, int yposit
 
 
 void MainWindow::topbarlayoutvisibility(std::string status){
-  for (int i = 0; i < topbarlayoutbuttons.size(); i++) {
-    QToolButton *searchtoolbutton = this->findChild<QToolButton *>(topbarlayoutbuttons[i]);
+  for (int i = 0; i < topbarlayout->count(); i++) {
+    QWidget *searchtoolbutton = topbarlayout->itemAt(i)->widget();
       if (searchtoolbutton) {
         if (status=="show") {
           searchtoolbutton->show();
         }else if(status=="hide") {
           searchtoolbutton->hide();
+
         }
       }
   }
 }
 
-//function to toggle the ui elements visibility
-void MainWindow::controllayoutvisibility(std::string status){
-  for (int i = 0; i < mcbuttons.size(); i++) {
-    QPushButton *seachpushbutton = this->findChild<QPushButton *>(mcbuttons[i]);
-    if (seachpushbutton) {
-      if (status=="show") {
-        if(mcbuttons[i]!="BContinueFLP"){
-          seachpushbutton->show();
-        }
-      }else if(status=="hide"){
-        seachpushbutton->hide();
-      }
-    }
-  }
-}
 
 //function to save the position of a video after closing it
 void MainWindow::savevideoposition(){
@@ -946,12 +987,29 @@ void MainWindow::getlastsavedposition(){
         lastsavedposition = std::stoi(line.substr(line.rfind(";")+1,line.size()-1));
       }
     }
-    
+
     if(lastsavedposition){
-      QPushButton *skipbutton = this->findChild<QPushButton *>("BContinueFLP");
+      QPushButton *skipbutton = ButtonsObjectList[CONTINUEFROMLASTPOS_BUTTON];
       skipbutton->show();
     }
   }
+}
+
+//double click detection
+void MainWindow::mouseDoubleClickEvent(QMouseEvent * event){
+  int video_start_x = view->pos().rx();
+  int video_start_y = view->pos().ry();
+  int video_end_x = view->size().width()+view->pos().rx();
+  int video_end_y = view->size().height()+view->pos().ry();
+
+  //making sure the position of the mouse when double clicking is inside the video layout
+  if(event->pos().rx() > video_start_x &&
+      event->pos().ry() > video_start_y  &&
+      event->pos().rx() < video_end_x &&
+      event->pos().ry() < video_end_y
+    ){
+      FullScreen();
+    }
 }
 
 //distractor
@@ -960,4 +1018,14 @@ MainWindow::~MainWindow(){
   for (SubObject* ptr:subslist){
     delete ptr;
   }
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event){
+  if (event->type() == QEvent::MouseMove) {
+    if(fullscreened){
+
+    }
+    return false;
+  }
+  return QMainWindow::eventFilter(obj, event);
 }

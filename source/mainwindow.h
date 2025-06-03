@@ -3,6 +3,7 @@
 
 #include <QApplication>
 #include <QStyleHints>
+#include "qboxlayout.h"
 #include "qevent.h"
 #include "CustomObjects.h"
 #include <QMainWindow>
@@ -53,7 +54,7 @@ public:
     VideoRepeat,
     Shuffle,
   };
-  
+
   enum topbarlayout_LABEL_ELEMENTS{
     PAUSE_BUTTON,
     BACK_BUTTON,
@@ -63,9 +64,9 @@ public:
     PLAYLIST_BUTTON,
     REPETITION_BUTTON,
     CONTINUEFROMLASTPOS_BUTTON,
-    BVolumeControl
+    BVolumeControl,
   };
-  
+
   enum controlbuttonslayout_LABEL_ELEMENTS{
     Open_file,
     Open_folder,
@@ -88,9 +89,11 @@ public:
     THEME,
     SHORTCUTS,
   };
-  
+
   MainWindow(QWidget *parent=nullptr);
   ~MainWindow();
+  void createTopLayout();
+  void createBottomLayout();
   void topbarlayoutclick(int buttonindex);
   void controlbuttonslayoutclick(int buttonindex);
   void setsliderrange(qint64 position);
@@ -104,13 +107,19 @@ public:
   QString fixhtml(QString test);
   void changingposition(int newpos);
   void resizelements(std::string elementtorezise="all");
+
   void resizeEvent(QResizeEvent * event) override;
+  void mouseDoubleClickEvent(QMouseEvent * event)override;
+  // void mouseMoveEvent(QMouseEvent *event)override;
+  bool eventFilter(QObject *obj, QEvent *event) override;
+
+  void FullScreen();
   void showingthings(std::string texttoshow, int xposition, int yposition,int animationduration);
   void topbarlayoutvisibility(std::string status);
-  void controllayoutvisibility(std::string status);
   void savevideoposition();
   void getlastsavedposition();
-  
+
+
   //turnning off the tab focusing
   bool focusNextPrevChild(bool next) override{
     if(next){}
@@ -128,10 +137,9 @@ private:
   QWidget *mainwidget;
   QStackedLayout *stackedlayout;
   QVBoxLayout *mainlayout;
-  QHBoxLayout *topbarlayout;
+  QHBoxLayout *topbarlayout=nullptr;
   QGridLayout *videolayout;
-  QHBoxLayout *thirdlayout;
-  QHBoxLayout *controlbuttonslayout;
+  QVBoxLayout *controlbuttonslayout=nullptr;
   QMediaPlayer *player;
   QGraphicsTextItem *sublabel;
   QAudioOutput *audio;
@@ -147,8 +155,16 @@ private:
   bool repeatfromposition = false;
   int startingpoint;
   int finishpoint;
+  // floating control layout elements
+  QWidget* floatingControlPannelWidget;
+  QVBoxLayout * floatingControlPannelContainerLayout;
+
+  QHBoxLayout* floatingControlPanneltopLayout;
+  QHBoxLayout* floatingControlPannelbottomLayout;
+  QGraphicsProxyWidget * floatingControlPannelProxy;
 
   QList<QString> mcbuttons = {"BPause","BBack","BStop","BNext","BFullscreen","BPlaylist","BRepeating","BContinueFLP","BVolumeControl"};
+  std::vector <QPushButton*> ButtonsObjectList = {};
   QList<QString> topbarlayoutbuttons = {"Media","Playback","Audio","Video","Subtitle","View","Help"};
   QList<QList <QString> > actionslist = {{"Open File","Open Folder","Open Media","Quit"},{"Jump Backward","Jump Forward","Jump to Time","Loop Segment","Break Loop"},{"Full Volume","Mute"},{"Set Radio"},{"Add Subtitles","Stop Subtitles","Add Delay","Reduce Delay","Subtitle Settings"},{"Video Title","change theme"},{"Shortcuts Instructions"}};
 
@@ -163,7 +179,7 @@ public:
   QString currenturl = "";
   std::string currentworkdirectory;
   int lastsavedposition=0;
-  
+
 };
 
 class PATHS {
@@ -175,7 +191,7 @@ class PATHS {
         "HOME"
       #endif
     ));
-  
+
     std::string Projectdir(){
       std::string projectpath;
       #ifdef _WIN32
@@ -195,13 +211,13 @@ class PATHS {
         if(len != -1) path[len]='\0';
         projectpath = path;
       #endif
-  
+
       size_t position = projectpath.rfind("bin");
       projectpath = projectpath.substr(0,position);
       return projectpath ;
     }
-  
-    
+
+
     std::string GETTHEME(std::string configDirectory){
       std::ifstream themefile(configDirectory+"/theme");
       auto defaultcolorscheme = qApp->styleHints()->colorScheme();

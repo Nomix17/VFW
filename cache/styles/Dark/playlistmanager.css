@@ -1,0 +1,14 @@
+QPushButton {
+  text-align: left;
+  min-width: 400px;
+  padding-left: 20px;
+  border-radius: 4px;
+}
+
+#donebutton {
+  text-align: center;
+  margin: 5px;
+  padding-left: 0px;
+  max-width: 100px;
+  min-width: 100px;
+}
