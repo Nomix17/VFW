@@ -613,7 +613,6 @@ void MainWindow::controlbuttonslayoutclick(int buttonindex) {
 
     // if reloading behavior is clicked
     case REPETITION_BUTTON: {
-      QPushButton *Repeatition_button = ButtonsObjectList[REPETITION_BUTTON];
       if (rep == PlaylistRepeat) rep = VideoRepeat;
       else if (rep == VideoRepeat) rep = Shuffle;
       else if (rep == Shuffle) rep = PlaylistRepeat;
