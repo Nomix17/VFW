@@ -67,6 +67,7 @@ QSlider::handle {
 /*slider volume*/
 QSlider#volumeslider {
   max-width: 150px;
+  min-width: 65px;
 }
 
 QSlider::sub-page:horizontal#volumeslider {
