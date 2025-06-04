@@ -614,19 +614,11 @@ void MainWindow::controlbuttonslayoutclick(int buttonindex) {
     // if reloading behavior is clicked
     case REPETITION_BUTTON: {
       QPushButton *Repeatition_button = ButtonsObjectList[REPETITION_BUTTON];
-      if (rep == PlaylistRepeat) {
-        // repeat playlist
-        Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BRepeatingone.png"));
-        rep = VideoRepeat;
-      } else if (rep == VideoRepeat) {
-        // repeating one video
-        Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BSuffle.png"));
-        rep = Shuffle;
-      } else if (rep == Shuffle) {
-        // shuffle
-        Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BRepeating.png"));
-        rep = PlaylistRepeat;
-      }
+      if (rep == PlaylistRepeat) rep = VideoRepeat;
+      else if (rep == VideoRepeat) rep = Shuffle;
+      else if (rep == Shuffle) rep = PlaylistRepeat;
+      updateButtonsIcon();
+
       break;
     }
 
@@ -799,22 +791,7 @@ void MainWindow::changingposition(int newpos) {
 
 // managing the interactions with the volume slider
 void MainWindow::slidermanagement(qreal position) {
-  QPushButton *VolumeControlButton = ButtonsObjectList[BVolumeControl];
-
-  // changing the volume button icon basing on the volume state
-  if (position * 1000 == 0) {
-    VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BMute.png"));
-    volumeslider->setStyleSheet("QSlider#volumeslider::handle{background:#1e1e1e;}");
-  } else if (position * 1000 <= 333 && position * 1000 > 0) {
-    VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeLow.png"));
-    volumeslider->setStyleSheet("QSlider#volumeslider::handle{background:#484949;}");
-
-  } else if (position * 1000 >= 333 && position * 1000 <= 666) {
-    VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeMid.png"));
-
-  } else if (position * 1000 >= 666) {
-    VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeControl.png"));
-  }
+  updateButtonsIcon();
   volumeslider->setSliderPosition(static_cast<int>(position * 1000));
 }
 
@@ -941,7 +918,7 @@ void MainWindow::FullScreen(){
   float currentVolume = audio->volume();
   volumeslider->setRange(0, 1000);
   volumeslider->setValue(currentVolume*1000);
-
+  updateButtonsIcon();
 }
 
 //function that display text on the top of the video with fading animation
@@ -985,6 +962,41 @@ void MainWindow::topbarlayoutvisibility(std::string status){
   }
 }
 
+//this function update buttons icons
+
+void MainWindow::updateButtonsIcon(){
+  //update play/pause button icon
+  QPushButton *Pause_button = ButtonsObjectList[PAUSE_BUTTON];
+  if(player->isPlaying()) Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "BPause.png"));
+  else Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "BPlay.png"));
+
+  //update volume button icons
+  QPushButton *VolumeControlButton = ButtonsObjectList[BVolumeControl];
+
+  float currentvolume = audio->volume() * 1000;
+  if (currentvolume == 0) {
+    VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BMute.png"));
+    volumeslider->setStyleSheet("QSlider#volumeslider::handle{background:#1e1e1e;}");
+
+  } else if (currentvolume <= 333 && currentvolume > 0) {
+    VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeLow.png"));
+    volumeslider->setStyleSheet("QSlider#volumeslider::handle{background:#484949;}");
+
+  } else if (currentvolume >= 333 && currentvolume <= 666) {
+    VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeMid.png"));
+
+  } else if (currentvolume >= 666) {
+    VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeControl.png"));
+  }
+
+
+  //update repetition button icon
+  QPushButton *Repeatition_button = ButtonsObjectList[REPETITION_BUTTON];
+  if (rep == PlaylistRepeat) Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BRepeating.png"));
+  else if (rep == VideoRepeat) Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BRepeatingone.png"));
+  else if (rep == Shuffle) Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BSuffle.png"));
+
+}
 
 //function to save the position of a video after closing it
 void MainWindow::savevideoposition(){

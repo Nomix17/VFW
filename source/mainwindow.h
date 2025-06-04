@@ -115,6 +115,7 @@ public:
   void FullScreen();
   void showingthings(std::string texttoshow, int xposition, int yposition,int animationduration);
   void topbarlayoutvisibility(std::string status);
+  void updateButtonsIcon();
   void savevideoposition();
   void getlastsavedposition();
 
