@@ -106,11 +106,10 @@ public:
   void subfileparsing(std::string subpath);
   QString fixhtml(QString test);
   void changingposition(int newpos);
-  void resizelements(std::string elementtorezise="all");
+  void resizelements(std::string elementtorezise="all",int animationTime = 0);
 
   void resizeEvent(QResizeEvent * event) override;
   void mouseDoubleClickEvent(QMouseEvent * event)override;
-  // void mouseMoveEvent(QMouseEvent *event)override;
   bool eventFilter(QObject *obj, QEvent *event) override;
 
   void FullScreen();
@@ -158,9 +157,6 @@ private:
   // floating control layout elements
   QWidget* floatingControlPannelWidget;
   QVBoxLayout * floatingControlPannelContainerLayout;
-
-  QHBoxLayout* floatingControlPanneltopLayout;
-  QHBoxLayout* floatingControlPannelbottomLayout;
   QGraphicsProxyWidget * floatingControlPannelProxy;
 
   QList<QString> mcbuttons = {"BPause","BBack","BStop","BNext","BFullscreen","BPlaylist","BRepeating","BContinueFLP","BVolumeControl"};
@@ -237,8 +233,6 @@ extern std::string theme;
 extern std::string CONFIGSDIRECTORY;
 extern std::string STYLESDIRECTORY;
 extern QString ICONSDIRECTORY;
-
-
 
 
 #endif

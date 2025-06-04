@@ -1,5 +1,6 @@
-#include "json.hpp"
+#include "qaction.h"
 #include "qboxlayout.h"
+#include "qevent.h"
 #include "qpoint.h"
 #include "qpushbutton.h"
 #include "qtoolbutton.h"
@@ -42,6 +43,10 @@
 #include <QGraphicsOpacityEffect>
 #include <QGraphicsProxyWidget>
 
+void moveSomethingToPos(QGraphicsWidget *widget, QPointF targetPos, int animationTime);
+void deletelayout(QLayout* layout);
+
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   this->setFocus();
   this->resize(750, 550);
@@ -64,8 +69,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   floatingControlPannelWidget = new QWidget;
   floatingControlPannelContainerLayout = new QVBoxLayout(floatingControlPannelWidget);
   floatingControlPannelProxy = scene->addWidget(floatingControlPannelWidget);
-  floatingControlPannelProxy->setPos(500,400);
   floatingControlPannelProxy->setZValue(10);
+  floatingControlPannelWidget->update();
 
   //setting up the subtites
   QFont font;
@@ -74,12 +79,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   font.setPointSize(24);
   sublabel->setFont(font);
   sublabel->setObjectName("sublabel");
-
-  // adding volumeslider to the controlbuttonslayout
-  connect(audio, &QAudioOutput::volumeChanged, this, &MainWindow::slidermanagement);
-  // connecting the slider and media with there logic
-  connect(player, &QMediaPlayer::positionChanged, this, &MainWindow::playertimeline);
-  connect(player, &QMediaPlayer::durationChanged, this, &MainWindow::setsliderrange);
 
 
   video->setSize(view->size());
@@ -110,9 +109,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   subpadding = win.padding;
   submarginbottom = win.marginbottom;
 
-
 }
-
+//function to create the top layout elements
 void MainWindow::createTopLayout(){
   if(topbarlayout != nullptr) delete topbarlayout;
 
@@ -149,6 +147,8 @@ void MainWindow::createTopLayout(){
 
 }
 
+
+//function to delete a layout passed as argument
 void deletelayout(QLayout* layout){
   if(!layout) return;
 
@@ -158,7 +158,7 @@ void deletelayout(QLayout* layout){
     }
 
     if(QWidget* childwidget = item->widget()){
-     delete childwidget;
+     childwidget->deleteLater();
     }
 
     delete item;
@@ -166,24 +166,24 @@ void deletelayout(QLayout* layout){
 
 }
 
+//function to create the bottom layout
 void MainWindow::createBottomLayout(){
+  // if the layout isn't null (this means that eather we entered or exited fullscreen mode)
   if(controlbuttonslayout != nullptr){
-    deletelayout(controlbuttonslayout),
-    delete controlbuttonslayout;
+    deletelayout(controlbuttonslayout);// deleting elements in the layout
+    delete controlbuttonslayout; // deleting the layout
   }
-  std::cout<<"failing point 2\n";
-
   controlbuttonslayout=nullptr;
-  ButtonsObjectList.clear();
+  ButtonsObjectList.clear(); // clearing the vector that hold the buttons of the bottom layout
 
-  controlbuttonslayout = new QVBoxLayout();
+  controlbuttonslayout = new QVBoxLayout();//creating new layout
   QHBoxLayout *firsthalflayout = new QHBoxLayout();
   QHBoxLayout *secondhalflayout = new QHBoxLayout();
 
-  videoslider = new CustomSlider(Qt::Horizontal);
+  videoslider = new CustomSlider(Qt::Horizontal);// creating video slider
   currenttimer = new QLabel("--:--:--");
   totaltimer = new QLabel("--:--:--");
-  volumeslider = new CustomSlider(Qt::Horizontal);
+  volumeslider = new CustomSlider(Qt::Horizontal);// create volume slider
   volumeslider->setObjectName("volumeslider");
 
   connect(videoslider, &QSlider::sliderMoved, [this]() {changingposition(videoslider->sliderPosition());this->setFocus();});
@@ -191,7 +191,7 @@ void MainWindow::createBottomLayout(){
   firsthalflayout->addWidget(videoslider);
   firsthalflayout->addWidget(totaltimer);
 
-  connect(volumeslider, &QSlider::valueChanged,[ this]() {audio->setVolume((float)volumeslider->value() / 1000);});
+  connect(volumeslider, &QSlider::valueChanged,[this]() {audio->setVolume((float)volumeslider->value() / 1000);});
   controlbuttonslayout->addLayout(firsthalflayout);
   controlbuttonslayout->addLayout(secondhalflayout);
 
@@ -202,7 +202,7 @@ void MainWindow::createBottomLayout(){
       secondhalflayout->addSpacing(20);
     } else if (j == 8) {
       // adding space for the style between buttons and volume parameters
-      secondhalflayout->addStretch(10);
+      secondhalflayout->addStretch(1);
     }
     QPushButton *button = new QPushButton(this);
     button->setObjectName(mcbuttons[j]);
@@ -226,6 +226,14 @@ void MainWindow::createBottomLayout(){
   secondhalflayout->addWidget(volumeslider);
   controlbuttonslayout->setAlignment(Qt::AlignLeft);
 
+  // adding volumeslider to the controlbuttonslayout
+  connect(audio, &QAudioOutput::volumeChanged, this, &MainWindow::slidermanagement);
+  // connecting the slider and media with there logic
+  connect(player, &QMediaPlayer::positionChanged, this, &MainWindow::playertimeline);
+  connect(player, &QMediaPlayer::durationChanged, this, &MainWindow::setsliderrange);
+
+  setsliderrange(player->duration());
+  videoslider->setValue(player->position());
 }
 
 void MainWindow::mediaplayer(QString url) {
@@ -236,6 +244,8 @@ void MainWindow::mediaplayer(QString url) {
     currenttimer->setText("--:--:--");
     totaltimer->setText("--:--:--");
     currenturl="";
+    volumeslider->setRange(0, 1000);
+    volumeslider->setSliderPosition(500);
     return ;
 
   } else if (url == "play a list") {  // if pass "play a list" as an argunent a video from the playlist will play
@@ -587,7 +597,6 @@ void MainWindow::controlbuttonslayoutclick(int buttonindex) {
     }
     // if fullscreen button is clicked
     case FULLSCREEN_BUTTON: {
-      std::cout<<"failing point 0\n";
       FullScreen();
       break;
     }
@@ -764,11 +773,10 @@ void MainWindow::playertimeline(qint64 position) {
       sublabel->setHtml("");
     }
   }
-
 }
 
 /*
-  solving the bug when the audio breaks when changing position,
+  solving the bug of the audio breaking when changing position,
   by deleting the audio output widget and create a new one
   every time we change position.
 */
@@ -880,16 +888,26 @@ void MainWindow::subfileparsing(std::string subpath) {
 }
 
 //function to resize ui elements
-void MainWindow::resizelements(std::string elementtorezise){
+void MainWindow::resizelements(std::string elementtorezise, int animationTime ){
   int VIEWWIDTH = view->size().width();
   int VIEWHEIGHT = view->size().height();
   int SUBWIDTH = sublabel->boundingRect().width();
   int SUBHEIGHT = sublabel->boundingRect().height();
+
+  //if the element being resized is the video layout
   if(elementtorezise=="video" || elementtorezise=="all"){
     video->setSize(QSize(VIEWWIDTH + 2, VIEWHEIGHT + 2));
     scene->setSceneRect(0, 0, VIEWWIDTH - 1, VIEWHEIGHT - 1);
     view->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
   }
+  //if the element being resized is the floating pannel
+  if(elementtorezise=="floatingPannel" || elementtorezise=="all"){
+    int floatingPannel_width = floatingControlPannelProxy->boundingRect().width();
+    int floatingPannel_height = floatingControlPannelProxy->boundingRect().height();
+    QPoint hiding_position = QPoint((VIEWWIDTH - floatingPannel_width) / 2, (VIEWHEIGHT + floatingPannel_height));
+    moveSomethingToPos(floatingControlPannelProxy,  hiding_position, animationTime);
+  }
+  //if the element being resized is the sub Label
   if(elementtorezise=="sub" || elementtorezise=="all"){
     sublabel->setPos((VIEWWIDTH - SUBWIDTH) / 2, (VIEWHEIGHT - SUBHEIGHT / 2) - submarginbottom);
   }
@@ -901,26 +919,29 @@ void MainWindow::resizeEvent(QResizeEvent *event) {
   resizelements();
 }
 
+//function to toggle the fullscreen
 void MainWindow::FullScreen(){
   if (fullscreened){
-    std::cout<<"failing point 1\n";
     this->showMaximized();
-    topbarlayoutvisibility("show");
+    topbarlayoutvisibility("show");// calling function to show topbar
     mainlayout->setContentsMargins(10, 10, 10, 10);
-    createBottomLayout();
-    std::cout<<"failing point 3\n";
-    mainlayout->addLayout(controlbuttonslayout);
+    createBottomLayout();//recreating bottom layout
+    mainlayout->addLayout(controlbuttonslayout);// adding the bottom layout into the mainlayout
   } else {
     this->showFullScreen();
-    topbarlayoutvisibility("hide");
+    topbarlayoutvisibility("hide");// calling function to hide topbar
     mainlayout->setContentsMargins(0, 0, 0, 0);
     video->setSize(this->size());
     view->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
-    createBottomLayout();
-    floatingControlPannelContainerLayout->addLayout(controlbuttonslayout);
+    createBottomLayout();//recreating bottom layout
+    floatingControlPannelContainerLayout->addLayout(controlbuttonslayout);// adding the bottom layout into the floating pannel
   }
-  std::cout<<"failing point 4\n";
   fullscreened = !fullscreened;
+  // resetting the volume slider
+  float currentVolume = audio->volume();
+  volumeslider->setRange(0, 1000);
+  volumeslider->setValue(currentVolume*1000);
+
 }
 
 //function that display text on the top of the video with fading animation
@@ -949,7 +970,7 @@ void MainWindow::showingthings(std::string texttoshow, int xposition, int yposit
 }
 
 
-
+// toplayout visibility control function
 void MainWindow::topbarlayoutvisibility(std::string status){
   for (int i = 0; i < topbarlayout->count(); i++) {
     QWidget *searchtoolbutton = topbarlayout->itemAt(i)->widget();
@@ -997,19 +1018,79 @@ void MainWindow::getlastsavedposition(){
 
 //double click detection
 void MainWindow::mouseDoubleClickEvent(QMouseEvent * event){
+
+  //getting the mouse position
+  int mousePosition_x = event->pos().rx();
+  int mousePosition_y = event->pos().ry();
+
+  //getting the video layout position
   int video_start_x = view->pos().rx();
   int video_start_y = view->pos().ry();
-  int video_end_x = view->size().width()+view->pos().rx();
-  int video_end_y = view->size().height()+view->pos().ry();
+  int video_end_x = view->size().width()+video_start_x;
+  int video_end_y = view->size().height()+video_start_y;
 
   //making sure the position of the mouse when double clicking is inside the video layout
-  if(event->pos().rx() > video_start_x &&
-      event->pos().ry() > video_start_y  &&
-      event->pos().rx() < video_end_x &&
-      event->pos().ry() < video_end_y
-    ){
-      FullScreen();
+  bool ClickIsInsideVideoLayout = (mousePosition_x > video_start_x &&
+                                mousePosition_y > video_start_y  &&
+                                mousePosition_x < video_end_x &&
+                                mousePosition_y < video_end_y);
+
+  // getting the floating pannel position
+  int floatingPannel_start_x = floatingControlPannelWidget->pos().rx();
+  int floatingPannel_start_y = floatingControlPannelWidget->pos().ry();
+  int floatingPannel_end_x = floatingControlPannelWidget->size().width() + floatingPannel_start_x;
+  int floatingPannel_end_y = floatingControlPannelWidget->size().height() + floatingPannel_start_y;
+
+  //making sure the position of the mouse when double clicking is ouside the floating pannel
+  bool ClickNotOnfloatingPannel = ((mousePosition_x < floatingPannel_start_x ||
+                                  mousePosition_y < floatingPannel_start_y ||
+                                  mousePosition_x > floatingPannel_end_x ||
+                                  mousePosition_y > floatingPannel_end_y));
+
+  if(ClickIsInsideVideoLayout && ClickNotOnfloatingPannel){
+    //if the user double clicked on the video layout a fullscreen function is gonna be called
+    FullScreen();
+  }
+}
+
+//function to move any graphic widget to any position smoothly
+void moveSomethingToPos(QGraphicsWidget *widget, QPointF targetPos, int animationTime){
+  QPropertyAnimation *animation = new QPropertyAnimation(widget, "pos");//defining the animation
+  animation->setDuration(animationTime);//duration of the animation
+  animation->setStartValue(widget->pos());
+  animation->setEndValue(targetPos);
+  animation->start(QPropertyAnimation::DeleteWhenStopped);  // start the animation
+
+}
+
+//function to detect mouse movement
+bool MainWindow::eventFilter(QObject *obj, QEvent *event){
+  static bool floatingPannelDisplayed = false; //this variable stores if the floating pannel is displayed already or not
+  if (event->type() == QEvent::MouseMove && !floatingPannelDisplayed) {
+    if(fullscreened){
+      //getting the position of the floating pannel
+      int viewheight = view->size().height();
+      int floatingPannel_Xpos = floatingControlPannelProxy->pos().rx();
+      int floatingPannel_height = floatingControlPannelProxy->boundingRect().height();
+      //calculate the targetPosition that we want to move the pannel into, and then calling moveSomethingToPos function
+      QPointF targetPos = QPointF(floatingPannel_Xpos,viewheight-floatingPannel_height);
+      moveSomethingToPos(floatingControlPannelProxy,targetPos,200);
+
+      //getting the mouse position
+      QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);//casting QEvent into QMouseEvent
+      int mousePosition_x = mouse_event->pos().rx();
+      int mousePosition_y = mouse_event->pos().ry();
+
+      floatingPannelDisplayed = true; //the floating pannel is displayed
+
+        QTimer::singleShot(2000,[this](){
+          resizelements("floatingPannel",200);// restoring the floating pannel to default (means it will be hidden)
+          floatingPannelDisplayed = false;// the floating pannel is not displayed
+        });
     }
+    return false;
+  }
+  return QMainWindow::eventFilter(obj, event);//return the event if it's not a mouse event
 }
 
 //distractor
@@ -1018,14 +1099,4 @@ MainWindow::~MainWindow(){
   for (SubObject* ptr:subslist){
     delete ptr;
   }
-}
-
-bool MainWindow::eventFilter(QObject *obj, QEvent *event){
-  if (event->type() == QEvent::MouseMove) {
-    if(fullscreened){
-
-    }
-    return false;
-  }
-  return QMainWindow::eventFilter(obj, event);
 }
