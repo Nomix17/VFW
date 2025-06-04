@@ -1076,11 +1076,6 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event){
       QPointF targetPos = QPointF(floatingPannel_Xpos,viewheight-floatingPannel_height);
       moveSomethingToPos(floatingControlPannelProxy,targetPos,200);
 
-      //getting the mouse position
-      QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);//casting QEvent into QMouseEvent
-      int mousePosition_x = mouse_event->pos().rx();
-      int mousePosition_y = mouse_event->pos().ry();
-
       floatingPannelDisplayed = true; //the floating pannel is displayed
 
         QTimer::singleShot(2000,[this](){
