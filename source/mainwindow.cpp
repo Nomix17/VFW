@@ -237,8 +237,9 @@ void MainWindow::createBottomLayout(){
 }
 
 void MainWindow::mediaplayer(QString url) {
-  // if there is no video to play a black image will play (blackscreen)
   video->setSize(view->size());
+
+  // if there is no video to play a black image will play (blackscreen)
   if (videoindex > playlist.size() || url == "blackscreen") {
     player->setSource({});
     currenttimer->setText("--:--:--");
@@ -616,7 +617,7 @@ void MainWindow::controlbuttonslayoutclick(int buttonindex) {
       if (rep == PlaylistRepeat) rep = VideoRepeat;
       else if (rep == VideoRepeat) rep = Shuffle;
       else if (rep == Shuffle) rep = PlaylistRepeat;
-      updateButtonsIcon();
+      updateButtonsIcon("repetition");
 
       break;
     }
@@ -764,6 +765,7 @@ void MainWindow::playertimeline(qint64 position) {
       sublabel->setHtml("");
     }
   }
+  updateButtonsIcon();
 }
 
 /*
@@ -790,7 +792,7 @@ void MainWindow::changingposition(int newpos) {
 
 // managing the interactions with the volume slider
 void MainWindow::slidermanagement(qreal position) {
-  updateButtonsIcon();
+  updateButtonsIcon("volume");
   volumeslider->setSliderPosition(static_cast<int>(position * 1000));
 }
 
@@ -963,37 +965,42 @@ void MainWindow::topbarlayoutvisibility(std::string status){
 
 //this function update buttons icons
 
-void MainWindow::updateButtonsIcon(){
+void MainWindow::updateButtonsIcon(std::string button_name){
+
   //update play/pause button icon
-  QPushButton *Pause_button = ButtonsObjectList[PAUSE_BUTTON];
-  if(player->isPlaying()) Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "BPause.png"));
-  else Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "BPlay.png"));
-
-  //update volume button icons
-  QPushButton *VolumeControlButton = ButtonsObjectList[BVolumeControl];
-
-  float currentvolume = audio->volume() * 1000;
-  if (currentvolume == 0) {
-    VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BMute.png"));
-    volumeslider->setStyleSheet("QSlider#volumeslider::handle{background:#1e1e1e;}");
-
-  } else if (currentvolume <= 333 && currentvolume > 0) {
-    VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeLow.png"));
-    volumeslider->setStyleSheet("QSlider#volumeslider::handle{background:#484949;}");
-
-  } else if (currentvolume >= 333 && currentvolume <= 666) {
-    VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeMid.png"));
-
-  } else if (currentvolume >= 666) {
-    VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeControl.png"));
+  if(button_name == "play/pause" || button_name == "all"){
+    QPushButton *Pause_button = ButtonsObjectList[PAUSE_BUTTON];
+    if(player->isPlaying()) Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "BPause.png"));
+    else Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "BPlay.png"));
   }
 
+  //update volume button icons
+  if(button_name == "volume" || button_name == "all"){
+    QPushButton *VolumeControlButton = ButtonsObjectList[BVolumeControl];
+    float currentvolume = audio->volume() * 1000;
+    if (currentvolume == 0) {
+      VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BMute.png"));
+      volumeslider->setStyleSheet("QSlider#volumeslider::handle{background:#1e1e1e;}");
 
-  //update repetition button icon
-  QPushButton *Repeatition_button = ButtonsObjectList[REPETITION_BUTTON];
-  if (rep == PlaylistRepeat) Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BRepeating.png"));
-  else if (rep == VideoRepeat) Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BRepeatingone.png"));
-  else if (rep == Shuffle) Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BSuffle.png"));
+    } else if (currentvolume <= 333 && currentvolume > 0) {
+      VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeLow.png"));
+      volumeslider->setStyleSheet("QSlider#volumeslider::handle{background:#484949;}");
+
+    } else if (currentvolume >= 333 && currentvolume <= 666) {
+      VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeMid.png"));
+
+    } else if (currentvolume >= 666) {
+      VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeControl.png"));
+    }
+ }
+
+ //update repetition button icon
+  if(button_name == "repetition" || button_name == "all"){
+    QPushButton *Repeatition_button = ButtonsObjectList[REPETITION_BUTTON];
+    if (rep == PlaylistRepeat) Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BRepeating.png"));
+    else if (rep == VideoRepeat) Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BRepeatingone.png"));
+    else if (rep == Shuffle) Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BSuffle.png"));
+  }
 
 }
 
