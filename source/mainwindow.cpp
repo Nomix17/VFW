@@ -234,6 +234,8 @@ void MainWindow::createBottomLayout(){
 
   setsliderrange(player->duration());
   videoslider->setValue(player->position());
+  updateButtonsIcon();
+
 }
 
 void MainWindow::mediaplayer(QString url) {
@@ -247,6 +249,7 @@ void MainWindow::mediaplayer(QString url) {
     currenturl="";
     volumeslider->setRange(0, 1000);
     volumeslider->setSliderPosition(500);
+    updateButtonsIcon();
     return ;
 
   } else if (url == "play a list") {  // if pass "play a list" as an argunent a video from the playlist will play
@@ -306,6 +309,7 @@ void MainWindow::mediaplayer(QString url) {
 
   //save the position of the video what was playing before
   savevideoposition();
+
 }
 
 // topbarlayout buttons logic
@@ -558,15 +562,9 @@ void MainWindow::controlbuttonslayoutclick(int buttonindex) {
   switch (buttonindex) {
     // if the pause button is clicked
     case PAUSE_BUTTON: {
-      QPushButton *Pause_button = ButtonsObjectList[PAUSE_BUTTON];
-      if (paused) {
-        Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "BPause.png"));
-        player->play();
-      } else {
-        Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "BPlay.png"));
-        player->pause();
-      }
-      paused = !paused;
+      if (player->isPlaying()) player->pause();
+      else player->play();
+      updateButtonsIcon();
       break;
     }
 
@@ -682,33 +680,8 @@ void MainWindow::playertimeline(qint64 position) {
 
   videoslider->setValue(position);//syncing the slider with the player position
 
-  // if the video is still playing (position != video duration)
-  if (position != player->duration()) {
-    // setting the current timer basing on the player position
-    int hour = player->position() / (1000 * 60 * 60);
-    int min = (player->position() / 1000 - hour * 60 * 60) / 60;
-    int second = player->position() / 1000 - min * 60 - hour * 60 * 60;
-    std::ostringstream osshour, ossmin, osssecond;
-    osshour << std::setfill('0') << std::setw(2) << hour;
-    ossmin << std::setfill('0') << std::setw(2) << min;
-    osssecond << std::setfill('0') << std::setw(2) << second;
-    currenttimer->setText(QString::fromStdString(osshour.str()) + ":"+
-      QString::fromStdString(ossmin.str()) +":" +
-      QString::fromStdString(osssecond.str()));
-
-    // setting the total timer basing on the player duration
-    int thour = player->duration() / (1000 * 60 * 60);
-    int tmin = (player->duration() / 1000 - thour * 60 * 60) / 60;
-    int tsecond = player->duration() / 1000 - tmin * 60 - thour * 60 * 60;
-    std::ostringstream tosshour, tossmin, tosssecond;
-    tosshour << std::setfill('0') << std::setw(2) << thour;
-    tossmin << std::setfill('0') << std::setw(2) << tmin;
-    tosssecond << std::setfill('0') << std::setw(2) << tsecond;
-    totaltimer->setText(QString::fromStdString(tosshour.str()) + ":" +
-      QString::fromStdString(tossmin.str()) +
-      ":" + QString::fromStdString(tosssecond.str()));
-
-  }
+  // setting the current timer basing on the player position
+  if (position != player->duration()) updateTimer();
 
   // if the video is finished
   else if (position == player->duration()) {
@@ -723,11 +696,7 @@ void MainWindow::playertimeline(qint64 position) {
     }
 
     // if the reloading button is in the "reload one video" mode
-    else if (rep == VideoRepeat) {
-      player->setPosition(0);
-      player->stop();
-      player->play();
-    }
+    else if (rep == VideoRepeat) changingposition(0);
 
     // if the reloading button is in the "random video" mode
     else if (rep == Shuffle) {
@@ -768,6 +737,39 @@ void MainWindow::playertimeline(qint64 position) {
   updateButtonsIcon();
 }
 
+void MainWindow::updateTimer(){
+
+  if(currenturl == "") return;
+
+  int position = player->position();
+
+  // setting the current timer basing on the player position
+  int hour = position / (1000 * 60 * 60);
+  int min = (position / 1000 - hour * 60 * 60) / 60;
+  int second = position  / 1000 - min * 60 - hour * 60 * 60;
+  std::ostringstream osshour, ossmin, osssecond;
+  osshour << std::setfill('0') << std::setw(2) << hour;
+  ossmin << std::setfill('0') << std::setw(2) << min;
+  osssecond << std::setfill('0') << std::setw(2) << second;
+  currenttimer->setText(QString::fromStdString(osshour.str()) + ":"+
+    QString::fromStdString(ossmin.str()) +":" +
+    QString::fromStdString(osssecond.str()));
+
+  // setting the total timer basing on the player duration
+  int thour = player->duration() / (1000 * 60 * 60);
+  int tmin = (player->duration() / 1000 - thour * 60 * 60) / 60;
+  int tsecond = player->duration() / 1000 - tmin * 60 - thour * 60 * 60;
+  std::ostringstream tosshour, tossmin, tosssecond;
+  tosshour << std::setfill('0') << std::setw(2) << thour;
+  tossmin << std::setfill('0') << std::setw(2) << tmin;
+  tosssecond << std::setfill('0') << std::setw(2) << tsecond;
+  totaltimer->setText(QString::fromStdString(tosshour.str()) + ":" +
+    QString::fromStdString(tossmin.str()) +
+    ":" + QString::fromStdString(tosssecond.str()));
+
+}
+
+
 /*
   solving the bug of the audio breaking when changing position,
   by deleting the audio output widget and create a new one
@@ -782,10 +784,10 @@ void MainWindow::changingposition(int newpos) {
   player->setPosition(newpos);
   player->setAudioOutput(audio);
   audio->setVolume(oldvol);
+  bool isPlaying = player->isPlaying();
   player->pause();
-  if (!paused) {
+  if (isPlaying) {
     player->play();
-    paused = false;
   }
 }
 
@@ -920,6 +922,7 @@ void MainWindow::FullScreen(){
   volumeslider->setRange(0, 1000);
   volumeslider->setValue(currentVolume*1000);
   updateButtonsIcon();
+  updateTimer();
 }
 
 //function that display text on the top of the video with fading animation
@@ -970,7 +973,7 @@ void MainWindow::updateButtonsIcon(std::string button_name){
   //update play/pause button icon
   if(button_name == "play/pause" || button_name == "all"){
     QPushButton *Pause_button = ButtonsObjectList[PAUSE_BUTTON];
-    if(player->isPlaying()) Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "BPause.png"));
+    if(player->isPlaying() || currenturl == "") Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "BPause.png"));
     else Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "BPlay.png"));
   }
 

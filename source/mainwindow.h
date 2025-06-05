@@ -98,6 +98,7 @@ public:
   void controlbuttonslayoutclick(int buttonindex);
   void setsliderrange(qint64 position);
   void playertimeline(qint64 position);
+  void updateTimer();
   void mediaposition(int position);
   void keyPressEvent(QKeyEvent *event)override;
   void mediaplayer(QString url="blackscreen");
@@ -126,7 +127,6 @@ public:
     return false;
   }
 private:
-  bool paused = false;
   bool fullscreened = false;
   bool finished = false;
   QString playertype;
