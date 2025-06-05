@@ -1,3 +1,4 @@
 *bin
 *.vscode
 *source/build.sh
+*cache/configs/.positionsave.csv
