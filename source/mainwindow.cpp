@@ -1087,25 +1087,22 @@ void moveSomethingToPos(QGraphicsWidget *widget, QPointF targetPos, int animatio
 //function to detect mouse movement
 bool MainWindow::eventFilter(QObject *obj, QEvent *event){
   static bool floatingPannelDisplayed = false; //this variable stores if the floating pannel is displayed already or not
-
   if (event->type() == QEvent::MouseMove && !floatingPannelDisplayed) {
     if(fullscreened){
       //getting the position of the floating pannel
       int viewheight = view->size().height();
-      int floatingPannel_xpos = floatingControlPannelProxy->pos().rx();
+      int floatingPannel_Xpos = floatingControlPannelProxy->pos().rx();
       int floatingPannel_height = floatingControlPannelProxy->boundingRect().height();
-
-
       //calculate the targetPosition that we want to move the pannel into, and then calling moveSomethingToPos function
-      QPointF targetPos = QPointF(floatingPannel_xpos,viewheight-floatingPannel_height);
+      QPointF targetPos = QPointF(floatingPannel_Xpos,viewheight-floatingPannel_height);
       moveSomethingToPos(floatingControlPannelProxy,targetPos,200);
 
       floatingPannelDisplayed = true; //the floating pannel is displayed
 
-      QTimer::singleShot(2000,[this](){
-        resizelements("floatingPannel",200);// restoring the floating pannel to default (means it will be hidden)
-        floatingPannelDisplayed = false;// the floating pannel is not displayed
-      });
+        QTimer::singleShot(2000,[this](){
+          resizelements("floatingPannel",200);// restoring the floating pannel to default (means it will be hidden)
+          floatingPannelDisplayed = false;// the floating pannel is not displayed
+        });
     }
     return false;
   }
