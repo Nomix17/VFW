@@ -127,6 +127,7 @@ public:
     return false;
   }
 private:
+  bool paused=false;
   bool fullscreened = false;
   bool finished = false;
   QString playertype;

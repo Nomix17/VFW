@@ -172,6 +172,9 @@ void MainWindow::createBottomLayout(){
   if(controlbuttonslayout != nullptr){
     deletelayout(controlbuttonslayout);// deleting elements in the layout
     delete controlbuttonslayout; // deleting the layout
+    delete volumeslider;
+    delete currenttimer;
+    delete totaltimer;
   }
   controlbuttonslayout=nullptr;
   ButtonsObjectList.clear(); // clearing the vector that hold the buttons of the bottom layout
@@ -179,6 +182,7 @@ void MainWindow::createBottomLayout(){
   controlbuttonslayout = new QVBoxLayout();//creating new layout
   QHBoxLayout *firsthalflayout = new QHBoxLayout();
   QHBoxLayout *secondhalflayout = new QHBoxLayout();
+
 
   videoslider = new CustomSlider(Qt::Horizontal);// creating video slider
   currenttimer = new QLabel("--:--:--");
@@ -249,6 +253,7 @@ void MainWindow::mediaplayer(QString url) {
     currenturl="";
     volumeslider->setRange(0, 1000);
     volumeslider->setSliderPosition(500);
+    paused = true;
     updateButtonsIcon();
     return ;
 
@@ -300,7 +305,7 @@ void MainWindow::mediaplayer(QString url) {
   volumeslider->setSliderPosition(500);
   video->show();
   player->play();
-
+  paused = false;
   //resize some ui elements based on the media opened
   resizelements();
 
@@ -564,6 +569,7 @@ void MainWindow::controlbuttonslayoutclick(int buttonindex) {
     case PAUSE_BUTTON: {
       if (player->isPlaying()) player->pause();
       else player->play();
+      paused = !paused ;
       updateButtonsIcon();
       break;
     }
@@ -653,7 +659,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
   } else if (event->key() == Qt::Key_M) {
     controlbuttonslayoutclick(BVolumeControl);
   } else if (event->key() == Qt::Key_Space) {
-    controlbuttonslayoutclick(0);
+    controlbuttonslayoutclick(PAUSE_BUTTON);
   } else if (event->key() == Qt::Key_Right) {
     changingposition(player->position() + 5000);
   } else if (event->key() == Qt::Key_Left) {
@@ -778,17 +784,17 @@ void MainWindow::updateTimer(){
 
 void MainWindow::changingposition(int newpos) {
   float oldvol = audio->volume();
-  player->stop();
+  // player->stop();
   delete audio;
   audio = new QAudioOutput();
   player->setPosition(newpos);
   player->setAudioOutput(audio);
   audio->setVolume(oldvol);
-  bool isPlaying = player->isPlaying();
-  player->pause();
-  if (isPlaying) {
-    player->play();
-  }
+  // player->pause();
+  // if (!paused) {
+  //   player->play();
+  //   paused = false;
+  // }
 }
 
 
