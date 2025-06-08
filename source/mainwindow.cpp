@@ -255,6 +255,9 @@ void MainWindow::mediaplayer(QString url) {
     volumeslider->setSliderPosition(500);
     paused = true;
     updateButtonsIcon();
+    QPushButton *SkipButton = ButtonsObjectList[CONTINUEFROMLASTPOS_BUTTON];
+    SkipButton->hide();
+
     return ;
 
   } else if (url == "play a list") {  // if pass "play a list" as an argunent a video from the playlist will play
@@ -693,12 +696,14 @@ void MainWindow::playertimeline(qint64 position) {
   else if (position == player->duration()) {
     // if the reloading button is in the "reload full playlist" mode
     if (rep == PlaylistRepeat) {
-      if (videoindex == playlist.size() - 1) {
-        videoindex = 0;
-      } else {
-        videoindex++;
-      }
-      mediaplayer("play a list");
+      if (playlist.size()){
+        if (videoindex == playlist.size() - 1) {
+          videoindex = 0;
+        } else {
+          videoindex++;
+        }
+        mediaplayer("play a list");
+      }else mediaplayer("blackscreen");
     }
 
     // if the reloading button is in the "reload one video" mode
@@ -979,7 +984,7 @@ void MainWindow::updateButtonsIcon(std::string button_name){
   //update play/pause button icon
   if(button_name == "play/pause" || button_name == "all"){
     QPushButton *Pause_button = ButtonsObjectList[PAUSE_BUTTON];
-    if(player->isPlaying() || currenturl == "") Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "BPause.png"));
+    if(!paused || currenturl == "") Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "BPause.png"));
     else Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "BPlay.png"));
   }
 
@@ -1001,9 +1006,9 @@ void MainWindow::updateButtonsIcon(std::string button_name){
     } else if (currentvolume >= 666) {
       VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeControl.png"));
     }
- }
+  }
 
- //update repetition button icon
+  //update repetition button icon
   if(button_name == "repetition" || button_name == "all"){
     QPushButton *Repeatition_button = ButtonsObjectList[REPETITION_BUTTON];
     if (rep == PlaylistRepeat) Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BRepeating.png"));
