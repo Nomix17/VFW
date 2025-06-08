@@ -784,17 +784,17 @@ void MainWindow::updateTimer(){
 
 void MainWindow::changingposition(int newpos) {
   float oldvol = audio->volume();
-  // player->stop();
+  player->pause();
+  player->setAudioOutput(nullptr);
   delete audio;
   audio = new QAudioOutput();
   player->setPosition(newpos);
   player->setAudioOutput(audio);
   audio->setVolume(oldvol);
-  // player->pause();
-  // if (!paused) {
-  //   player->play();
-  //   paused = false;
-  // }
+  if (!paused){
+    player->play();
+    paused = false;
+  }
 }
 
 
