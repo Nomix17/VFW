@@ -218,7 +218,7 @@ class PATHS {
 
     std::string GETTHEME(std::string configDirectory){
       std::ifstream themefile(configDirectory+"/theme");
-      std::string theme = "light";
+      std::string theme ="light";
       if(themefile){
         getline(themefile,theme);
       }

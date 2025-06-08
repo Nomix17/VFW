@@ -570,7 +570,7 @@ void MainWindow::controlbuttonslayoutclick(int buttonindex) {
   switch (buttonindex) {
     // if the pause button is clicked
     case PAUSE_BUTTON: {
-      if (player->isPlaying()) player->pause();
+      if (!paused) player->pause();
       else player->play();
       paused = !paused ;
       updateButtonsIcon();
