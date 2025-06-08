@@ -218,8 +218,7 @@ class PATHS {
 
     std::string GETTHEME(std::string configDirectory){
       std::ifstream themefile(configDirectory+"/theme");
-      auto defaultcolorscheme = qApp->styleHints()->colorScheme();
-      std::string theme = (defaultcolorscheme == Qt::ColorScheme::Dark)? "dark":"light";
+      std::string theme = "light";
       if(themefile){
         getline(themefile,theme);
       }
