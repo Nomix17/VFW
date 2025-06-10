@@ -79,7 +79,7 @@ public:
     BREAKLOOP,
     FULL_VOLUME,
     MUTE,
-    SET_RADIO,
+    TOGGLE_FILL,
     ADDSUB,
     STOPSUB,
     ADDDELAY,
@@ -164,7 +164,7 @@ private:
   QList<QString> mcbuttons = {"BPause","BBack","BStop","BNext","BFullscreen","BPlaylist","BRepeating","BContinueFLP","BVolumeControl"};
   std::vector <QPushButton*> ButtonsObjectList = {};
   QList<QString> topbarlayoutbuttons = {"Media","Playback","Audio","Video","Subtitle","View","Help"};
-  QList<QList <QString> > actionslist = {{"Open File","Open Folder","Open Media","Quit"},{"Jump Backward","Jump Forward","Jump to Time","Loop Segment","Break Loop"},{"Full Volume","Mute"},{"Set Radio"},{"Add Subtitles","Stop Subtitles","Add Delay","Reduce Delay","Subtitle Settings"},{"Video Title","change theme"},{"Shortcuts Instructions"}};
+  QList<QList <QString> > actionslist = {{"Open File","Open Folder","Open Media","Quit"},{"Jump Backward","Jump Forward","Jump to Time","Loop Segment","Break Loop"},{"Full Volume","Mute"},{"Stretch to Fit"},{"Add Subtitles","Stop Subtitles","Add Delay","Reduce Delay","Subtitle Settings"},{"Video Title","change theme"},{"Shortcuts Instructions"}};
 
 public:
   std::vector<QUrl> playlist;

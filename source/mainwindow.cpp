@@ -445,9 +445,12 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
       break;
     }
 
-    // set a video radio
-    case SET_RADIO: {
-      // setting a whole new window
+    // make the videofill the view
+    case TOGGLE_FILL: {
+      static bool fill = true;
+      if(fill) video->setAspectRatioMode(Qt::IgnoreAspectRatio);
+      else video->setAspectRatioMode(Qt::KeepAspectRatio);
+      fill =! fill;
       break;
     }
 
