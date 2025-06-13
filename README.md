@@ -33,4 +33,5 @@ sudo chown -R $(whoami):$(whoami) /opt/VFW
 ```
 ## Customization
 
-To Edit or/and add a theme check the directory ```cache/styles/```, it's easy to customize, just some css files.
+To Edit or/and add a theme check the directory ```cache/styles/```. 
+It's easy to customize, just some css files.
