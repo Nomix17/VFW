@@ -130,9 +130,12 @@ void MainWindow::createTopLayout(){
     if (actionslist.size() > i) {
       // loop the elements in actionslist of the i button
       for (qsizetype j = 0; j < actionslist[i].size(); j++) {
+
         QAction *action = new QAction(this);
         action->setObjectName(actionslist[i][j]);
         action->setText(actionslist[i][j]);
+
+        TopBarButtonsObjectList.push_back(action);
         connect(action, &QAction::triggered, [this, i, j, counter]() { topbarlayoutclick(counter); });
         // connect these actions later
         menu->addAction(action);
@@ -415,21 +418,25 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
     }
 
     // loop on segment of the video
-    case LOOPSEGMENT: {
-      SRepeatWindow win(nullptr, STYLESDIRECTORY);
-      win.exec();
-      if (win.startingpoint >= 0 && win.finishingpoint >= 0 && win.finishingpoint != win.startingpoint) {
-        repeatfromposition = true;
-        startingpoint = win.startingpoint;
-        finishpoint = win.finishingpoint;
-        changingposition(startingpoint * 1000);
-      }
-      break;
-    }
+    case TOGGLE_LOOPSEGMENT: {
+      QAction * toggleLoopAction = TopBarButtonsObjectList[TOGGLE_LOOPSEGMENT];
+      if(!currenturl.isEmpty()){
+        if(!repeatfromposition){
+          SRepeatWindow win(nullptr, STYLESDIRECTORY);
+          win.exec();
+          if (win.startingpoint >= 0 && win.finishingpoint >= 0 && win.finishingpoint != win.startingpoint) {
+            repeatfromposition = true;
+            startingpoint = win.startingpoint;
+            finishpoint = win.finishingpoint;
+            changingposition(startingpoint * 1000);
+            toggleLoopAction->setText("Exit The Loop");
 
-    // break the segment loop
-    case BREAKLOOP: {
-      repeatfromposition = false;
+          }
+        }else{
+          repeatfromposition = false;
+          toggleLoopAction->setText("Start Segment Loop");
+        }
+      }
       break;
     }
 
@@ -446,36 +453,42 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
     }
 
     // make the videofill the view
-    case TOGGLE_FILL: {
-      static bool fill = true;
-      if(fill) video->setAspectRatioMode(Qt::IgnoreAspectRatio);
-      else video->setAspectRatioMode(Qt::KeepAspectRatio);
-      fill =! fill;
+    case TOGGLE_ASPRadio: {
+      QAction * toggleFillAction = TopBarButtonsObjectList[TOGGLE_ASPRadio];
+      if(CurrentAspectMode == Qt::KeepAspectRatio){
+        CurrentAspectMode = Qt::IgnoreAspectRatio; 
+        toggleFillAction->setText("Lock Aspect Ratio");
+      }else{
+        CurrentAspectMode = Qt::KeepAspectRatio;
+        toggleFillAction->setText("Stretch to Fill");
+      }
+      video->setAspectRatioMode(CurrentAspectMode);
       break;
     }
 
     // if the user choose to open a sub file
-    case ADDSUB: {
+    case TOGGLE_SUB: {
+      QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
       QString displaydir;
-      if (currentworkdirectory.size())
-        displaydir = QString::fromStdString(currentworkdirectory);
-      else{
-        displaydir = homedir;
+      if(subslist.size() == 0){
+        if (currentworkdirectory.size())
+          displaydir = QString::fromStdString(currentworkdirectory);
+        else{
+          displaydir = homedir;
+        }
+        suburl = QFileDialog::getOpenFileName(this, tr("Select Subtitle file"), displaydir, tr("Srt files (*.srt)"));
+        if (!suburl.isEmpty()) {
+          subfileparsing(suburl.toStdString());
+          ToggleSubs->setText("Remove Subtitles");
+        }
+      }else{
+        for (SubObject* ptr:subslist){
+          delete ptr;
+        }
+        sublabel->setOpacity(0);
+        subslist.clear();
+        ToggleSubs->setText("Add Subtitles");
       }
-      suburl = QFileDialog::getOpenFileName(this, tr("Select Subtitle file"), displaydir, tr("Srt files (*.srt)"));
-      if (!suburl.isEmpty()) {
-        subfileparsing(suburl.toStdString());
-      }
-      break;
-    }
-
-    // if the user choose to not show a sub
-    case STOPSUB: {
-      for (SubObject* ptr:subslist){
-        delete ptr;
-      }
-      subslist.clear();
-
       break;
     }
 

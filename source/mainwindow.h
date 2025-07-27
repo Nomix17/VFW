@@ -75,13 +75,11 @@ public:
     JUMP_BACKWARD,
     JUMP_FORWARD,
     JUMP_TO_TIME,
-    LOOPSEGMENT,
-    BREAKLOOP,
+    TOGGLE_LOOPSEGMENT,
     FULL_VOLUME,
     MUTE,
-    TOGGLE_FILL,
-    ADDSUB,
-    STOPSUB,
+    TOGGLE_ASPRadio,
+    TOGGLE_SUB,
     ADDDELAY,
     REDUCEDELAY,
     SUBSETTINGS,
@@ -133,6 +131,7 @@ private:
   QString playertype;
   size_t videoindex=0;
   RepeatMode  rep = PlaylistRepeat ;
+  Qt::AspectRatioMode CurrentAspectMode = Qt::KeepAspectRatio;
 
   QLabel* image;
   QWidget *mainwidget;
@@ -163,8 +162,16 @@ private:
 
   QList<QString> mcbuttons = {"BPause","BBack","BStop","BNext","BFullscreen","BPlaylist","BRepeating","BContinueFLP","BVolumeControl"};
   std::vector <QPushButton*> ButtonsObjectList = {};
+  std::vector <QAction*> TopBarButtonsObjectList= {};
   QList<QString> topbarlayoutbuttons = {"Media","Playback","Audio","Video","Subtitle","View","Help"};
-  QList<QList <QString> > actionslist = {{"Open File","Open Folder","Open Media","Quit"},{"Jump Backward","Jump Forward","Jump to Time","Loop Segment","Break Loop"},{"Full Volume","Mute"},{"Stretch to Fit"},{"Add Subtitles","Stop Subtitles","Add Delay","Reduce Delay","Subtitle Settings"},{"Video Title","change theme"},{"Shortcuts Instructions"}};
+
+  QList<QList <QString> > actionslist = {{"Open File","Open Folder","Open Media","Quit"},
+                                      {"Jump Backward","Jump Forward","Jump to Time","Start Segment Loop"},
+                                      {"Full Volume","Mute"},
+                                      {"Stretch to Fit"},
+                                      {"Add Subtitles","Add Delay","Reduce Delay","Subtitle Settings"},
+                                      {"Video Title","change theme"},
+                                      {"Shortcuts Instructions"}};
 
 public:
   std::vector<QUrl> playlist;
