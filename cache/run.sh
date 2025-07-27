@@ -1,26 +1,41 @@
 #!/bin/bash
 
-set -e
+mediapaths=()
+path_mode="fullpath"
 
-BASE_NAME=$(basename *.pro .pro)
+while [[ $# -gt 0 ]]; do 
+  case "$1" in
+    --fullpath | -p) 
+      path_mode="fullpath"
+      ;;
+    --nameonly | -n)
+      path_mode="nameonly"
+      ;;
+    -*)
+      echo "Unknown option: $1" 
+      exit 1
+      ;;
+    *)
 
-if [ ! -d "../bin" ]; then
-  mkdir ../bin
+      if [[ "$path_mode" == "fullpath" ]]; then
+        mediapaths+=("$1")
+      else
+        mediapaths+=("$(pwd)/$1")
+      fi
+      ;;
+  esac
+  shift
+done
+
+if [[ ${#mediapaths[@]} -eq 0 ]]; then
+  echo "No files specified"
+  exit 1
 fi
 
-cd ../bin
+echo "Processing files:"
+for path in "${mediapaths[@]}"; do
+  echo "  $path"
+done
 
-qmake6 ../source/*.pro
-make clean
-make
-
-# ./"$BASE_NAME"
-
-mkdir -p /opt/VFW
-cp -r ../cache /opt/VFW/
-cp -r ../bin /opt/VFW/
-cp ../source/uninstall.sh /opt/VFW/bin
-
-cp ../cache/run.sh /usr/bin/VFW
-
-cp ../cache/VFW.desktop /usr/share/applications/
+cd "/opt/VFW/bin/"
+./VFW "${mediapaths[@]}"
