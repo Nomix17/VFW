@@ -28,7 +28,7 @@ git clone https://github.com/Nomix17/VFW
 cd VFW
 chmod +x source/build.sh cache/run.sh
 cd source
-sudo ./build.sh $HOME
+sudo ./build.sh
 sudo chown -R $(whoami):$(whoami) /opt/VFW
 ```
 ## Customization
