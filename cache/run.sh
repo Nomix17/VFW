@@ -27,12 +27,6 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
-if [[ ${#mediapaths[@]} -eq 0 ]]; then
-  echo "No files specified"
-  exit 1
-fi
-
-echo "Processing files:"
 for path in "${mediapaths[@]}"; do
   echo "  $path"
 done
