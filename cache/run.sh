@@ -23,4 +23,4 @@ cp ../source/uninstall.sh /opt/VFW/bin
 
 cp ../cache/run.sh /usr/bin/VFW
 
-cp ../cache/VFW.desktop $1/.local/share/applications
+cp ../cache/VFW.desktop /usr/share/applications/
