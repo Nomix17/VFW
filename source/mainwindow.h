@@ -128,7 +128,6 @@ private:
   bool paused=false;
   bool fullscreened = false;
   bool finished = false;
-  QString playertype;
   size_t videoindex=0;
   RepeatMode  rep = PlaylistRepeat ;
   Qt::AspectRatioMode CurrentAspectMode = Qt::KeepAspectRatio;
@@ -174,6 +173,7 @@ private:
                                       {"Shortcuts Instructions"}};
 
 public:
+  QString playertype;
   std::vector<QUrl> playlist;
   QString htmlstyle;
   int subpadding;
