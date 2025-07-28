@@ -43,6 +43,7 @@ int main(int argc,char* argv[]){
     //run the Playlist when the app open
     w.mediaplayer("play a list");
     w.resize(750,551);
+    w.playertype = "playlist";
   }
   a.installEventFilter(&w);
   return a.exec();
