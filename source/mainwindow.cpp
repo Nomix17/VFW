@@ -255,7 +255,7 @@ void MainWindow::mediaplayer(QString url) {
     totaltimer->setText("--:--:--");
     currenturl="";
     volumeslider->setRange(0, 1000);
-    volumeslider->setSliderPosition(500);
+    volumeslider->setSliderPosition(1000);
     paused = true;
     updateButtonsIcon();
     QPushButton *SkipButton = ButtonsObjectList[CONTINUEFROMLASTPOS_BUTTON];
@@ -306,9 +306,9 @@ void MainWindow::mediaplayer(QString url) {
   player->setSource(QUrl(currenturl));
   player->setVideoOutput(video);
   player->setAudioOutput(audio);
-  audio->setVolume(0.5);
+  audio->setVolume(1);
   volumeslider->setRange(0, 1000);
-  volumeslider->setSliderPosition(500);
+  volumeslider->setSliderPosition(1000);
   video->show();
   player->play();
   paused = false;
