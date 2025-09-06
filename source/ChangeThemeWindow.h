@@ -26,7 +26,7 @@ public:
 
   ChangeThemeWindow(QWidget *parent, std::string ConfigDirectory, std::string ProjectDirectory, std::string StyleDirectory)
       : QDialog(parent) {
-    this->setFixedSize(460,600);
+    this->setFixedSize(400,500);
     scrollarea->setWidgetResizable(true);
     scrollarea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 

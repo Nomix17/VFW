@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QApplication>
+#include <QShortcut>
 #include <QStyleHints>
 #include "qboxlayout.h"
 #include "qevent.h"
@@ -40,9 +41,9 @@
 
 
 struct SubObject{
-  int starttime;
+  float starttime;
   std::string textcontaint;
-  int endtime;
+  float endtime;
 };
 
 // main window class
@@ -80,6 +81,8 @@ public:
     MUTE,
     TOGGLE_ASPRadio,
     TOGGLE_SUB,
+    LOADSUBTITLES,
+    TOGGLE_SUBDISPLAY,
     ADDDELAY,
     REDUCEDELAY,
     SUBSETTINGS,
@@ -90,6 +93,7 @@ public:
 
   MainWindow(QWidget *parent=nullptr);
   ~MainWindow();
+  void setupShortCuts();
   void createTopLayout();
   void createBottomLayout();
   void topbarlayoutclick(int buttonindex);
@@ -98,10 +102,10 @@ public:
   void playertimeline(qint64 position);
   void updateTimer();
   void mediaposition(int position);
-  void keyPressEvent(QKeyEvent *event)override;
   void mediaplayer(QString url="blackscreen");
   void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
   void slidermanagement(qreal position);
+  void toggleSubtitles();
   void subfileparsing(std::string subpath);
   QString fixhtml(QString test);
   void changingposition(int newpos);
@@ -117,7 +121,8 @@ public:
   void updateButtonsIcon(std::string button_name = "all");
   void savevideoposition();
   void getlastsavedposition();
-
+  void LoadingInDirectorySubtitles(QString currenturl);
+  void LoadingBuitInSubs(QString currenturl);
 
   //turnning off the tab focusing
   bool focusNextPrevChild(bool next) override{
@@ -168,13 +173,14 @@ private:
                                       {"Jump Backward","Jump Forward","Jump to Time","Start Segment Loop"},
                                       {"Full Volume","Mute"},
                                       {"Stretch to Fit"},
-                                      {"Add Subtitles","Add Delay","Reduce Delay","Subtitle Settings"},
+                                      {"Add Subtitle File","Load Subtitle","Hide Subtitles","Add Delay","Reduce Delay","Subtitle Settings"},
                                       {"Video Title","change theme"},
                                       {"Shortcuts Instructions"}};
 
 public:
   QString playertype;
   std::vector<QUrl> playlist;
+  bool ShowSubs = true;
   QString htmlstyle;
   int subpadding;
   int submarginbottom;
@@ -184,7 +190,8 @@ public:
   QString currenturl = "";
   std::string currentworkdirectory;
   int lastsavedposition=0;
-
+  std::vector <QString> subsInVideo = {};
+  QString currentLoadedSubPath = "";
 };
 
 class PATHS {

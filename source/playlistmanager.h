@@ -43,9 +43,8 @@ class PlaylistManager:public QDialog{
       //calling function to create buttons
       createbuttons(IconDirectory,playlist_vector,currenturl);
 
-
       //configuring the scrollarea
-      this->setFixedSize(470,600);
+      this->setFixedSize(400,500);
       scrollarea->setWidgetResizable(true);
       scrollarea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   
@@ -83,14 +82,12 @@ class PlaylistManager:public QDialog{
         QString media_url = playlist_vector[i].toString();
 
         //getting the video title
-        std::string video_title="";
-        int counter = media_url.size();
-        while(media_url[counter]!='/'){
-          video_title+=media_url[counter].toLatin1();
-          counter--;
-        }
-        std::reverse(video_title.begin(),video_title.end());//reversing the text so it look correct
-
+        int slashPosition = media_url.toStdString().rfind("/");
+        std::string video_title = media_url.toStdString().substr(slashPosition+1);
+        if(video_title.size() > 50){
+          video_title = video_title.substr(0,47);
+          video_title = video_title + "..."; 
+        } 
         //creating a button that represent video
         QPushButton *Video_Button= new QPushButton(QString::fromStdString("  "+video_title));
         Video_Button->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);

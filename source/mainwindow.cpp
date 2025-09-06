@@ -4,14 +4,15 @@
 #include "qpoint.h"
 #include "qpushbutton.h"
 #include "qtoolbutton.h"
-#include <mainwindow.h>
-#include <SRepeatWindow.h>
-#include <jumptotime.h>
-#include <playlistmanager.h>
-#include <shortcutsinstructions.h>
-#include <ChangeThemeWindow.h>
-#include <mediaurl.h>
-#include <subconfig.h>
+#include "mainwindow.h"
+#include "SRepeatWindow.h"
+#include "jumptotime.h"
+#include "playlistmanager.h"
+#include "shortcutsinstructions.h"
+#include "ChangeThemeWindow.h"
+#include "mediaurl.h"
+#include "subWindow.h"
+#include "subconfig.h"
 
 #include <iostream>
 #include <string>
@@ -35,20 +36,29 @@
 #include <QPropertyAnimation>
 #include <QFileDialog>
 #include <QTimer>
+#include <QProcess>
 
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QGraphicsVideoItem>
 #include <QGraphicsTextItem>
 #include <QGraphicsOpacityEffect>
+#include <QGraphicsDropShadowEffect>
 #include <QGraphicsProxyWidget>
+
+
+std::vector<std::string> supportedMediaFormats = {
+    ".mp4", ".mkv", ".avi", ".mov", ".webm", ".wmv", ".m4v",
+    ".mp3", ".wav", ".aac", ".m4a", ".wma", ".ogg"
+};
 
 void moveSomethingToPos(QGraphicsWidget *widget, QPointF targetPos, int animationTime);
 void deletelayout(QLayout* layout);
 
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
-  this->setFocus();
+  setFocusPolicy(Qt::StrongFocus); // important
+  setupShortCuts();
   this->resize(750, 550);
   // elements definition
   player = new QMediaPlayer(this);
@@ -193,7 +203,7 @@ void MainWindow::createBottomLayout(){
   volumeslider = new CustomSlider(Qt::Horizontal);// create volume slider
   volumeslider->setObjectName("volumeslider");
 
-  connect(videoslider, &QSlider::sliderMoved, [this]() {changingposition(videoslider->sliderPosition());this->setFocus();});
+  connect(videoslider, &QSlider::sliderMoved, [this]() {changingposition(videoslider->sliderPosition());});
   firsthalflayout->addWidget(currenttimer);
   firsthalflayout->addWidget(videoslider);
   firsthalflayout->addWidget(totaltimer);
@@ -244,9 +254,64 @@ void MainWindow::createBottomLayout(){
   updateButtonsIcon();
 
 }
+void MainWindow::LoadingInDirectorySubtitles(QString currenturl){
+  subsInVideo.clear();
+  std::filesystem::path currentVideoPath(currenturl.toStdString()); 
+  std::string directoryPath = currentVideoPath.parent_path().string();
+  
+  for(const auto & fileEntry : std::filesystem::directory_iterator(directoryPath)){
+    std::string fileExtention = fileEntry.path().extension();
+    if(fileExtention == ".srt"){
+      std::string filePathWithoutExtention = fileEntry.path().stem().string();
+      std::string currentVideoPathWithoutExtension = currentVideoPath.stem().string();
+      if(filePathWithoutExtention == currentVideoPathWithoutExtension){
+        subsInVideo.push_back(QString::fromStdString(fileEntry.path().string()));
+        currentLoadedSubPath = QString::fromStdString(fileEntry.path().string());
+        subfileparsing(currentLoadedSubPath.toStdString());
+        QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
+        ToggleSubs->setText("Remove Subtitles");
+        break;
+      }
+    }
+  }
+}
+void MainWindow::LoadingBuitInSubs(QString currenturl) {
+  QProcess lookForSubs;
+  lookForSubs.start("/usr/bin/ffprobe", {
+    "-v", "error",
+    "-select_streams", "s",
+    "-show_entries", "stream=index",
+    "-of", "csv=p=0",
+    currenturl
+  });
+  lookForSubs.waitForFinished(-1);
+
+  QStringList subStreams = QString(lookForSubs.readAllStandardOutput())
+    .split("\n", Qt::SkipEmptyParts);
+
+  std::cout<<"Number Of Subs Found: "<<subStreams.size()<<"\n";
+
+  for(int i=0; i < subStreams.size(); i++) {
+    std::filesystem::path currentVideoPath(currenturl.toStdString());
+    std::string currentVideoPathWithoutExtension = currentVideoPath.parent_path().string() +"/"+currentVideoPath.stem().string();
+
+    QString fileSubPath = QString("%1_Sub%2.srt").arg(currentVideoPathWithoutExtension).arg(i);
+    QString subId = QString("0:s:%1").arg(i);
+
+    QProcess* ffmpegProcess = new QProcess(this);
+    connect(ffmpegProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), ffmpegProcess, &QProcess::deleteLater);
+    ffmpegProcess->start("/usr/bin/ffmpeg", {"-y","-i", currenturl, "-map", subId, fileSubPath});
+
+    subsInVideo.push_back(fileSubPath);
+
+    std::cout << "-------------------------------------------Extract subtitle to: " << fileSubPath.toStdString() << "-------------------------------------------\n";
+  }
+}
 
 void MainWindow::mediaplayer(QString url) {
   video->setSize(view->size());
+  QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
+  ToggleSubs->setText("Add Subtitles");
 
   // if there is no video to play a black image will play (blackscreen)
   if (videoindex > playlist.size() || url == "blackscreen") {
@@ -278,11 +343,11 @@ void MainWindow::mediaplayer(QString url) {
 
   //if there is no / in the path that mean were in windows
   if(currenturlstring.rfind("/") == std::string::npos){
-      searchedChar = "%5C"; //windows uses these weird ass characters to symbolize the /
-      while(currenturlstring.rfind(searchedChar) != std::string::npos){ //finding and replacing all %5C with / so we will use it as normal path
-          searchedCharPos = currenturlstring.rfind(searchedChar);
-          currenturlstring.replace(searchedCharPos,searchedChar.size(),"/");
-      }
+    searchedChar = "%5C"; //windows uses these weird ass characters to symbolize the /
+    while(currenturlstring.rfind(searchedChar) != std::string::npos){ //finding and replacing all %5C with / so we will use it as normal path
+        searchedCharPos = currenturlstring.rfind(searchedChar);
+        currenturlstring.replace(searchedCharPos,searchedChar.size(),"/");
+    }
   }
 
   searchedChar = "/"; // searching character
@@ -297,8 +362,11 @@ void MainWindow::mediaplayer(QString url) {
   showingthings(current_video_title, xposition, yposition, 2000);
 
   //get the current path of directory that the video is playing in
-  currentworkdirectory = currenturlstring.substr(0,currentworkdirectory.size()-current_video_title.size()+1);
+  currentworkdirectory = currenturlstring.substr(0,currenturlstring.size()-current_video_title.size());
 
+  LoadingInDirectorySubtitles(currenturl);
+  LoadingBuitInSubs(currenturl);
+  
   //getting the path of the video playing as QString
   currenturl = QString::fromStdString(currenturlstring);
 
@@ -326,7 +394,6 @@ void MainWindow::mediaplayer(QString url) {
 // topbarlayout buttons logic
 void MainWindow::topbarlayoutclick(int buttonindex) {
   QString url;
-  QString suburl;
   switch (buttonindex) {
     // if the user choose to open a file
     case Open_file: {
@@ -336,8 +403,12 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
       else{
         displaydir = homedir;
       }
-
-        url = QFileDialog::getOpenFileName(this, tr("Select Video File"), displaydir, tr("Mp4 files (*.mp4 *.mp3)"));
+      std::stringstream SupportecFormatsString; 
+      SupportecFormatsString << "Video/Audio files ("; 
+      for(size_t i=0;i<supportedMediaFormats.size();i++) SupportecFormatsString << "*" << supportedMediaFormats[i] <<" ";
+      SupportecFormatsString << ")";
+      // SupportecFormatsString.c_str()
+      url = QFileDialog::getOpenFileName(this, tr("Select Video File"), displaydir, tr(SupportecFormatsString.str().c_str()));
 
       if (!url.isEmpty()) {
         mediaplayer(url);
@@ -361,7 +432,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
         playlist.clear();  // clearing the playlist
         // saving all the urls in a list
         for (auto i : std::filesystem::directory_iterator(url.toStdString())) {
-          if(i.path().extension() == ".mp4" || i.path().extension() == ".mp3"){
+          if(std::find(supportedMediaFormats.begin(), supportedMediaFormats.end(),i.path().extension()) != supportedMediaFormats.end()){
             playlist.push_back(QUrl(QString::fromStdString(i.path().string())));
           }
         }
@@ -476,9 +547,10 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
         else{
           displaydir = homedir;
         }
-        suburl = QFileDialog::getOpenFileName(this, tr("Select Subtitle file"), displaydir, tr("Srt files (*.srt)"));
-        if (!suburl.isEmpty()) {
-          subfileparsing(suburl.toStdString());
+        currentLoadedSubPath = QFileDialog::getOpenFileName(this, tr("Select Subtitle file"), displaydir, tr("Srt files (*.srt)"));
+        if (!currentLoadedSubPath.isEmpty()) {
+          subfileparsing(currentLoadedSubPath.toStdString());
+          std::cout<<"Subtitles were Loaded: "<<currentLoadedSubPath.toStdString()<<"\n";
           ToggleSubs->setText("Remove Subtitles");
         }
       }else{
@@ -487,7 +559,33 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
         }
         sublabel->setOpacity(0);
         subslist.clear();
+        currentLoadedSubPath = "";
         ToggleSubs->setText("Add Subtitles");
+      }
+      break;
+    } 
+    case LOADSUBTITLES:{
+      subWindow subWin(nullptr,STYLESDIRECTORY,ICONSDIRECTORY.toStdString(),subsInVideo,currentLoadedSubPath);
+      subWin.exec();
+      if(!subWin.clickedSubPath.isEmpty()){
+        currentLoadedSubPath = subWin.clickedSubPath;
+        sublabel->setOpacity(0);
+        subslist.clear();
+        subfileparsing(currentLoadedSubPath.toStdString());
+        std::cout<<"Subtitles were Loaded: "<<currentLoadedSubPath.toStdString()<<"\n";
+        QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
+        ToggleSubs->setText("Remove Subtitles");
+      }
+      break;
+    }
+
+    case TOGGLE_SUBDISPLAY: {
+      QAction * ToggleSubsDisplay = TopBarButtonsObjectList[TOGGLE_SUBDISPLAY];
+      toggleSubtitles();
+      if(ShowSubs){
+        ToggleSubsDisplay->setText("Hide Subtitles");
+      }else{
+        ToggleSubsDisplay->setText("Display Subtitles");
       }
       break;
     }
@@ -498,7 +596,6 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
         for (size_t i = 0; i < subslist.size(); i++) {
           subslist[i]->starttime += 0.1;
           subslist[i]->endtime += 0.1;
-
         }
         subdelay += 0.1;
         if (-0.1 < subdelay && subdelay < 0.1) {
@@ -578,7 +675,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
     }
   }
 
-  this->setFocus();
+  ;
 }
 
 // controlbuttonslayout buttons logic
@@ -663,37 +760,92 @@ void MainWindow::controlbuttonslayoutclick(int buttonindex) {
       break;
     }
   }
-  this->setFocus();
+  ;
 }
 
 // keyboard event catching function
-void MainWindow::keyPressEvent(QKeyEvent *event) {
-  if (event->key() == Qt::Key_Tab) {
-    event->ignore();
-  } else if (event->key() == Qt::Key_Escape) {
-    fullscreened = true;
-    FullScreen();
-  } else if (event->key() == Qt::Key_F) {
-    FullScreen();
-  } else if (event->key() == Qt::Key_M) {
-    controlbuttonslayoutclick(BVolumeControl);
-  } else if (event->key() == Qt::Key_Space) {
-    controlbuttonslayoutclick(PAUSE_BUTTON);
-  } else if (event->key() == Qt::Key_Right) {
-    changingposition(player->position() + 5000);
-  } else if (event->key() == Qt::Key_Left) {
-    changingposition(player->position() - 5000);
-  } else if (event->key() == Qt::Key_Up) {
-    slidermanagement(audio->volume() + 0.1);
-    volumeslider->setSliderPosition(volumeslider->sliderPosition() + 0.1);
-  } else if (event->key() == Qt::Key_Down) {
-    slidermanagement(audio->volume() - 0.1);
-    volumeslider->setSliderPosition(volumeslider->sliderPosition() - 0.1);
-  } else if (event->key() == Qt::Key_G) {
-    topbarlayoutclick(REDUCEDELAY);
-  } else if (event->key() == Qt::Key_H) {
-    topbarlayoutclick(ADDDELAY);
-  }
+void MainWindow::setupShortCuts(){
+    setFocusPolicy(Qt::StrongFocus);
+
+    // --- Playback controls ---
+    auto pause = new QShortcut(QKeySequence(Qt::Key_Space), this);
+    pause->setContext(Qt::ApplicationShortcut);
+    connect(pause, &QShortcut::activated, this, [this]{
+        controlbuttonslayoutclick(PAUSE_BUTTON);
+    });
+
+    auto seekFwd = new QShortcut(QKeySequence(Qt::Key_Right), this);
+    seekFwd->setContext(Qt::ApplicationShortcut);
+    connect(seekFwd, &QShortcut::activated, this, [this]{
+        changingposition(player->position() + 5000);
+    });
+
+    auto seekBack = new QShortcut(QKeySequence(Qt::Key_Left), this);
+    seekBack->setContext(Qt::ApplicationShortcut);
+    connect(seekBack, &QShortcut::activated, this, [this]{
+        changingposition(player->position() - 5000);
+    });
+
+    // --- Volume controls ---
+    auto volUp = new QShortcut(QKeySequence(Qt::Key_Up), this);
+    volUp->setContext(Qt::ApplicationShortcut);
+    connect(volUp, &QShortcut::activated, this, [this]{
+        slidermanagement(audio->volume() + 0.1f);
+        volumeslider->setValue(volumeslider->value() + 1);
+    });
+
+    auto volDown = new QShortcut(QKeySequence(Qt::Key_Down), this);
+    volDown->setContext(Qt::ApplicationShortcut);
+    connect(volDown, &QShortcut::activated, this, [this]{
+        slidermanagement(audio->volume() - 0.1f);
+        volumeslider->setValue(volumeslider->value() - 1);
+    });
+
+    // --- Fullscreen ---
+    auto toggleFS = new QShortcut(QKeySequence(Qt::Key_F), this);
+    toggleFS->setContext(Qt::ApplicationShortcut);
+    connect(toggleFS, &QShortcut::activated, this, [this]{ FullScreen(); });
+
+    auto escFS = new QShortcut(QKeySequence(Qt::Key_Escape), this);
+    escFS->setContext(Qt::ApplicationShortcut);
+    connect(escFS, &QShortcut::activated, this, [this]{
+        fullscreened = true;
+        FullScreen();
+    });
+
+    // --- Other controls ---
+    auto toggleSubs = new QShortcut(QKeySequence(Qt::Key_V),this);
+    toggleSubs->setContext(Qt::ApplicationShortcut);
+    connect(toggleSubs, &QShortcut::activated, this, [this]{
+      toggleSubtitles();
+    });
+
+    auto volPanel = new QShortcut(QKeySequence(Qt::Key_M), this);
+    volPanel->setContext(Qt::ApplicationShortcut);
+    connect(volPanel, &QShortcut::activated, this, [this]{
+      controlbuttonslayoutclick(BVolumeControl);
+    });
+
+    auto reduceDelay = new QShortcut(QKeySequence(Qt::Key_G), this);
+    reduceDelay->setContext(Qt::ApplicationShortcut);
+    connect(reduceDelay, &QShortcut::activated, this, [this]{
+      topbarlayoutclick(REDUCEDELAY);
+    });
+
+    auto addDelay = new QShortcut(QKeySequence(Qt::Key_H), this);
+    addDelay->setContext(Qt::ApplicationShortcut);
+    connect(addDelay, &QShortcut::activated, this, [this]{
+      topbarlayoutclick(ADDDELAY);
+    });
+}
+
+void MainWindow::toggleSubtitles(){
+  ShowSubs =! ShowSubs;
+  if(!ShowSubs) sublabel->setHtml("");
+  int xposition = view->size().width() / 2;
+  int yposition = view->size().height() /2;
+  std::string displayMessage = ShowSubs ? "Subtitles On" : "Subtitles Off";
+  showingthings(displayMessage, xposition, yposition, 2000);
 }
 
 // slider and player relationship
@@ -743,18 +895,18 @@ void MainWindow::playertimeline(qint64 position) {
   // syncing subtitles to the player position
   for(size_t i=0;i<subslist.size();i++){
     // checking if the player position is between the 2 times
-    if (subslist[i]->starttime * 1000 <= position && position <= subslist[i]->endtime * 1000) {
+    if (ShowSubs && (subslist[i]->starttime * 1000) - 200 <= position && position <= subslist[i]->endtime * 1000) {
       // getting the size of the view and the sub
       sublabel->setOpacity(1);
-      // adding 100ms delay to the sub apearence until the sub is fully randered to hide the animation
-      if (position <= subslist[i]->starttime * 1000 + 100 ) {
+      // adding 10ms delay to the sub apearence until the sub is fully randered to hide the animation
+      if (position <= subslist[i]->starttime * 1000 + 200 ) {
         sublabel->setOpacity(0);
       }
 
       resizelements("sub");
 
       // if the media is in the targeted position we merge the html style with the subtitle and pass it as html script
-      sublabel->setHtml(htmlstyle + QString::fromStdString(subslist[i]->textcontaint) + "</div>");
+      sublabel->setHtml(htmlstyle + QString::fromStdString(subslist[i]->textcontaint) + "</td></tr></table>");
       break;
     }else if (i == subslist.size() - 2) {
       // if the media is not in a target position we pass an empty string
@@ -798,7 +950,7 @@ void MainWindow::updateTimer(){
 
 
 /*
-  solving the bug of the audio breaking when changing position,
+  this function is to work around a bug that break the audio when changing position,
   by deleting the audio output widget and create a new one
   every time we change position.
 */
@@ -825,6 +977,12 @@ void MainWindow::slidermanagement(qreal position) {
   volumeslider->setSliderPosition(static_cast<int>(position * 1000));
 }
 
+bool lineIsEmpty(const std::string& str){
+  return str.empty() || std::all_of(str.begin(), str.end(), [](unsigned char c){
+      return std::isspace(c);
+  });
+}
+
 // scraping the subtitles from the sub file
 void MainWindow::subfileparsing(std::string subpath) {
   std::ifstream file(subpath);
@@ -838,36 +996,30 @@ void MainWindow::subfileparsing(std::string subpath) {
 
   // looping the lines in the file
   while (getline(file, line)) {
-    int lettercounter = 0;
     bool timefound = false;
-    // looping the characters in the line
-    while (line[lettercounter] != '\0') {
-      // if the line content the set of characters "-->"
-      if (line.find("-->")!=std::string::npos) {
-        std::istringstream ss(line);
-        int h1, min1, sec1, milsec1, h2, min2, sec2, milsec2;
-        std::string arrow;
-        char step;
-        ss>>h1>>step>>min1>>step>>sec1>>step>>milsec1;
-        ss>>std::ws>>arrow>>std::ws;
-        ss>>h2>>step>>min2>>step>>sec2>>step>>milsec2;
+    // if the line content the set of characters "-->"
+    if (line.find("-->")!=std::string::npos) {
+      std::istringstream ss(line);
+      int h1, min1, sec1, milsec1, h2, min2, sec2, milsec2;
+      std::string arrow;
+      char step;
+      ss>>h1>>step>>min1>>step>>sec1>>step>>milsec1;
+      ss>>std::ws>>arrow>>std::ws;
+      ss>>h2>>step>>min2>>step>>sec2>>step>>milsec2;
 
-        // calculating the starting time from the string line (hour, minutes, seconds)
-        double firsttime = h1*60*60 + min1*60 + sec1 + milsec1*0.001;
+      // calculating the starting time from the string line (hour, minutes, seconds)
+      double firsttime = h1*60*60 + min1*60 + sec1 + milsec1*0.001;
 
-        // calculating the ending time from the string line (hour, minutes, seconds)
-        double secondtime = h2*60*60 + min2*60 + sec2 + milsec2*0.001;
+      // calculating the ending time from the string line (hour, minutes, seconds)
+      double secondtime = h2*60*60 + min2*60 + sec2 + milsec2*0.001;
 
-        // saving the starting time and the end time in a SubObject (a custom defined in mainwindow.h)
-        subobject = new SubObject;
-        subobject->starttime = firsttime;
-        subobject->endtime = secondtime;
+      // saving the starting time and the end time in a SubObject (a custom defined in mainwindow.h)
+      subobject = new SubObject;
+      subobject->starttime = firsttime;
+      subobject->endtime = secondtime;
 
-        // bool variable to know what does the line content (times in this case)
-        timefound = true;
-        break;
-      }
-      lettercounter += 1;
+      // bool variable to know what does the line content (times in this case)
+      timefound = true;
     }
 
     // if the line is after a time line
@@ -878,9 +1030,9 @@ void MainWindow::subfileparsing(std::string subpath) {
       // checking if there is a next line
       while (getline(file, nextline)) {
         // checking if the line is empty
-        if (nextline.size() > 2 && nextline.find("-->")==std::string::npos) {
+        if (!lineIsEmpty(nextline) && nextline.find("-->")==std::string::npos) {
           // if the line is not empty is will add it to a bandal
-          fulltext += nextline + "<br>";
+          fulltext += nextline + "<br/>";
         } else {
           // if the line is empty or it's a time line,it will break (so only the subs are added to the variable(fulltext))
           break;
@@ -994,7 +1146,6 @@ void MainWindow::topbarlayoutvisibility(std::string status){
 }
 
 //this function update buttons icons
-
 void MainWindow::updateButtonsIcon(std::string button_name){
 
   //update play/pause button icon
@@ -1108,7 +1259,6 @@ void moveSomethingToPos(QGraphicsWidget *widget, QPointF targetPos, int animatio
   animation->setStartValue(widget->pos());
   animation->setEndValue(targetPos);
   animation->start(QPropertyAnimation::DeleteWhenStopped);  // start the animation
-
 }
 
 //function to detect mouse movement
@@ -1123,12 +1273,16 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event){
       //calculate the targetPosition that we want to move the pannel into, and then calling moveSomethingToPos function
       QPointF targetPos = QPointF(floatingPannel_Xpos,viewheight-floatingPannel_height);
       moveSomethingToPos(floatingControlPannelProxy,targetPos,200);
-
+      int Oldsubmarginbottom = submarginbottom;
+      submarginbottom += floatingPannel_height;
+      resizelements("sub");
       floatingPannelDisplayed = true; //the floating pannel is displayed
 
-        QTimer::singleShot(2000,[this](){
+        QTimer::singleShot(2000,[this,Oldsubmarginbottom](){
           resizelements("floatingPannel",200);// restoring the floating pannel to default (means it will be hidden)
           floatingPannelDisplayed = false;// the floating pannel is not displayed
+          submarginbottom = Oldsubmarginbottom;
+          resizelements("sub");
         });
     }
     return false;

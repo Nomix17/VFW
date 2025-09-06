@@ -14,12 +14,13 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QToolButton>
-#include <QSpinBox>
+#include <QLineEdit>
 #include <QLabel>
 #include <QMenu>
 #include <QAction>
 #include <QColorDialog>
 #include <QList>
+#include <QIntValidator>
 
 using namespace nlohmann;
 
@@ -48,6 +49,7 @@ public:
   std::string StyleDirectory = "";
 
   void gui(std::string Configspath,std::string StylePath){
+    this->setFixedSize(480,400);
     StyleDirectory = StylePath;
     Configsdirectory = Configspath;
     mainlayout = new QVBoxLayout(this);
@@ -87,10 +89,9 @@ public:
         button->setMenu(font_familly);
         gridlayout->addWidget(button,i/2,(i%2)*2+1);
       }else{
-        QSpinBox* number_picker = new QSpinBox();
+        QLineEdit* number_picker = new QLineEdit();
         number_picker->setObjectName(labels[i]);
-
-        number_picker->setRange(0,100);
+        number_picker->setValidator(new QIntValidator(0, 100, this)); 
         gridlayout->addWidget(number_picker,i/2,(i%2)*2+1);
       }
     }
@@ -133,23 +134,21 @@ public:
 
     json settings;
 
-    settings["margin-bottom"]=this->findChild<QSpinBox*>("Margin Bottom:")->value();
-    settings["padding"]=this->findChild<QSpinBox*>("Padding:")->value();
-    
+    settings["margin-bottom"]=std::stoi(this->findChild<QLineEdit*>("Margin Bottom:")->text().toStdString());
+    settings["padding"]=std::stoi(this->findChild<QLineEdit*>("Padding:")->text().toStdString());
+
     settings["bg-color"]=this->findChild<QPushButton*>("BgColor")->palette().color(QPalette::Button).name().toStdString();
-    settings["bg-opacity"]=this->findChild<QSpinBox*>("Bg Opacity:")->value();
-    
-    settings["font-size"]=this->findChild<QSpinBox*>("Font Size:")->value();
+    settings["bg-opacity"]=std::stoi(this->findChild<QLineEdit*>("Bg Opacity:")->text().toStdString());
+
+    settings["font-size"]=std::stoi(this->findChild<QLineEdit*>("Font Size:")->text().toStdString());
     settings["font-familly"]=selected_font.toStdString();
-    
+
     settings["font-color"]=this->findChild<QPushButton*>("FontColor")->palette().color(QPalette::Button).name().toStdString();
-    settings["font-opacity"]=this->findChild<QSpinBox*>("Font Opacity:")->value();
-   
+    settings["font-opacity"]=std::stoi(this->findChild<QLineEdit*>("Font Opacity:")->text().toStdString());
 
-
-  std::ofstream file(Configsdirectory+"subconfig.json");
-  file << settings.dump(4);
-  file.close();
+    std::ofstream file(Configsdirectory+"subconfig.json");
+    file << settings.dump(4);
+    file.close();
 
   }
   
@@ -158,20 +157,17 @@ public:
     std::ifstream file(Configsdirectory+"subconfig.json");
     file>>configfile;
 
-    this->findChild<QSpinBox*>("Margin Bottom:")->setValue(configfile["margin-bottom"]);
-    this->findChild<QSpinBox*>("Padding:")->setValue(configfile["padding"]);
+    this->findChild<QLineEdit*>("Margin Bottom:")->setText(QString::number(configfile["margin-bottom"].get<int>()));
+    this->findChild<QLineEdit*>("Padding:")->setText(QString::number(configfile["padding"].get<int>()));
 
     this->findChild<QPushButton*>("BgColor")->setStyleSheet("background-color:"+QString::fromStdString(configfile["bg-color"])+";");
-    this->findChild<QSpinBox*>("Bg Opacity:")->setValue(configfile["bg-opacity"]);
-
-    this->findChild<QSpinBox*>("Font Size:")->setValue(configfile["font-size"]);
-    selected_font = QString::fromStdString(configfile["font-familly"]);
-    this->findChild<QToolButton*>("Font Familly:")->setText(selected_font);
-
+    this->findChild<QLineEdit*>("Bg Opacity:")->setText(QString::number(configfile["bg-opacity"].get<int>()));
+   
+    this->findChild<QLineEdit*>("Font Size:")->setText(QString::number(configfile["font-size"].get<int>()));
+    this->findChild<QToolButton*>("Font Familly:")->setText(QString::fromStdString(configfile["font-familly"]));
+   
     this->findChild<QPushButton*>("FontColor")->setStyleSheet("background-color:"+QString::fromStdString(configfile["font-color"])+";");
-    this->findChild<QSpinBox*>("Font Opacity:")->setValue(configfile["font-opacity"]);
-
-    
+    this->findChild<QLineEdit*>("Font Opacity:")->setText(QString::number(configfile["font-opacity"].get<int>()));
 
     file.close();
   }
@@ -186,16 +182,26 @@ public:
     json settings;
     std::ifstream file(jsonpath);
     file>>settings;
+
     QColor bgcolor(QString::fromStdString(settings["bg-color"]));
     QColor fontcolor(QString::fromStdString(settings["font-color"]));
 
-    QString HtmlScript = "<div style='"
-              
-              "background-color: rgba(" + QString::number(bgcolor.red()) + ", " + QString::number(bgcolor.green()) + ", " + QString::number(bgcolor.blue()) + ", " + QString::number(static_cast<double>(settings["bg-opacity"]) / 100, 'f', 2) + "); "
-              "color: rgba(" + QString::number(fontcolor.red()) + ", " + QString::number(fontcolor.green()) + ", " + QString::number(fontcolor.blue()) + ", " + QString::number(static_cast<double>(settings["font-opacity"]) / 100, 'f', 2) + "); "
-              
-              "font-family: " + QString::fromStdString(settings["font-familly"]) + "; "                    
-              "font-size: " + QString::number(static_cast<int>(settings["font-size"])) + "px;'>";
+    QString backgroundColorRGB = QString::number(bgcolor.red()) + ", " + QString::number(bgcolor.green()) + ", " + QString::number(bgcolor.blue());
+    QString backgroundColorAlpha = QString::number(static_cast<double>(settings["bg-opacity"]) / 100, 'f', 2);
+    QString textColorRGB = QString::number(fontcolor.red()) + ", " + QString::number(fontcolor.green()) + ", " + QString::number(fontcolor.blue());
+    QString textColorAlpha = QString::number(static_cast<double>(settings["font-opacity"]) / 100, 'f', 2);
+    QString paddingValue = QString::number(static_cast<double>(settings["padding"]), 'f', 2);
+
+              // "text-shadow: -1px -1px 0 "+backgroundColorRGB+", 1px -1px 0 "+backgroundColorRGB+", -1px  1px 0 "+backgroundColorRGB+", 1px  1px 0 "+backgroundColorRGB+";"
+
+  QString HtmlScript = "<table cellpadding='" + paddingValue + "' "
+                       "style='"
+                       "background-color: rgba(" + backgroundColorRGB + ", " + backgroundColorAlpha + "); "
+                       "color: rgba(" + textColorRGB + ", " + textColorAlpha + "); "
+                       "font-family: \"" + QString::fromStdString(settings["font-familly"]) + "\"; "
+                       "font-size: " + QString::number(static_cast<int>(settings["font-size"])) + "px;"
+                       "'>"
+                       "<tr><td>";
 
     padding = settings["padding"];
     marginbottom = settings["margin-bottom"];
