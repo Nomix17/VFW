@@ -12,13 +12,17 @@ QPushButton#BorderColor,#BgColor,#FontColor{
   border-radius: 5px;
 }
 
-QSpinBox{
+QLineEdit{
+  qproperty-alignment: 'AlignCenter';
+  background-color: #1e1e1e;
+  color:#ffffff;
   border-radius: 5px;
-  min-height: 30px;
-  min-width: 60px;
-  max-height: 30px;
-  max-width: 60px;
+  max-height: 35px;
+  max-width: 65px;
+  min-height: 35px;
+  min-width: 65px;
   font-size:20px;
+  border: 1px solid #313131;
 }
 
 
@@ -34,10 +38,8 @@ QPushButton{
 }
 QToolButton{
   border: 1px solid #616b6e;
-  height: 30px;
-  width: 65px;
-  height: 30px;
-  width: 65px;
+  height: 28px;
+  width: 62px;
   border-radius: 5px;
   margin:0px;
 }
