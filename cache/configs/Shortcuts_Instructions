@@ -1,5 +1,5 @@
 Functionality:Shortcut
-FullScreen/Unfullscreen:F
+Toggle FullScreen:F
 Unfullscreen:Escape
 Pause/Unpause:Space
 Go Back:LeftArowkey
@@ -7,5 +7,6 @@ Go Forward:RightArowkey
 Mute/Unmute:M
 Volume Up:UpArrowKey
 Volume Down:DownArrowKey
+Toggle Subtitles:V
 Increase Subtitles Delay:H
 Reduce Subtitles Delay:G
