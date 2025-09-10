@@ -248,6 +248,7 @@ extern std::string projectdir;
 extern std::string theme;
 extern std::string CONFIGSDIRECTORY;
 extern std::string STYLESDIRECTORY;
+extern std::string FONTSDIRECTORY;
 extern QString ICONSDIRECTORY;
 
 

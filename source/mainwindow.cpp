@@ -85,11 +85,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   //setting up the subtites
   QFont font;
   sublabel = new QGraphicsTextItem();
-  sublabel->setDefaultTextColor(Qt::white);
-  font.setPointSize(24);
   sublabel->setFont(font);
   sublabel->setObjectName("sublabel");
-
+  sublabel->setZValue(12);
 
   video->setSize(view->size());
   view->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
@@ -115,6 +113,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
   // load the sub style
   SubConfig win;
+  win.loadFonts(FONTSDIRECTORY);
   htmlstyle = win.makehtml(CONFIGSDIRECTORY);
   subpadding = win.padding;
   submarginbottom = win.marginbottom;
@@ -637,7 +636,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
     // if the user choose to custumize the sub
     case SUBSETTINGS: {
       SubConfig win;
-      win.gui(CONFIGSDIRECTORY, STYLESDIRECTORY);
+      win.gui(CONFIGSDIRECTORY, FONTSDIRECTORY, STYLESDIRECTORY);
       win.exec();
       htmlstyle = win.makehtml(CONFIGSDIRECTORY);
       subpadding = win.padding;
@@ -1107,7 +1106,7 @@ void MainWindow::FullScreen(){
 
 //function that display text on the top of the video with fading animation
 void MainWindow::showingthings(std::string texttoshow, int xposition, int yposition, int animationduration) {
-  if(toshowtext != nullptr){
+  if(toshowtext != nullptr && toshowtext->scene() == scene ){
     scene->removeItem(toshowtext);
   }
   if(animationduration == 0) return;

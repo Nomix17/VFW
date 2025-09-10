@@ -21,6 +21,7 @@
 #include <QColorDialog>
 #include <QList>
 #include <QIntValidator>
+#include <QFontDatabase>
 
 using namespace nlohmann;
 
@@ -47,8 +48,9 @@ private:
 public: 
   std::string Configsdirectory = "";
   std::string StyleDirectory = "";
+  QList <QString> fontPaths;
 
-  void gui(std::string Configspath,std::string StylePath){
+  void gui(std::string Configspath,std::string FONTSDIRECTORY,std::string StylePath){
     this->setFixedSize(480,400);
     StyleDirectory = StylePath;
     Configsdirectory = Configspath;
@@ -75,15 +77,18 @@ public:
         button->setPopupMode(QToolButton::InstantPopup);
         button->setText("Font");
         button->setObjectName(labels[i]);
-        QList <QString> fonts= {"Arial","Serif","Sans-Serif","Monospace","Courier New","Cursive","Comic Sans MS"};
+        loadFonts(FONTSDIRECTORY);
         QMenu *font_familly = new QMenu();
-        for(int i=0;i<fonts.size();i++){
+        for(int i=0;i<fontPaths.size();i++){
+          int id = QFontDatabase::addApplicationFont(fontPaths[i]);
+          QString fontName = QFontDatabase::applicationFontFamilies(id).at(0);
+
           QAction * actions = new QAction;
-          actions->setText(fonts[i]);
+          actions->setText(fontName);
           font_familly->addAction(actions);
-          connect(actions,&QAction::triggered,[this,i,fonts,button](){
-            selected_font = fonts[i];
-            button->setText(fonts[i]);
+          connect(actions,&QAction::triggered,[this,i,fontName,button](){
+            selected_font = fontName;
+            button->setText(fontName);
           });
         }
         button->setMenu(font_familly);
@@ -169,6 +174,8 @@ public:
     this->findChild<QPushButton*>("FontColor")->setStyleSheet("background-color:"+QString::fromStdString(configfile["font-color"])+";");
     this->findChild<QLineEdit*>("Font Opacity:")->setText(QString::number(configfile["font-opacity"].get<int>()));
 
+    selected_font = QString::fromStdString(configfile["font-familly"]);
+
     file.close();
   }
 
@@ -209,14 +216,22 @@ public:
     file.close();
     return HtmlScript;
   }
-
+  void loadFonts(std::string FONTSDIRECTORY){
+    for(const auto & fileEntry : std::filesystem::directory_iterator(FONTSDIRECTORY)){
+      std::filesystem::path filePath = fileEntry.path();
+      std::string filePathString = filePath.string();
+      std::string fontNameString = filePath.filename().stem().string();
+      fontPaths.push_back(QString::fromStdString(filePathString));
+      QFontDatabase::addApplicationFont(QString::fromStdString(filePathString));
+    }
+  }
   void createdefaultjson(){
     json defaultsettings;
 
       defaultsettings["bg-color"] = "#000000";
       defaultsettings["bg-opacity"]= 20;
       defaultsettings["font-color"]= "#ffffff";
-      defaultsettings["font-familly"]="monospace";
+      defaultsettings["font-familly"]="Noto Sans Arabic";
       defaultsettings["font-opacity"]= 100;
       defaultsettings["font-size"]= 24;
       defaultsettings["margin-bottom"]= 61;

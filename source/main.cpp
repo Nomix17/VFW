@@ -13,10 +13,10 @@ PATHS path;
 QString homedir = path.homedir;
 std::string projectdir = path.Projectdir();
 std::string CONFIGSDIRECTORY = projectdir + "cache/configs/";
+std::string FONTSDIRECTORY = projectdir + "cache/fonts/";
 std::string theme = path.GETTHEME(CONFIGSDIRECTORY);
 QString ICONSDIRECTORY = QString::fromStdString(projectdir + "cache/icons/"+theme+"/");
 std::string STYLESDIRECTORY = projectdir + "cache/styles/"+theme+"/";
-
 
 int main(int argc,char* argv[]){
   QApplication a(argc, argv);
