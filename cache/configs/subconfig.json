@@ -2,9 +2,9 @@
     "bg-color": "#000000",
     "bg-opacity": 0,
     "font-color": "#ffffff",
-    "font-familly": "Sans-Serif",
+    "font-familly": "Noto Sans Arabic",
     "font-opacity": 100,
     "font-size": 30,
     "margin-bottom": 70,
-    "padding": 26
+    "padding": 10
 }
