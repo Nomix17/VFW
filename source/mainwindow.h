@@ -182,6 +182,7 @@ public:
   std::vector<QUrl> playlist;
   bool ShowSubs = true;
   QString htmlstyle;
+  QGraphicsTextItem *toshowtext = nullptr;
   int subpadding;
   int submarginbottom;
   SubObject* subobject;

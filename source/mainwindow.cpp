@@ -304,7 +304,7 @@ void MainWindow::LoadingBuitInSubs(QString currenturl) {
 
     subsInVideo.push_back(fileSubPath);
 
-    std::cout << "-------------------------------------------Extract subtitle to: " << fileSubPath.toStdString() << "-------------------------------------------\n";
+    std::cout << "-----------------------------------Extract subtitle to: " << fileSubPath.toStdString() << "-----------------------------------\n";
   }
 }
 
@@ -356,11 +356,6 @@ void MainWindow::mediaplayer(QString url) {
   // getting the title of the video that is currently playing for later uses
   current_video_title = currenturlstring.substr(searchedCharPos+1,currenturlstring.size());
 
-  // displaying the title for a brief of time
-  int xposition = view->size().width() / 2;
-  int yposition = view->size().height() - submarginbottom;
-  showingthings(current_video_title, xposition, yposition, 2000);
-
   //get the current path of directory that the video is playing in
   currentworkdirectory = currenturlstring.substr(0,currenturlstring.size()-current_video_title.size());
 
@@ -383,6 +378,11 @@ void MainWindow::mediaplayer(QString url) {
   //resize some ui elements based on the media opened
   resizelements();
 
+  // displaying the title for a brief of time
+  int xposition = view->size().width() / 2;
+  int yposition = view->size().height() - submarginbottom;
+
+  showingthings(current_video_title, xposition, yposition, 2000);
   //load the last saved position if it's availble
   getlastsavedposition();
 
@@ -1070,6 +1070,7 @@ void MainWindow::resizelements(std::string elementtorezise, int animationTime ){
   if(elementtorezise=="sub" || elementtorezise=="all"){
     sublabel->setPos((VIEWWIDTH - SUBWIDTH) / 2, (VIEWHEIGHT - SUBHEIGHT / 2) - submarginbottom);
   }
+  showingthings("",0,0,0);
 }
 
 //resizing window logic
@@ -1106,7 +1107,12 @@ void MainWindow::FullScreen(){
 
 //function that display text on the top of the video with fading animation
 void MainWindow::showingthings(std::string texttoshow, int xposition, int yposition, int animationduration) {
-  QGraphicsTextItem *toshowtext = new QGraphicsTextItem;
+  if(toshowtext != nullptr){
+    scene->removeItem(toshowtext);
+  }
+  if(animationduration == 0) return;
+
+  toshowtext = new QGraphicsTextItem;
   // show the state of the delay using the same font config of the subtitles
   toshowtext->setHtml(htmlstyle + QString::fromStdString(texttoshow) + "</div>");
 
@@ -1125,8 +1131,6 @@ void MainWindow::showingthings(std::string texttoshow, int xposition, int yposit
   animation->setStartValue(1.0);
   animation->setEndValue(0.0);
   animation->start(QPropertyAnimation::DeleteWhenStopped);  // start the animation
-  // after a duration delete the text
-  QTimer::singleShot(animationduration, [toshowtext]() { delete toshowtext; });
 }
 
 
