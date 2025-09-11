@@ -47,17 +47,12 @@
 #include <QGraphicsProxyWidget>
 
 
-std::vector<std::string> supportedMediaFormats = {
-    ".mp4", ".mkv", ".avi", ".mov", ".webm", ".wmv", ".m4v",
-    ".mp3", ".wav", ".aac", ".m4a", ".wma", ".ogg"
-};
-
 void moveSomethingToPos(QGraphicsWidget *widget, QPointF targetPos, int animationTime);
 void deletelayout(QLayout* layout);
 
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
-  setFocusPolicy(Qt::StrongFocus); // important
+  setFocusPolicy(Qt::StrongFocus);
   setupShortCuts();
   this->resize(750, 550);
   // elements definition

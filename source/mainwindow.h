@@ -250,6 +250,6 @@ extern std::string CONFIGSDIRECTORY;
 extern std::string STYLESDIRECTORY;
 extern std::string FONTSDIRECTORY;
 extern QString ICONSDIRECTORY;
-
+extern std::vector<std::string> supportedMediaFormats;
 
 #endif

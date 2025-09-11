@@ -18,11 +18,14 @@ std::string theme = path.GETTHEME(CONFIGSDIRECTORY);
 QString ICONSDIRECTORY = QString::fromStdString(projectdir + "cache/icons/"+theme+"/");
 std::string STYLESDIRECTORY = projectdir + "cache/styles/"+theme+"/";
 
+std::vector<std::string> supportedMediaFormats = {
+    ".mp4", ".mkv", ".avi", ".mov", ".webm", ".wmv", ".m4v",
+    ".mp3", ".wav", ".aac", ".m4a", ".wma", ".ogg"
+};
+
 int main(int argc,char* argv[]){
   QApplication a(argc, argv);
   std::ifstream stylefile(STYLESDIRECTORY+"mainwindow.css");
-
-  //load style file#include <QFile>
 
   if(stylefile){
     std::string script;
@@ -38,7 +41,9 @@ int main(int argc,char* argv[]){
   if(argc>1){
     for(int i=1;i<argc;i++){
       //add the paths to the playlist
-      w.playlist.push_back(QUrl(argv[i]));
+      std::string fileExtention = std::filesystem::path(argv[i]).extension();
+      if(std::find(supportedMediaFormats.begin(),supportedMediaFormats.end(),fileExtention) != supportedMediaFormats.end())
+        w.playlist.push_back(QUrl(argv[i]));
     }
     //run the Playlist when the app open
     w.mediaplayer("play a list");
