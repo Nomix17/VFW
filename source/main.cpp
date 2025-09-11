@@ -46,7 +46,11 @@ int main(int argc,char* argv[]){
         w.playlist.push_back(QUrl(argv[i]));
     }
     //run the Playlist when the app open
-    w.mediaplayer("play a list");
+    if(w.playlist.size()){
+      w.mediaplayer("play a list");
+    }else{
+      w.mediaplayer("blackscreen");
+    }
     w.resize(750,551);
     w.playertype = "playlist";
   }
