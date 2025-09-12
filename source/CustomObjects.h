@@ -1,9 +1,18 @@
 #ifndef CUSTOMOBJ
 #define CUSTOMOBJ
 
+#include "mainwindow.h"
 #include <iostream>
 #include <QSlider>
 #include <QMouseEvent>
+#include <QPainter>
+
+struct ChapterObject{
+  QString id;
+  QString title;
+  float startTime;
+  float endTime;
+};
 
 class CustomSlider:public QSlider{
   Q_OBJECT
@@ -41,9 +50,37 @@ public:
     buttonpressed = false;
     QSlider::mouseReleaseEvent(event);
   }
+  
+  void setChaptersMarks(std::vector <ChapterObject> Chapters, bool displayChapters){
+    this->Chapters = Chapters;
+    this->displayChapters = displayChapters;
+    this->update();
+  }
+
+protected:
+  void paintEvent(QPaintEvent* event) override{
+    QSlider::paintEvent(event);
+    if (Chapters.empty() || !displayChapters) return;
+    QPainter painter(this);
+    painter.setPen(QColor("#00c3ff"));
+
+    int slider_width = width();
+    int slider_range = maximum() - minimum();
+
+    for (size_t i = 0; i < Chapters.size(); i++) {
+      float start = Chapters[i].startTime*1000;
+      int position = static_cast<int>((start * slider_width) / slider_range);
+      if (position < 0) position = 0;
+      if (position > slider_width) position = slider_width;
+      painter.drawLine(position, 0, position, height()/4);
+    }
+  }
+
 
 private:
   bool buttonpressed = true;//bool to save the state of cursor holding/pressing or not
+  std::vector <ChapterObject> Chapters;
+  bool displayChapters;
 };
 
 

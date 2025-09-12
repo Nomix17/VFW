@@ -209,7 +209,7 @@ void MainWindow::createBottomLayout(){
   // setting controlbuttonslayout pushbuttons
   for (int j = 0; j < mcbuttons.size(); j++) {
     // adding space for the style
-    if (j == 1 || j == 4 || j==7) {
+    if (j == 1 || j == 4 || j == 7) {
       secondhalflayout->addSpacing(20);
     } else if (j == 8) {
       // adding space for the style between buttons and volume parameters
@@ -269,7 +269,39 @@ void MainWindow::LoadingInDirectorySubtitles(QString currenturl){
     }
   }
 }
-void MainWindow::LoadingBuitInSubs(QString currenturl) {
+
+void MainWindow::ExtranctingChapterData(QString currenturl){
+  ChaptersVectors.clear();
+  QProcess ChaptersProcess;
+  ChaptersProcess.start("/usr/bin/ffprobe",{
+    "-i",currenturl,
+    "-show_chapters"
+  });
+  ChaptersProcess.waitForFinished(-1);
+  QStringList Chapters = QString(ChaptersProcess.readAllStandardOutput()) 
+    .split("[CHAPTER]",Qt::SkipEmptyParts);
+
+  std::cout<<"\n\n<-------------------------| Number Of Chapters Detected: "<<Chapters.size()<<" |------------------------->\n\n";
+
+  for(int i=0;i<Chapters.size();i++){
+    QStringList chapterStreams = QString(Chapters[i]).split("\n");
+    ChapterObject newChapter; 
+    newChapter.title = "Unknown";
+    for(int j=0;j<chapterStreams.size();j++){
+      if(chapterStreams[j] != "[/CHAPTER]"){
+        QStringList SplitedLine = QString(chapterStreams[j]).split("=");
+        if(SplitedLine[0] == "id") newChapter.id = SplitedLine[1];
+        else if(SplitedLine[0] == "TAG:title") newChapter.title = SplitedLine[1];
+        else if(SplitedLine[0] == "start_time") newChapter.startTime = SplitedLine[1].toFloat();
+        else if(SplitedLine[0] == "end_time") newChapter.endTime = SplitedLine[1].toFloat();
+      }
+    }
+    ChaptersVectors.push_back(newChapter);
+  }
+  videoslider->setChaptersMarks(ChaptersVectors, showChaptersIndicators);
+}
+
+void MainWindow::ExtractingBuitInSubs(QString currenturl) {
   QProcess lookForSubs;
   lookForSubs.start("/usr/bin/ffprobe", {
     "-v", "error",
@@ -283,7 +315,7 @@ void MainWindow::LoadingBuitInSubs(QString currenturl) {
   QStringList subStreams = QString(lookForSubs.readAllStandardOutput())
     .split("\n", Qt::SkipEmptyParts);
 
-  std::cout<<"Number Of Subs Found: "<<subStreams.size()<<"\n";
+  std::cout<<"\n\n<-------------------------| Number Of Subs Detected: "<<subStreams.size()<<" |------------------------->\n\n";
 
   for(int i=0; i < subStreams.size(); i++) {
     std::filesystem::path currentVideoPath(currenturl.toStdString());
@@ -298,7 +330,7 @@ void MainWindow::LoadingBuitInSubs(QString currenturl) {
 
     subsInVideo.push_back(fileSubPath);
 
-    std::cout << "-----------------------------------Extract subtitle to: " << fileSubPath.toStdString() << "-----------------------------------\n";
+    std::cout <<"\n\n<-------------------------| Extract subtitle to: " << fileSubPath.toStdString() <<" |------------------------->\n\n";
   }
 }
 
@@ -353,8 +385,9 @@ void MainWindow::mediaplayer(QString url) {
   //get the current path of directory that the video is playing in
   currentworkdirectory = currenturlstring.substr(0,currenturlstring.size()-current_video_title.size());
 
+  ExtranctingChapterData(currenturl);
   LoadingInDirectorySubtitles(currenturl);
-  LoadingBuitInSubs(currenturl);
+  ExtractingBuitInSubs(currenturl);
   
   //getting the path of the video playing as QString
   currenturl = QString::fromStdString(currenturlstring);
@@ -481,6 +514,16 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
       }
       break;
     }
+    // jump to next chapter
+    case JUMP_TO_NEXT_CHAP:{
+      moveToNextChapter();
+      break;
+    }
+    // jump to previous chapter
+    case JUMP_TO_PREV_CHAP:{
+      moveToPrevChapter();
+      break;
+    }
 
     // loop on segment of the video
     case TOGGLE_LOOPSEGMENT: {
@@ -583,7 +626,16 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
       }
       break;
     }
-
+    case TOGGLE_CHAPTERSINDICATORS: {
+      QAction * toggleChapters = TopBarButtonsObjectList[TOGGLE_CHAPTERSINDICATORS];
+      toggleChaptersIndicators();
+      if(showChaptersIndicators){
+        toggleChapters->setText("Hide Chapters Indicators");
+      }else{
+        toggleChapters->setText("Display Chapters Indicators");
+      }
+      break;
+    }
     // add delay to the subtitles time
     case ADDDELAY: {
       if (subslist.size()) {
@@ -807,13 +859,33 @@ void MainWindow::setupShortCuts(){
         FullScreen();
     });
 
-    // --- Other controls ---
+    // --- Subtitles controls ---
     auto toggleSubs = new QShortcut(QKeySequence(Qt::Key_V),this);
     toggleSubs->setContext(Qt::ApplicationShortcut);
     connect(toggleSubs, &QShortcut::activated, this, [this]{
       toggleSubtitles();
     });
+    
+    // --- Chapters controls ---
+    auto toggleChaptersIndHandler = new QShortcut(QKeySequence(Qt::Key_C),this);
+    toggleChaptersIndHandler->setContext(Qt::ApplicationShortcut);
+    connect(toggleChaptersIndHandler,&QShortcut::activated,this, [this]{
+      toggleChaptersIndicators();
+    });
 
+    auto goToNextChapter = new QShortcut(QKeySequence(Qt::Key_N),this);
+    goToNextChapter->setContext(Qt::ApplicationShortcut);
+    connect(goToNextChapter, &QShortcut::activated, this, [this]{
+      moveToNextChapter();
+    });
+
+    auto goToPrevChapter = new QShortcut(QKeySequence(Qt::Key_B),this);
+    goToPrevChapter->setContext(Qt::ApplicationShortcut);
+    connect(goToPrevChapter, &QShortcut::activated, this, [this]{
+      moveToPrevChapter();
+    });
+
+    // --- Other controls ---
     auto volPanel = new QShortcut(QKeySequence(Qt::Key_M), this);
     volPanel->setContext(Qt::ApplicationShortcut);
     connect(volPanel, &QShortcut::activated, this, [this]{
@@ -841,6 +913,51 @@ void MainWindow::toggleSubtitles(){
   std::string displayMessage = ShowSubs ? "Subtitles On" : "Subtitles Off";
   showingthings(displayMessage, xposition, yposition, 2000);
 }
+
+void MainWindow::toggleChaptersIndicators(){
+  showChaptersIndicators =!showChaptersIndicators;
+  int xposition = view->size().width() / 2;
+  int yposition = view->size().height() /2;
+  std::string displayMessage = showChaptersIndicators ? "Chapters Indicators On" : "Chapters Indicators Off";
+  showingthings(displayMessage, xposition, yposition, 2000);
+  videoslider->setChaptersMarks(ChaptersVectors, showChaptersIndicators);
+}
+
+std::vector<int> calculatingTextDimentions(QString text){
+  QGraphicsTextItem *dummyText = new QGraphicsTextItem;
+  dummyText->setHtml(text);
+
+  int textwidth = dummyText->boundingRect().width();
+  int textheight = dummyText->boundingRect().height();
+  return {textwidth, textheight};
+}
+
+void MainWindow::moveToNextChapter(){
+  for(size_t i=0;i<ChaptersVectors.size();i++){
+    if(player->position() >= ChaptersVectors[i].startTime*1000 && player->position() <= ChaptersVectors[i].endTime*1000){
+      ChapterObject newChapter;
+      if(i == ChaptersVectors.size()-1) newChapter = ChaptersVectors[i];
+      else newChapter = ChaptersVectors[i+1];
+      changingposition(newChapter.startTime*1000+1);
+      QString titleToShow = htmlstyle + newChapter.title + "</div>";
+      showingthings(titleToShow.toStdString(),calculatingTextDimentions(titleToShow)[0],calculatingTextDimentions(titleToShow)[1], 2000); 
+      break;
+    }
+  }
+}
+
+void MainWindow::moveToPrevChapter(){
+  for(size_t i=1;i<ChaptersVectors.size();i++){
+    if(player->position() >= ChaptersVectors[i].startTime*1000 && player->position() <= ChaptersVectors[i].endTime*1000){
+      ChapterObject newChapter = ChaptersVectors[i-1];
+      changingposition(newChapter.startTime*1000+1);
+      QString titleToShow = htmlstyle + newChapter.title + "</div>";
+      showingthings(titleToShow.toStdString(),calculatingTextDimentions(titleToShow)[0],calculatingTextDimentions(titleToShow)[1], 2000); 
+      break;
+    }
+  }
+} 
+
 
 // slider and player relationship
 // setting the range of the slider basing on the player
@@ -1097,6 +1214,7 @@ void MainWindow::FullScreen(){
   volumeslider->setValue(currentVolume*1000);
   updateButtonsIcon();
   updateTimer();
+  videoslider->setChaptersMarks(ChaptersVectors, showChaptersIndicators);
 }
 
 //function that display text on the top of the video with fading animation

@@ -1,12 +1,12 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "CustomObjects.h"
 #include <QApplication>
 #include <QShortcut>
 #include <QStyleHints>
 #include "qboxlayout.h"
 #include "qevent.h"
-#include "CustomObjects.h"
 #include <QMainWindow>
 #include <QStyleHints>
 #include <QHBoxLayout>
@@ -39,12 +39,21 @@
   #include <unistd.h>
 #endif
 
+// struct ChapterObject{
+//   QString id;
+//   QString title;
+//   float startTime;
+//   float endTime;
+// };
 
 struct SubObject{
   float starttime;
   std::string textcontaint;
   float endtime;
 };
+
+struct ChapterObject;
+class CustomSlider;
 
 // main window class
 class MainWindow: public QMainWindow{
@@ -76,6 +85,8 @@ public:
     JUMP_BACKWARD,
     JUMP_FORWARD,
     JUMP_TO_TIME,
+    JUMP_TO_NEXT_CHAP,
+    JUMP_TO_PREV_CHAP,
     TOGGLE_LOOPSEGMENT,
     FULL_VOLUME,
     MUTE,
@@ -87,6 +98,7 @@ public:
     REDUCEDELAY,
     SUBSETTINGS,
     TITLE,
+    TOGGLE_CHAPTERSINDICATORS,
     THEME,
     SHORTCUTS,
   };
@@ -106,6 +118,9 @@ public:
   void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
   void slidermanagement(qreal position);
   void toggleSubtitles();
+  void toggleChaptersIndicators();
+  void moveToNextChapter();
+  void moveToPrevChapter();
   void subfileparsing(std::string subpath);
   QString fixhtml(QString test);
   void changingposition(int newpos);
@@ -121,14 +136,16 @@ public:
   void updateButtonsIcon(std::string button_name = "all");
   void savevideoposition();
   void getlastsavedposition();
+  void ExtranctingChapterData(QString currenturl);
   void LoadingInDirectorySubtitles(QString currenturl);
-  void LoadingBuitInSubs(QString currenturl);
+  void ExtractingBuitInSubs(QString currenturl);
 
   //turnning off the tab focusing
   bool focusNextPrevChild(bool next) override{
     if(next){}
     return false;
   }
+
 private:
   bool paused=false;
   bool fullscreened = false;
@@ -170,17 +187,15 @@ private:
   QList<QString> topbarlayoutbuttons = {"Media","Playback","Audio","Video","Subtitle","View","Help"};
 
   QList<QList <QString> > actionslist = {{"Open File","Open Folder","Open Media","Quit"},
-                                      {"Jump Backward","Jump Forward","Jump to Time","Start Segment Loop"},
-                                      {"Full Volume","Mute"},
-                                      {"Stretch to Fit"},
-                                      {"Add Subtitle File","Load Subtitle","Hide Subtitles","Add Delay","Reduce Delay","Subtitle Settings"},
-                                      {"Video Title","change theme"},
-                                      {"Shortcuts Instructions"}};
+                                {"Jump Backward","Jump Forward","Jump to Time","Move To Next Chapter","Move To Previous Chapter","Start Segment Loop"},
+                                {"Full Volume","Mute"},
+                                {"Stretch to Fit"},
+                                {"Add Subtitle File","Load Subtitle","Hide Subtitles","Add Delay","Reduce Delay","Subtitle Settings"},
+                                {"Video Title","Display Chapters Indicators","Change Theme"},
+                                {"Shortcuts Instructions"}};
 
-public:
-  QString playertype;
-  std::vector<QUrl> playlist;
   bool ShowSubs = true;
+  bool showChaptersIndicators = false;
   QString htmlstyle;
   QGraphicsTextItem *toshowtext = nullptr;
   int subpadding;
@@ -191,8 +206,15 @@ public:
   QString currenturl = "";
   std::string currentworkdirectory;
   int lastsavedposition=0;
+  std::vector <ChapterObject> ChaptersVectors = {};
   std::vector <QString> subsInVideo = {};
   QString currentLoadedSubPath = "";
+
+public:
+  std::vector<QUrl> playlist;
+  QString playertype;
+
+
 };
 
 class PATHS {
