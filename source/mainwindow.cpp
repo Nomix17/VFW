@@ -954,7 +954,9 @@ void MainWindow::moveToNextChapter(){
       else newChapter = ChaptersVectors[i+1];
       changingposition(newChapter.startTime*1000+1);
       QString titleToShow = htmlstyle + newChapter.title + "</div>";
-      showingthings(titleToShow.toStdString(),calculatingTextDimentions(titleToShow)[0],calculatingTextDimentions(titleToShow)[1], 2000); 
+      int video_start_x = view->pos().rx();
+      int video_start_y = view->pos().ry();
+      showingthings(titleToShow.toStdString(),video_start_x+calculatingTextDimentions(titleToShow)[0]/2+10,video_start_y+calculatingTextDimentions(newChapter.title)[1]+15, 2000); 
       break;
     }
   }
@@ -966,7 +968,10 @@ void MainWindow::moveToPrevChapter(){
       ChapterObject newChapter = ChaptersVectors[i-1];
       changingposition(newChapter.startTime*1000+1);
       QString titleToShow = htmlstyle + newChapter.title + "</div>";
-      showingthings(titleToShow.toStdString(),calculatingTextDimentions(titleToShow)[0],calculatingTextDimentions(titleToShow)[1], 2000); 
+      int video_start_x = view->pos().rx();
+      int video_start_y = view->pos().ry();
+      showingthings(titleToShow.toStdString(),video_start_x+calculatingTextDimentions(titleToShow)[0]/2+10,video_start_y+calculatingTextDimentions(newChapter.title)[1]+15, 2000); 
+ 
       break;
     }
   }
