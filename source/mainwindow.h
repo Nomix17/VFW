@@ -138,7 +138,7 @@ public:
   void getlastsavedposition();
   void ExtranctingChapterData(QString currenturl);
   void LoadingInDirectorySubtitles(QString currenturl);
-  void ExtractingBuitInSubs(QString currenturl);
+  void ExtractingBuiltInSubs(QString currenturl);
 
   //turnning off the tab focusing
   bool focusNextPrevChild(bool next) override{

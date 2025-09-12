@@ -249,7 +249,6 @@ void MainWindow::createBottomLayout(){
 
 }
 void MainWindow::LoadingInDirectorySubtitles(QString currenturl){
-  subsInVideo.clear();
   std::filesystem::path currentVideoPath(currenturl.toStdString()); 
   std::string directoryPath = currentVideoPath.parent_path().string();
   
@@ -260,10 +259,12 @@ void MainWindow::LoadingInDirectorySubtitles(QString currenturl){
       std::string currentVideoPathWithoutExtension = currentVideoPath.stem().string();
       if(filePathWithoutExtention == currentVideoPathWithoutExtension){
         subsInVideo.push_back(QString::fromStdString(fileEntry.path().string()));
-        currentLoadedSubPath = QString::fromStdString(fileEntry.path().string());
-        subfileparsing(currentLoadedSubPath.toStdString());
-        QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
-        ToggleSubs->setText("Remove Subtitles");
+        if(currentLoadedSubPath == ""){
+          currentLoadedSubPath = QString::fromStdString(fileEntry.path().string());
+          subfileparsing(currentLoadedSubPath.toStdString());
+          QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
+          ToggleSubs->setText("Remove Subtitles");
+        }
         break;
       }
     }
@@ -301,7 +302,7 @@ void MainWindow::ExtranctingChapterData(QString currenturl){
   videoslider->setChaptersMarks(ChaptersVectors, showChaptersIndicators);
 }
 
-void MainWindow::ExtractingBuitInSubs(QString currenturl) {
+void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
   QProcess lookForSubs;
   lookForSubs.start("/usr/bin/ffprobe", {
     "-v", "error",
@@ -325,10 +326,21 @@ void MainWindow::ExtractingBuitInSubs(QString currenturl) {
     QString subId = QString("0:s:%1").arg(i);
 
     QProcess* ffmpegProcess = new QProcess(this);
-    connect(ffmpegProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), ffmpegProcess, &QProcess::deleteLater);
+    connect(ffmpegProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), ffmpegProcess, &QProcess::deleteLater); // delete the process when finished
     ffmpegProcess->start("/usr/bin/ffmpeg", {"-y","-i", currenturl, "-map", subId, fileSubPath});
 
     subsInVideo.push_back(fileSubPath);
+
+    if(i == 0){
+      currentLoadedSubPath = fileSubPath;
+      // when done extracting the first subtitle in the file parse the subs
+      connect(ffmpegProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), ffmpegProcess,[this](){
+        subfileparsing(currentLoadedSubPath.toStdString());
+        // change the text of the QAction 
+        QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
+        ToggleSubs->setText("Remove Subtitles");
+      });
+    }
 
     std::cout <<"\n\n<-------------------------| Extract subtitle to: " << fileSubPath.toStdString() <<" |------------------------->\n\n";
   }
@@ -338,6 +350,8 @@ void MainWindow::mediaplayer(QString url) {
   video->setSize(view->size());
   QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
   ToggleSubs->setText("Add Subtitles");
+  subsInVideo.clear();
+  currentLoadedSubPath = "";
 
   // if there is no video to play a black image will play (blackscreen)
   if (videoindex > playlist.size() || url == "blackscreen") {
@@ -386,8 +400,8 @@ void MainWindow::mediaplayer(QString url) {
   currentworkdirectory = currenturlstring.substr(0,currenturlstring.size()-current_video_title.size());
 
   ExtranctingChapterData(currenturl);
+  ExtractingBuiltInSubs(currenturl);
   LoadingInDirectorySubtitles(currenturl);
-  ExtractingBuitInSubs(currenturl);
   
   //getting the path of the video playing as QString
   currenturl = QString::fromStdString(currenturlstring);
@@ -1214,7 +1228,6 @@ void MainWindow::FullScreen(){
   volumeslider->setValue(currentVolume*1000);
   updateButtonsIcon();
   updateTimer();
-  videoslider->setChaptersMarks(ChaptersVectors, showChaptersIndicators);
 }
 
 //function that display text on the top of the video with fading animation
