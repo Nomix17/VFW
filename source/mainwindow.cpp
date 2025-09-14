@@ -18,6 +18,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <filesystem>
 
 #include <QApplication>
 
@@ -254,14 +255,14 @@ void MainWindow::LoadingInDirectorySubtitles(QString currenturl){
   
   for(const auto & fileEntry : std::filesystem::directory_iterator(directoryPath)){
     std::string fileExtention = fileEntry.path().extension();
-    if(fileExtention == ".srt"){
+    if(std::find(supportedSubtitlesFormats.begin(), supportedSubtitlesFormats.end(), fileExtention) != supportedSubtitlesFormats.end()){
       std::string filePathWithoutExtention = fileEntry.path().stem().string();
       std::string currentVideoPathWithoutExtension = currentVideoPath.stem().string();
       if(filePathWithoutExtention == currentVideoPathWithoutExtension){
         subsInVideo.push_back(QString::fromStdString(fileEntry.path().string()));
         if(currentLoadedSubPath == ""){
           currentLoadedSubPath = QString::fromStdString(fileEntry.path().string());
-          subfileparsing(currentLoadedSubPath.toStdString());
+          SubFileParsing(currentLoadedSubPath.toStdString());
           QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
           ToggleSubs->setText("Remove Subtitles");
         }
@@ -322,7 +323,7 @@ void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
     std::filesystem::path currentVideoPath(currenturl.toStdString());
     std::string currentVideoPathWithoutExtension = currentVideoPath.parent_path().string() +"/"+currentVideoPath.stem().string();
 
-    QString fileSubPath = QString("%1_Sub%2.srt").arg(currentVideoPathWithoutExtension).arg(i);
+    QString fileSubPath = QString("%1_Sub%2.srt").arg(QString::fromStdString(currentVideoPathWithoutExtension)).arg(i);
     QString subId = QString("0:s:%1").arg(i);
 
     QProcess* ffmpegProcess = new QProcess(this);
@@ -335,7 +336,7 @@ void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
       currentLoadedSubPath = fileSubPath;
       // when done extracting the first subtitle in the file parse the subs
       connect(ffmpegProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), ffmpegProcess,[this](){
-        subfileparsing(currentLoadedSubPath.toStdString());
+        SubFileParsing(currentLoadedSubPath.toStdString());
         // change the text of the QAction 
         QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
         ToggleSubs->setText("Remove Subtitles");
@@ -377,34 +378,17 @@ void MainWindow::mediaplayer(QString url) {
   }
 
   //getting the path of the video playing as std::string
-  std::string currenturlstring = currenturl.toStdString();
-  std::string searchedChar; // searching character
-  int searchedCharPos; // the position of the searched char
-
-  //if there is no / in the path that mean were in windows
-  if(currenturlstring.rfind("/") == std::string::npos){
-    searchedChar = "%5C"; //windows uses these weird ass characters to symbolize the /
-    while(currenturlstring.rfind(searchedChar) != std::string::npos){ //finding and replacing all %5C with / so we will use it as normal path
-        searchedCharPos = currenturlstring.rfind(searchedChar);
-        currenturlstring.replace(searchedCharPos,searchedChar.size(),"/");
-    }
-  }
-
-  searchedChar = "/"; // searching character
-  searchedCharPos = currenturlstring.rfind(searchedChar); // the position of the searched char
+  std::filesystem::path currentPath (currenturl.toStdString());
 
   // getting the title of the video that is currently playing for later uses
-  current_video_title = currenturlstring.substr(searchedCharPos+1,currenturlstring.size());
+  current_video_title = currentPath.stem().string();
 
   //get the current path of directory that the video is playing in
-  currentworkdirectory = currenturlstring.substr(0,currenturlstring.size()-current_video_title.size());
+  currentworkdirectory = currentPath.parent_path().string();
 
   ExtranctingChapterData(currenturl);
   ExtractingBuiltInSubs(currenturl);
   LoadingInDirectorySubtitles(currenturl);
-  
-  //getting the path of the video playing as QString
-  currenturl = QString::fromStdString(currenturlstring);
 
   // mediaplayer setup (sound and video widget)
   player->setSource(QUrl(currenturl));
@@ -448,7 +432,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
       SupportecFormatsString << "Video/Audio files ("; 
       for(size_t i=0;i<supportedMediaFormats.size();i++) SupportecFormatsString << "*" << supportedMediaFormats[i] <<" ";
       SupportecFormatsString << ")";
-      // SupportecFormatsString.c_str()
+
       url = QFileDialog::getOpenFileName(this, tr("Select Video File"), displaydir, tr(SupportecFormatsString.str().c_str()));
 
       if (!url.isEmpty()) {
@@ -598,9 +582,16 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
         else{
           displaydir = homedir;
         }
-        currentLoadedSubPath = QFileDialog::getOpenFileName(this, tr("Select Subtitle file"), displaydir, tr("Srt files (*.srt)"));
+
+        std::stringstream SupportedSubtitlesFormatstring; 
+        SupportedSubtitlesFormatstring << "Srt files ("; 
+
+        for(size_t i=0;i<supportedSubtitlesFormats.size();i++) SupportedSubtitlesFormatstring << "*" << supportedSubtitlesFormats[i] <<" ";
+        SupportedSubtitlesFormatstring << ")";
+
+        currentLoadedSubPath = QFileDialog::getOpenFileName(this, tr("Select Subtitle file"), displaydir, tr(SupportedSubtitlesFormatstring.str().c_str()));
         if (!currentLoadedSubPath.isEmpty()) {
-          subfileparsing(currentLoadedSubPath.toStdString());
+          SubFileParsing(currentLoadedSubPath.toStdString());
           std::cout<<"Subtitles were Loaded: "<<currentLoadedSubPath.toStdString()<<"\n";
           ToggleSubs->setText("Remove Subtitles");
         }
@@ -622,7 +613,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
         currentLoadedSubPath = subWin.clickedSubPath;
         sublabel->setOpacity(0);
         subslist.clear();
-        subfileparsing(currentLoadedSubPath.toStdString());
+        SubFileParsing(currentLoadedSubPath.toStdString());
         std::cout<<"Subtitles were Loaded: "<<currentLoadedSubPath.toStdString()<<"\n";
         QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
         ToggleSubs->setText("Remove Subtitles");
@@ -1036,7 +1027,7 @@ void MainWindow::playertimeline(qint64 position) {
       resizelements("sub");
 
       // if the media is in the targeted position we merge the html style with the subtitle and pass it as html script
-      sublabel->setHtml(htmlstyle + QString::fromStdString(subslist[i]->textcontaint) + "</td></tr></table>");
+      sublabel->setHtml(htmlstyle + QString::fromStdString(subslist[i]->textContent) + "</td></tr></table>");
       break;
     }else if (i == subslist.size() - 2) {
       // if the media is not in a target position we pass an empty string
@@ -1113,22 +1104,83 @@ bool lineIsEmpty(const std::string& str){
   });
 }
 
-// scraping the subtitles from the sub file
-void MainWindow::subfileparsing(std::string subpath) {
+bool stringIsInteger(std::string text){
+  if(text.empty()) return false;
+  for(size_t i=0;i<text.size();i++){
+    if(((int)text[i] < '0' || (int)text[i] > '9') && (int)text[text.size()] != ' ' ) return false;
+  }
+  return true;
+}
+
+bool lineContainsTime(std::string text){
+  return (text.find("-->") != std::string::npos);
+}
+
+void MainWindow::assSubFileParsing(std::string subpath){
   std::ifstream file(subpath);
   std::string line;
-
-  // clearing the subs list (so if the user loaded a new subtitle the old one is gonna be deleted)
-  for (SubObject* ptr:subslist){
-    delete ptr;
-  }
   subslist.clear();
+  int startTimeIndex=1; 
+  int endTimeIndex=2;
+  int textIndex=9;
+
+  while(getline(file,line)){
+    if(line.find("Format:") != std::string::npos){
+      line.erase(std::remove(line.begin(),line.end(),' '), line.end());
+      line.erase(std::remove(line.begin(),line.end(),'\r'), line.end());
+      QStringList splitedLine = QString::fromStdString(line).split(",");
+      for(int i=0;i<splitedLine.size();i++){
+        if(splitedLine[i] == "Start") startTimeIndex = i;
+        if(splitedLine[i] == "End") endTimeIndex = i;
+        if(splitedLine[i] == "Text") textIndex = i;
+      }
+    }
+    if(line.find("Dialogue:") != std::string::npos){
+      QStringList splitedDialogLine = QString::fromStdString(line).split(",");
+
+      subobject = new SubObject;
+
+      char step;     
+      std::istringstream ss1(splitedDialogLine[startTimeIndex].toStdString());
+      int h1, min1, sec1, milsec1;
+      ss1>>h1>>step>>min1>>step>>sec1>>step>>milsec1;
+      double firsttime = h1*60*60 + min1*60 + sec1 + milsec1*0.001;
+
+      std::istringstream ss2(splitedDialogLine[endTimeIndex].toStdString());
+      int h2, min2, sec2, milsec2;
+      ss2>>h2>>step>>min2>>step>>sec2>>step>>milsec2;
+      double secondtime = h2*60*60 + min2*60 + sec2 + milsec2*0.001;
+      
+      std::string subText = splitedDialogLine[textIndex].toStdString();
+
+      size_t pos = 0;
+      while ((pos = subText.find("\\N", pos)) != std::string::npos) {
+        subText.replace(pos, 2, "<br/>");
+        pos += 1;
+      }
+      while ((pos = subText.find("\\n", pos)) != std::string::npos) {
+        subText.replace(pos, 2, "<br/>");
+        pos += 1;
+      }
+
+
+      subobject->starttime = firsttime;
+      subobject->endtime = secondtime;
+      subobject->textContent = subText;
+      subslist.push_back(subobject);
+    }
+  }
+}
+
+void MainWindow::strSubFileParsing(std::string subpath){
+  std::ifstream file(subpath);
+  std::string line;
+  std::string nextline;
+  std::string fulltext = "";
 
   // looping the lines in the file
   while (getline(file, line)) {
-    bool timefound = false;
-    // if the line content the set of characters "-->"
-    if (line.find("-->")!=std::string::npos) {
+    if(lineContainsTime(line)){
       std::istringstream ss(line);
       int h1, min1, sec1, milsec1, h2, min2, sec2, milsec2;
       std::string arrow;
@@ -1143,37 +1195,34 @@ void MainWindow::subfileparsing(std::string subpath) {
       // calculating the ending time from the string line (hour, minutes, seconds)
       double secondtime = h2*60*60 + min2*60 + sec2 + milsec2*0.001;
 
-      // saving the starting time and the end time in a SubObject (a custom defined in mainwindow.h)
       subobject = new SubObject;
       subobject->starttime = firsttime;
       subobject->endtime = secondtime;
 
-      // bool variable to know what does the line content (times in this case)
-      timefound = true;
-    }
-
-    // if the line is after a time line
-    if (timefound) {
-      // adding the sub lines to a list
-      std::string nextline;
-      std::string fulltext = "";
-      // checking if there is a next line
-      while (getline(file, nextline)) {
-        // checking if the line is empty
-        if (!lineIsEmpty(nextline) && nextline.find("-->")==std::string::npos) {
-          // if the line is not empty is will add it to a bandal
-          fulltext += nextline + "<br/>";
-        } else {
-          // if the line is empty or it's a time line,it will break (so only the subs are added to the variable(fulltext))
+      while(getline(file,nextline)){
+        nextline.erase(std::remove(nextline.begin(), nextline.end(), '\r'), nextline.end());
+        if(stringIsInteger(nextline)){
+          if(!fulltext.empty()){
+            int brPosition = fulltext.rfind("<br/>");
+            subobject->textContent = fulltext.substr(0,brPosition);
+            subslist.push_back(subobject);
+            fulltext = "";
+          }
           break;
+        }else{
+          fulltext += nextline + "<br/>";
         }
       }
-      // adding the subs to the list
-      subobject->textcontaint = fulltext.erase(fulltext.size()-4,4); //removing the <br> in the end of the fulltext (if you don't remove it it will appeare as a empty new line in the subs)
-      subslist.push_back(subobject);
-      timefound = false;
     }
   }
+}
+
+// scraping the subtitles from the sub file
+void MainWindow::SubFileParsing(std::string subpath) {
+  for (SubObject* ptr:subslist) delete ptr;
+  subslist.clear();
+  if(std::filesystem::path(subpath).extension().string() == ".ass") assSubFileParsing(subpath);
+  else strSubFileParsing(subpath);
 }
 
 //function to resize ui elements

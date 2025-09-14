@@ -22,6 +22,9 @@ std::vector<std::string> supportedMediaFormats = {
     ".mp4", ".mkv", ".avi", ".mov", ".webm", ".wmv", ".m4v",
     ".mp3", ".wav", ".aac", ".m4a", ".wma", ".ogg"
 };
+std::vector<std::string> supportedSubtitlesFormats = {
+  ".vtt",".srt",".ass"
+};
 
 int main(int argc,char* argv[]){
   QApplication a(argc, argv);

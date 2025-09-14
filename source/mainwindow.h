@@ -48,7 +48,7 @@
 
 struct SubObject{
   float starttime;
-  std::string textcontaint;
+  std::string textContent;
   float endtime;
 };
 
@@ -121,7 +121,10 @@ public:
   void toggleChaptersIndicators();
   void moveToNextChapter();
   void moveToPrevChapter();
-  void subfileparsing(std::string subpath);
+  void SubFileParsing(std::string subpath);
+  void strSubFileParsing(std::string subpath);
+  void assSubFileParsing(std::string subpath);
+
   QString fixhtml(QString test);
   void changingposition(int newpos);
   void resizelements(std::string elementtorezise="all",int animationTime = 0);
@@ -273,5 +276,6 @@ extern std::string STYLESDIRECTORY;
 extern std::string FONTSDIRECTORY;
 extern QString ICONSDIRECTORY;
 extern std::vector<std::string> supportedMediaFormats;
+extern std::vector<std::string> supportedSubtitlesFormats;
 
 #endif
