@@ -23,7 +23,7 @@ std::vector<std::string> supportedMediaFormats = {
     ".mp3", ".wav", ".aac", ".m4a", ".wma", ".ogg"
 };
 std::vector<std::string> supportedSubtitlesFormats = {
-  ".vtt",".srt",".ass"
+  ".srt",".ass"
 };
 
 int main(int argc,char* argv[]){

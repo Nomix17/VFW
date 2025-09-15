@@ -1134,8 +1134,7 @@ void MainWindow::assSubFileParsing(std::string subpath){
         if(splitedLine[i] == "End") endTimeIndex = i;
         if(splitedLine[i] == "Text") textIndex = i;
       }
-    }
-    if(line.find("Dialogue:") != std::string::npos){
+    }else if(line.find("Dialogue:") != std::string::npos){
       QStringList splitedDialogLine = QString::fromStdString(line).split(",");
 
       subobject = new SubObject;
@@ -1151,7 +1150,12 @@ void MainWindow::assSubFileParsing(std::string subpath){
       ss2>>h2>>step>>min2>>step>>sec2>>step>>milsec2;
       double secondtime = h2*60*60 + min2*60 + sec2 + milsec2*0.001;
       
-      std::string subText = splitedDialogLine[textIndex].toStdString();
+      std::string subText="";
+      for(int i = textIndex; i<splitedDialogLine.size(); i++){
+        subText += splitedDialogLine[i].toStdString();
+        subText += ",";
+      }
+      subText.erase(subText.size()-1);
 
       size_t pos = 0;
       while ((pos = subText.find("\\N", pos)) != std::string::npos) {
