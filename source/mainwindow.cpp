@@ -104,6 +104,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   mainwidget->setLayout(mainlayout);
   setCentralWidget(mainwidget);
 
+  //loading settings
+  parseSettingsFile();
+
   // showing a blackscreen
   mediaplayer();
 
@@ -361,7 +364,7 @@ void MainWindow::mediaplayer(QString url) {
     totaltimer->setText("--:--:--");
     currenturl="";
     volumeslider->setRange(0, 1000);
-    volumeslider->setSliderPosition(1000);
+    volumeslider->setSliderPosition(Settings["defaultVolume"]*1000);
     paused = true;
     updateButtonsIcon();
     QPushButton *SkipButton = ButtonsObjectList[CONTINUEFROMLASTPOS_BUTTON];
@@ -394,9 +397,11 @@ void MainWindow::mediaplayer(QString url) {
   player->setSource(QUrl(currenturl));
   player->setVideoOutput(video);
   player->setAudioOutput(audio);
-  audio->setVolume(1);
+
+  if(Settings.find("defaultVolume") != Settings.end())
+    audio->setVolume(Settings["defaultVolume"]);
   volumeslider->setRange(0, 1000);
-  volumeslider->setSliderPosition(1000);
+  volumeslider->setSliderPosition(Settings["defaultVolume"]*1000);
   video->show();
   player->play();
   paused = false;
@@ -1024,10 +1029,10 @@ void MainWindow::playertimeline(qint64 position) {
         sublabel->setOpacity(0);
       }
 
-      resizelements("sub");
-
       // if the media is in the targeted position we merge the html style with the subtitle and pass it as html script
       sublabel->setHtml(htmlstyle + QString::fromStdString(subslist[i]->textContent) + "</td></tr></table>");
+
+      resizelements("sub");
       break;
     }else if (i == subslist.size() - 2) {
       // if the media is not in a target position we pass an empty string
@@ -1096,6 +1101,7 @@ void MainWindow::changingposition(int newpos) {
 void MainWindow::slidermanagement(qreal position) {
   updateButtonsIcon("volume");
   volumeslider->setSliderPosition(static_cast<int>(position * 1000));
+  Settings["defaultVolume"] = position;
 }
 
 bool lineIsEmpty(const std::string& str){
@@ -1326,7 +1332,6 @@ void MainWindow::topbarlayoutvisibility(std::string status){
           searchtoolbutton->show();
         }else if(status=="hide") {
           searchtoolbutton->hide();
-
         }
       }
   }
@@ -1477,8 +1482,58 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event){
   return QMainWindow::eventFilter(obj, event);//return the event if it's not a mouse event
 }
 
+void MainWindow::parseSettingsFile(){
+  std::string settingsFilePath = CONFIGSDIRECTORY + "/settings";
+  std::ifstream file(settingsFilePath);
+  std::string line;
+
+  if(file){
+    while(std::getline(file,line)){
+      if(line.find(":") != std::string::npos){
+        try{
+          std::istringstream sstr(line);
+          std::string temp;
+
+          std::getline(sstr,temp,':');
+          std::string item = temp;
+          
+          std::getline(sstr,temp);
+          float value = std::stof(temp);
+
+          Settings[item] = value;
+
+        }catch(const std::invalid_argument e){
+          std::cout << "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%[ WARNING ]%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n";
+          std::cout << "Failed to fetch from Settings File: "<<e.what()<<"\n";
+          std::cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n";
+        }
+      }
+    }
+  }else{
+    std::cerr << "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%[ WARNING ]%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n";
+    std::cerr << "Cannot find Settings File: "<<settingsFilePath;
+    std::cerr << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n";
+  }
+
+}
+
+void MainWindow::savingNewSettings(){
+  std::string settingsFilePath = CONFIGSDIRECTORY + "/settings";
+  std::ofstream settingsFile(settingsFilePath);
+
+  std::stringstream sstr;
+  for(const auto& [key,value] : Settings){
+    sstr << key << ":" << value << "\n";
+  }
+  std::string newSettings = sstr.str();
+ 
+  settingsFile << newSettings;
+  settingsFile.close();
+}
+
 //distractor
 MainWindow::~MainWindow(){
+  savingNewSettings();
   savevideoposition();
   for (SubObject* ptr:subslist){
     delete ptr;

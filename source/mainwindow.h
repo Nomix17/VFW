@@ -142,6 +142,10 @@ public:
   void ExtranctingChapterData(QString currenturl);
   void LoadingInDirectorySubtitles(QString currenturl);
   void ExtractingBuiltInSubs(QString currenturl);
+  void parseSettingsFile();
+  void savingNewSettings();
+
+// savingNewSettings
 
   //turnning off the tab focusing
   bool focusNextPrevChild(bool next) override{
@@ -212,6 +216,9 @@ private:
   std::vector <ChapterObject> ChaptersVectors = {};
   std::vector <QString> subsInVideo = {};
   QString currentLoadedSubPath = "";
+
+  //default Values
+  std::map<std::string,float> Settings;
 
 public:
   std::vector<QUrl> playlist;
