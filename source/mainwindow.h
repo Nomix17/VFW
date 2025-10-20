@@ -122,7 +122,7 @@ public:
   void moveToNextChapter();
   void moveToPrevChapter();
   void SubFileParsing(std::string subpath);
-  void strSubFileParsing(std::string subpath);
+  void srtSubFileParsing(std::string subpath);
   void assSubFileParsing(std::string subpath);
 
   QString fixhtml(QString test);

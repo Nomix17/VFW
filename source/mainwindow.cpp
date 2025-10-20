@@ -20,9 +20,10 @@
 #include <sstream>
 #include <fstream>
 #include <filesystem>
+#include <bits/stdc++.h>
 
 #include <QApplication>
-
+#include <QMediaMetaData>
 #include <QLabel>
 #include <QToolButton>
 #include <QMenu>
@@ -824,7 +825,7 @@ void MainWindow::setupShortCuts(){
     auto seekBack = new QShortcut(QKeySequence(Qt::Key_Left), this);
     seekBack->setContext(Qt::ApplicationShortcut);
     connect(seekBack, &QShortcut::activated, this, [this]{
-        changingposition(player->position() - 5000);
+        changingposition(std::max(0,static_cast<int>(player->position() - 5000)));
     });
 
     // --- Volume controls ---
@@ -1067,17 +1068,24 @@ void MainWindow::updateTimer(){
 */
 
 void MainWindow::changingposition(int newpos) {
-  float oldvol = audio->volume();
-  player->pause();
-  player->setAudioOutput(nullptr);
-  delete audio;
-  audio = new QAudioOutput();
-  player->setPosition(newpos);
-  player->setAudioOutput(audio);
-  audio->setVolume(oldvol);
-  if (!paused){
-    player->play();
-    paused = false;
+  QMediaMetaData meta = player->metaData();
+  QVariant audioCodec = meta.value(QMediaMetaData::AudioCodec);
+
+  if(audioCodec.isValid()){
+    float oldvol = audio->volume();
+    player->pause();
+    player->setAudioOutput(nullptr);
+    delete audio;
+    audio = new QAudioOutput();
+    player->setPosition(newpos);
+    player->setAudioOutput(audio);
+    audio->setVolume(oldvol);
+    if (!paused){
+      player->play();
+      paused = false;
+    }
+  }else{
+    player->setPosition(newpos);
   }
 }
 
@@ -1167,7 +1175,7 @@ void MainWindow::assSubFileParsing(std::string subpath){
   }
 }
 
-void MainWindow::strSubFileParsing(std::string subpath){
+void MainWindow::srtSubFileParsing(std::string subpath){
   std::ifstream file(subpath);
   std::string line;
   std::string nextline;
@@ -1196,18 +1204,19 @@ void MainWindow::strSubFileParsing(std::string subpath){
 
       while(getline(file,nextline)){
         nextline.erase(std::remove(nextline.begin(), nextline.end(), '\r'), nextline.end());
-        if(stringIsInteger(nextline)){
-          if(!fulltext.empty()){
-            int brPosition = fulltext.rfind("<br/>");
-            subobject->textContent = fulltext.substr(0,brPosition);
-            subslist.push_back(subobject);
-            fulltext = "";
-          }
-          break;
-        }else{
+        if(stringIsInteger(nextline)) break;
+        else{
           fulltext += nextline + "<br/>";
         }
       }
+
+      if(!fulltext.empty()){
+        int brPosition = fulltext.rfind("<br/>");
+        subobject->textContent = fulltext.substr(0,brPosition);
+        subslist.push_back(subobject);
+        fulltext = "";
+      }
+
     }
   }
 }
@@ -1217,7 +1226,7 @@ void MainWindow::SubFileParsing(std::string subpath) {
   for (SubObject* ptr:subslist) delete ptr;
   subslist.clear();
   if(std::filesystem::path(subpath).extension().string() == ".ass") assSubFileParsing(subpath);
-  else strSubFileParsing(subpath);
+  else srtSubFileParsing(subpath);
 }
 
 //function to resize ui elements
