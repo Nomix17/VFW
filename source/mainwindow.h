@@ -224,7 +224,6 @@ public:
   std::vector<QUrl> playlist;
   QString playertype;
 
-
 };
 
 class PATHS {

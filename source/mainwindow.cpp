@@ -13,6 +13,7 @@
 #include "mediaurl.h"
 #include "subWindow.h"
 #include "subconfig.h"
+#include "topBarButton.h"
 
 #include <iostream>
 #include <string>
@@ -51,6 +52,7 @@
 void moveSomethingToPos(QGraphicsWidget *widget, QPointF targetPos, int animationTime);
 void deletelayout(QLayout* layout);
 
+std::vector <QAction*> topBarButton::TopBarButtonsObjectList;
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   setFocusPolicy(Qt::StrongFocus);
@@ -124,35 +126,20 @@ void MainWindow::createTopLayout(){
 
   topbarlayout = new QHBoxLayout();
 
-  size_t counter = 0;
   for (qsizetype i = 0; i < topbarlayoutbuttons.size(); i++) {
-    // making toolbuttons basing on the elements of topbarlayoutbuttons list
-    QToolButton *button = new QToolButton(this);
-    button->setPopupMode(QToolButton::InstantPopup);
-    button->setText(topbarlayoutbuttons[i]);
-    button->setObjectName(topbarlayoutbuttons[i]);
-    connect(button, &QPushButton::clicked, [this, i]() { topbarlayoutclick(i); });
 
-    // creat a menu for eachbutton
-    QMenu *menu = new QMenu(this);
-    if (actionslist.size() > i) {
-      // loop the elements in actionslist of the i button
-      for (qsizetype j = 0; j < actionslist[i].size(); j++) {
+    // create a menu for eachbutton
+    topBarButton *TButton = new topBarButton(topbarlayoutbuttons[i]);
+    TButton->setupMenu(actionslist[i]);
+ 
+    connect(TButton,&topBarButton::handleButtonsClick,[this](int ButtonNumber){
+      this->topbarlayoutclick(ButtonNumber);
+    });
 
-        QAction *action = new QAction(this);
-        action->setObjectName(actionslist[i][j]);
-        action->setText(actionslist[i][j]);
-
-        TopBarButtonsObjectList.push_back(action);
-        connect(action, &QAction::triggered, [this, i, j, counter]() { topbarlayoutclick(counter); });
-        // connect these actions later
-        menu->addAction(action);
-        counter++;
-      }
-    }
-    button->setMenu(menu);
-    topbarlayout->addWidget(button);
+    topbarlayout->addWidget(TButton);
   }
+
+  TopBarButtonsObjectList = topBarButton::TopBarButtonsObjectList;
 
   topbarlayout->setAlignment(Qt::AlignLeft);
 
@@ -286,7 +273,7 @@ void MainWindow::ExtranctingChapterData(QString currenturl){
   QStringList Chapters = QString(ChaptersProcess.readAllStandardOutput()) 
     .split("[CHAPTER]",Qt::SkipEmptyParts);
 
-  std::cout<<"\n\n<-------------------------| Number Of Chapters Detected: "<<Chapters.size()<<" |------------------------->\n\n";
+  std::cout<<"[ LOG ] Number Of Chapters Detected: "<<Chapters.size()<<"\n";
 
   for(int i=0;i<Chapters.size();i++){
     QStringList chapterStreams = QString(Chapters[i]).split("\n");
@@ -320,7 +307,7 @@ void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
   QStringList subStreams = QString(lookForSubs.readAllStandardOutput())
     .split("\n", Qt::SkipEmptyParts);
 
-  std::cout<<"\n\n<-------------------------| Number Of Subs Detected: "<<subStreams.size()<<" |------------------------->\n\n";
+  std::cout<<"[ LOG ] Number Of Subs Detected: "<<subStreams.size()<<"\n\n";
 
   for(int i=0; i < subStreams.size(); i++) {
     std::filesystem::path currentVideoPath(currenturl.toStdString());
@@ -346,7 +333,7 @@ void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
       });
     }
 
-    std::cout <<"\n\n<-------------------------| Extract subtitle to: " << fileSubPath.toStdString() <<" |------------------------->\n\n";
+    std::cout <<"[ LOG ] Extract subtitle to: " << fileSubPath.toStdString() <<"\n";
   }
 }
 
@@ -597,7 +584,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
         currentLoadedSubPath = QFileDialog::getOpenFileName(this, tr("Select Subtitle file"), displaydir, tr(SupportedSubtitlesFormatstring.str().c_str()));
         if (!currentLoadedSubPath.isEmpty()) {
           SubFileParsing(currentLoadedSubPath.toStdString());
-          std::cout<<"Subtitles were Loaded: "<<currentLoadedSubPath.toStdString()<<"\n";
+          std::cout<<"[ LOG ] Subtitles were Loaded: "<<currentLoadedSubPath.toStdString()<<"\n";
           ToggleSubs->setText("Remove Subtitles");
         }
       }else{
@@ -619,7 +606,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
         sublabel->setOpacity(0);
         subslist.clear();
         SubFileParsing(currentLoadedSubPath.toStdString());
-        std::cout<<"Subtitles were Loaded: "<<currentLoadedSubPath.toStdString()<<"\n";
+        std::cout<<"[ LOG ] Subtitles were Loaded: "<<currentLoadedSubPath.toStdString()<<"\n";
         QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
         ToggleSubs->setText("Remove Subtitles");
       }
@@ -730,8 +717,6 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
       break;
     }
   }
-
-  ;
 }
 
 // controlbuttonslayout buttons logic
@@ -1502,17 +1487,13 @@ void MainWindow::parseSettingsFile(){
 
           Settings[item] = value;
 
-        }catch(const std::invalid_argument e){
-          std::cout << "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%[ WARNING ]%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n";
-          std::cout << "Failed to fetch from Settings File: "<<e.what()<<"\n";
-          std::cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n";
+        }catch(const std::invalid_argument& e){
+          std::cout << "[ WARNING ] Failed to fetch from Settings File: "<<e.what()<<"\n";
         }
       }
     }
   }else{
-    std::cerr << "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%[ WARNING ]%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n";
-    std::cerr << "Cannot find Settings File: "<<settingsFilePath;
-    std::cerr << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n";
+    std::cerr << "[ WARNING ] Cannot find Settings File: "<<settingsFilePath;
   }
 
 }

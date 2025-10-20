@@ -17,8 +17,8 @@ class SRepeatWindow :public QDialog{
   
 public:
   SRepeatWindow(QWidget *parent,std::string StyleDirectory):QDialog(parent){
-    // this->resize(300,250);
-    
+    this->setFixedSize(590,200);
+   
     //load style file
     std::ifstream stylefile(StyleDirectory+"/srepeat.css");
     if(stylefile){
