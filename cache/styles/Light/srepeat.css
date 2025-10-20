@@ -1,32 +1,36 @@
-QWidget{
-  background-color: #f0f0f0;
-}
 QSpinBox{
-  min-height: 40px;
-  max-height:40px;
-  font-size:30px;
-  background-color: #ffffff;
+  max-height: 40px;
+  width: 50px;
+  font-size:20px;
+  color:white;
+  background-color:#1e1e1e;
+  border-radius:5px;
+  qproperty-alignment: 'AlignCenter';
+  padding:0;
 }
+
+QSpinBox::up-button,
+QSpinBox::down-button {
+    width: 0;
+    height: 0;
+    border: none;
+    background: none;
+}
+
 QPushButton{
   max-height: 40px;
   max-width: 60px;
   min-height: 40px;
   min-width: 60px;
-  background-color:#dcdcdc;
-  border: 1px solid #cccccc;
   border-radius:4px;
   margin-top:40px;
-
-}
-QPushButton:pressed{
-  background-color:#ffffff;
 }
 QLabel{
-  font-size: 22px;
-  color: #000000;
+  font-size: 20px;
+  color: black;
 }
 QLabel#separetor{
   font-size: 25px;
-  color: #000000;
+  color: black;
 
 }

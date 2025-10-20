@@ -18,6 +18,9 @@ QToolButton:pressed {
 }
 
 QToolButton::menu-indicator {
+  image: none;
+  width: 0;
+  height: 0;
   width: 0px;
 }
 

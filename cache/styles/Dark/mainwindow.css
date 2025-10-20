@@ -16,6 +16,9 @@ QToolButton:pressed {
   background-color: #161616;
 }
 QToolButton::menu-indicator {
+  image: none;
+  width: 0;
+  height: 0;
   width: 0px;
 }
 
