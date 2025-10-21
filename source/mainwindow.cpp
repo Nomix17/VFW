@@ -1464,12 +1464,27 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event){
       resizelements("sub");
       floatingPannelDisplayed = true; //the floating pannel is displayed
 
-        QTimer::singleShot(2000,[this,Oldsubmarginbottom](){
-          resizelements("floatingPannel",200);// restoring the floating pannel to default (means it will be hidden)
-          floatingPannelDisplayed = false;// the floating pannel is not displayed
-          submarginbottom = Oldsubmarginbottom;
-          resizelements("sub");
-        });
+      //check if mouse inside the layout
+      // QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+      // QPoint mousePos = mouseEvent->pos();
+      // int floatingPannel_width = floatingControlPannelProxy->boundingRect().width();
+
+      // int floatingPannel_Top = floatingControlPannelProxy->pos().ry();
+      // int floatingPannel_Left = floatingControlPannelProxy->pos().rx();
+      // int floatingPannel_Botttom = floatingPannel_Top + floatingPannel_height;
+      // int floatingPannel_Right = floatingPannel_Left + floatingPannel_width;
+
+      // bool mouseInsideX = (mousePos.rx() >= floatingPannel_Left) && (mousePos.rx() <= floatingPannel_Right);
+      // bool mouseInsideY = (mousePos.ry() >= floatingPannel_Top) && (mousePos.ry() <= floatingPannel_Botttom);
+      
+      // mouseInsideFloatingLayout = mouseInsideX && mouseInsideY;
+
+      QTimer::singleShot(2000,[this,Oldsubmarginbottom](){
+        resizelements("floatingPannel",200);// restoring the floating pannel to default (means it will be hidden)
+        floatingPannelDisplayed = false;// the floating pannel is not displayed
+        submarginbottom = Oldsubmarginbottom;
+        resizelements("sub");
+      });
     }
     return false;
   }

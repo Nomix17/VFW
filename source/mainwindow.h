@@ -223,7 +223,7 @@ private:
 public:
   std::vector<QUrl> playlist;
   QString playertype;
-
+  // bool mouseInsideFloatingLayout = false;
 };
 
 class PATHS {
