@@ -1121,6 +1121,11 @@ bool lineContainsTime(std::string text){
 
 void MainWindow::assSubFileParsing(std::string subpath){
   std::ifstream file(subpath);
+  if(!file){
+    std::cerr << "[ WARNING ] Cannot find .ass subtitle File: "<<subpath<<"\n";
+    return;
+  }
+
   std::string line;
   subslist.clear();
   int startTimeIndex=1; 
@@ -1181,6 +1186,10 @@ void MainWindow::assSubFileParsing(std::string subpath){
 
 void MainWindow::srtSubFileParsing(std::string subpath){
   std::ifstream file(subpath);
+  if(!file){
+    std::cerr << "[ WARNING ] Cannot open .srt subtitle File: "<<subpath<<"\n";
+    return;
+  }
   std::string line;
   std::string nextline;
   std::string fulltext = "";
@@ -1389,7 +1398,8 @@ void MainWindow::savevideoposition(){
 void MainWindow::getlastsavedposition(){
   if(current_video_title == "") return;
   lastsavedposition = 0;
-  std::ifstream possavefile(CONFIGSDIRECTORY+"/.positionsave.csv");
+  std::string LPPPath = CONFIGSDIRECTORY+"/.positionsave.csv";
+  std::ifstream possavefile(LPPPath);
   if (possavefile){
     std::string line;
     while(getline(possavefile,line)){
@@ -1402,6 +1412,8 @@ void MainWindow::getlastsavedposition(){
       QPushButton *skipbutton = ButtonsObjectList[CONTINUEFROMLASTPOS_BUTTON];
       skipbutton->show();
     }
+  }else{
+      std::cerr << "[ WARNING ] Failed to open LPP  File: "<<LPPPath<<"\n";
   }
 }
 
@@ -1521,7 +1533,7 @@ void MainWindow::parseSettingsFile(){
       }
     }
   }else{
-    std::cerr << "[ WARNING ] Cannot find Settings File: "<<settingsFilePath;
+    std::cerr << "[ WARNING ] Cannot find Settings File: "<<settingsFilePath<<"\n";
   }
 
 }
