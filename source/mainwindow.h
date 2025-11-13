@@ -117,6 +117,7 @@ public:
   void mediaplayer(QString url="blackscreen");
   void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
   void slidermanagement(qreal position);
+  void closeVideo();
   void toggleSubtitles();
   void toggleChaptersIndicators();
   void moveToNextChapter();

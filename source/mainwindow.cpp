@@ -744,9 +744,7 @@ void MainWindow::controlbuttonslayoutclick(int buttonindex) {
     // if the stop button is clicked
     case STOP_BUTTON: {
       savevideoposition();
-      mediaplayer("blackscreen");
-      playlist.clear();
-      playertype = "video";
+      closeVideo();
       break;
     }
 
@@ -983,7 +981,7 @@ void MainWindow::playertimeline(qint64 position) {
           videoindex++;
         }
         mediaplayer("play a list");
-      }else mediaplayer("blackscreen");
+      }else closeVideo();
     }
 
     // if the reloading button is in the "reload one video" mode
@@ -1095,6 +1093,12 @@ void MainWindow::slidermanagement(qreal position) {
   updateButtonsIcon("volume");
   volumeslider->setSliderPosition(static_cast<int>(position * 1000));
   Settings["defaultVolume"] = position;
+}
+
+void MainWindow::closeVideo(){
+  mediaplayer("blackscreen");
+  playlist.clear();
+  playertype = "video";
 }
 
 bool lineIsEmpty(const std::string& str){
