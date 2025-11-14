@@ -274,7 +274,7 @@ void MainWindow::ExtranctingChapterData(QString currenturl){
   QStringList Chapters = QString(ChaptersProcess.readAllStandardOutput()) 
     .split("[CHAPTER]",Qt::SkipEmptyParts);
 
-  std::cout<<"[ LOG ] Number Of Chapters Detected: "<<Chapters.size()<<"\n";
+  std::cout<<"[ INFO ] Number Of Chapters Detected: "<<Chapters.size()<<"\n";
 
   for(int i=0;i<Chapters.size();i++){
     QStringList chapterStreams = QString(Chapters[i]).split("\n");
@@ -308,7 +308,7 @@ void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
   QStringList subStreams = QString(lookForSubs.readAllStandardOutput())
     .split("\n", Qt::SkipEmptyParts);
 
-  std::cout<<"[ LOG ] Number Of Subs Detected: "<<subStreams.size()<<"\n\n";
+  std::cout<<"[ INFO ] Number Of Subs Detected: "<<subStreams.size()<<"\n";
 
   for(int i=0; i < subStreams.size(); i++) {
     std::filesystem::path currentVideoPath(currenturl.toStdString());
@@ -334,7 +334,7 @@ void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
       });
     }
 
-    std::cout <<"[ LOG ] Extract subtitle to: " << fileSubPath.toStdString() <<"\n";
+    std::cout <<"[ INFO ] Extract subtitle to: " << fileSubPath.toStdString() <<"\n";
   }
 }
 
@@ -585,7 +585,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
         currentLoadedSubPath = QFileDialog::getOpenFileName(this, tr("Select Subtitle file"), displaydir, tr(SupportedSubtitlesFormatstring.str().c_str()));
         if (!currentLoadedSubPath.isEmpty()) {
           SubFileParsing(currentLoadedSubPath.toStdString());
-          std::cout<<"[ LOG ] Subtitles were Loaded: "<<currentLoadedSubPath.toStdString()<<"\n";
+          std::cout<<"[ INFO ] Subtitles were Loaded: "<<currentLoadedSubPath.toStdString()<<"\n";
           ToggleSubs->setText("Remove Subtitles");
         }
       }else{
@@ -607,7 +607,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
         sublabel->setOpacity(0);
         subslist.clear();
         SubFileParsing(currentLoadedSubPath.toStdString());
-        std::cout<<"[ LOG ] Subtitles were Loaded: "<<currentLoadedSubPath.toStdString()<<"\n";
+        std::cout<<"[ INFO ] Subtitles were Loaded: "<<currentLoadedSubPath.toStdString()<<"\n";
         QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
         ToggleSubs->setText("Remove Subtitles");
       }

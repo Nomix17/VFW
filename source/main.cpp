@@ -75,7 +75,8 @@ int main(int argc,char* argv[]){
 void createMissingDirectories(){
   // create all the essential directoies
   for(const std::string& dirPath : essentialDirectories){
-    std::cerr << "[ WARNING ] Missing directory created: " << dirPath << "\n";
-    std::filesystem::create_directories(dirPath);
+    bool created = std::filesystem::create_directories(dirPath);
+    if(created)
+      std::cerr << "[ WARNING ] Missing directory created: " << dirPath << "\n";
   }
 }
