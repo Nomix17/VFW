@@ -18,6 +18,13 @@ std::string theme = path.GETTHEME(CONFIGSDIRECTORY);
 QString ICONSDIRECTORY = QString::fromStdString(projectdir + "cache/icons/"+theme+"/");
 std::string STYLESDIRECTORY = projectdir + "cache/styles/"+theme+"/";
 
+std::array <std::string,4> essentialDirectories = {
+  CONFIGSDIRECTORY,
+  FONTSDIRECTORY,
+  ICONSDIRECTORY.toStdString(),
+  STYLESDIRECTORY
+};
+
 std::vector<std::string> supportedMediaFormats = {
     ".mp4", ".mkv", ".avi", ".mov", ".webm", ".wmv", ".m4v",
     ".mp3", ".wav", ".aac", ".m4a", ".wma", ".ogg"
@@ -26,8 +33,12 @@ std::vector<std::string> supportedSubtitlesFormats = {
   ".srt",".ass"
 };
 
+void createMissingDirectories();
+
 int main(int argc,char* argv[]){
   QApplication a(argc, argv);
+  createMissingDirectories();
+
   std::ifstream stylefile(STYLESDIRECTORY+"mainwindow.css");
 
   if(stylefile){
@@ -59,4 +70,12 @@ int main(int argc,char* argv[]){
   }
   a.installEventFilter(&w);
   return a.exec();
+}
+
+void createMissingDirectories(){
+  // create all the essential directoies
+  for(const std::string& dirPath : essentialDirectories){
+    std::cerr << "[ WARNING ] Missing directory created: " << dirPath << "\n";
+    std::filesystem::create_directories(dirPath);
+  }
 }

@@ -3,6 +3,7 @@
 
 #include "json.hpp"
 
+#include <filesystem>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -223,8 +224,10 @@ public:
       return HtmlScript;
     }else{
       std::cerr << "[ WARNING ] Failed to open subtitles config File: "<<subConfigPath<<"\n";
+      return "";
     }
   }
+
   void loadFonts(std::string FONTSDIRECTORY){
     for(const auto & fileEntry : std::filesystem::directory_iterator(FONTSDIRECTORY)){
       std::filesystem::path filePath = fileEntry.path();
