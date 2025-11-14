@@ -159,62 +159,71 @@ public:
   
   void loadconfig(){
     json configfile;
-    std::ifstream file(Configsdirectory+"subconfig.json");
-    file>>configfile;
+    std::string subConfigPath = Configsdirectory+"subconfig.json";
+    std::ifstream file(subConfigPath);
+    if(file){
+      file>>configfile;
 
-    this->findChild<QLineEdit*>("Margin Bottom:")->setText(QString::number(configfile["margin-bottom"].get<int>()));
-    this->findChild<QLineEdit*>("Padding:")->setText(QString::number(configfile["padding"].get<int>()));
+      this->findChild<QLineEdit*>("Margin Bottom:")->setText(QString::number(configfile["margin-bottom"].get<int>()));
+      this->findChild<QLineEdit*>("Padding:")->setText(QString::number(configfile["padding"].get<int>()));
 
-    this->findChild<QPushButton*>("BgColor")->setStyleSheet("background-color:"+QString::fromStdString(configfile["bg-color"])+";");
-    this->findChild<QLineEdit*>("Bg Opacity:")->setText(QString::number(configfile["bg-opacity"].get<int>()));
-   
-    this->findChild<QLineEdit*>("Font Size:")->setText(QString::number(configfile["font-size"].get<int>()));
-    this->findChild<QToolButton*>("Font Familly:")->setText(QString::fromStdString(configfile["font-familly"]));
-   
-    this->findChild<QPushButton*>("FontColor")->setStyleSheet("background-color:"+QString::fromStdString(configfile["font-color"])+";");
-    this->findChild<QLineEdit*>("Font Opacity:")->setText(QString::number(configfile["font-opacity"].get<int>()));
+      this->findChild<QPushButton*>("BgColor")->setStyleSheet("background-color:"+QString::fromStdString(configfile["bg-color"])+";");
+      this->findChild<QLineEdit*>("Bg Opacity:")->setText(QString::number(configfile["bg-opacity"].get<int>()));
+     
+      this->findChild<QLineEdit*>("Font Size:")->setText(QString::number(configfile["font-size"].get<int>()));
+      this->findChild<QToolButton*>("Font Familly:")->setText(QString::fromStdString(configfile["font-familly"]));
+     
+      this->findChild<QPushButton*>("FontColor")->setStyleSheet("background-color:"+QString::fromStdString(configfile["font-color"])+";");
+      this->findChild<QLineEdit*>("Font Opacity:")->setText(QString::number(configfile["font-opacity"].get<int>()));
 
-    selected_font = QString::fromStdString(configfile["font-familly"]);
+      selected_font = QString::fromStdString(configfile["font-familly"]);
 
-    file.close();
+      file.close();
+    }else{
+      std::cerr << "[ WARNING ] Cannot find subtitles config File: "<<subConfigPath<<"\n";
+    }
   }
 
   QString makehtml(std::string Configspath){
     Configsdirectory = Configspath;
-    std::string jsonpath = Configspath+"subconfig.json";
-    if(!std::filesystem::exists(jsonpath)){
+    std::string subConfigPath = Configspath+"subconfig.json";
+    if(!std::filesystem::exists(subConfigPath)){
       createdefaultjson();
     }
 
     json settings;
-    std::ifstream file(jsonpath);
-    file>>settings;
+    std::ifstream file(subConfigPath);
+    if(file){
+      file>>settings;
 
-    QColor bgcolor(QString::fromStdString(settings["bg-color"]));
-    QColor fontcolor(QString::fromStdString(settings["font-color"]));
+      QColor bgcolor(QString::fromStdString(settings["bg-color"]));
+      QColor fontcolor(QString::fromStdString(settings["font-color"]));
 
-    QString backgroundColorRGB = QString::number(bgcolor.red()) + ", " + QString::number(bgcolor.green()) + ", " + QString::number(bgcolor.blue());
-    QString backgroundColorAlpha = QString::number(static_cast<double>(settings["bg-opacity"]) / 100, 'f', 2);
-    QString textColorRGB = QString::number(fontcolor.red()) + ", " + QString::number(fontcolor.green()) + ", " + QString::number(fontcolor.blue());
-    QString textColorAlpha = QString::number(static_cast<double>(settings["font-opacity"]) / 100, 'f', 2);
-    QString paddingValue = QString::number(static_cast<double>(settings["padding"]), 'f', 2);
+      QString backgroundColorRGB = QString::number(bgcolor.red()) + ", " + QString::number(bgcolor.green()) + ", " + QString::number(bgcolor.blue());
+      QString backgroundColorAlpha = QString::number(static_cast<double>(settings["bg-opacity"]) / 100, 'f', 2);
+      QString textColorRGB = QString::number(fontcolor.red()) + ", " + QString::number(fontcolor.green()) + ", " + QString::number(fontcolor.blue());
+      QString textColorAlpha = QString::number(static_cast<double>(settings["font-opacity"]) / 100, 'f', 2);
+      QString paddingValue = QString::number(static_cast<double>(settings["padding"]), 'f', 2);
 
-              // "text-shadow: -1px -1px 0 "+backgroundColorRGB+", 1px -1px 0 "+backgroundColorRGB+", -1px  1px 0 "+backgroundColorRGB+", 1px  1px 0 "+backgroundColorRGB+";"
+                // "text-shadow: -1px -1px 0 "+backgroundColorRGB+", 1px -1px 0 "+backgroundColorRGB+", -1px  1px 0 "+backgroundColorRGB+", 1px  1px 0 "+backgroundColorRGB+";"
 
-  QString HtmlScript = "<table cellpadding='" + paddingValue + "' "
-                       "style='"
-                       "background-color: rgba(" + backgroundColorRGB + ", " + backgroundColorAlpha + "); "
-                       "color: rgba(" + textColorRGB + ", " + textColorAlpha + "); "
-                       "font-family: \"" + QString::fromStdString(settings["font-familly"]) + "\"; "
-                       "font-size: " + QString::number(static_cast<int>(settings["font-size"])) + "px;"
-                       "'>"
-                       "<tr><td>";
+    QString HtmlScript = "<table cellpadding='" + paddingValue + "' "
+                         "style='"
+                         "background-color: rgba(" + backgroundColorRGB + ", " + backgroundColorAlpha + "); "
+                         "color: rgba(" + textColorRGB + ", " + textColorAlpha + "); "
+                         "font-family: \"" + QString::fromStdString(settings["font-familly"]) + "\"; "
+                         "font-size: " + QString::number(static_cast<int>(settings["font-size"])) + "px;"
+                         "'>"
+                         "<tr><td>";
 
-    padding = settings["padding"];
-    marginbottom = settings["margin-bottom"];
+      padding = settings["padding"];
+      marginbottom = settings["margin-bottom"];
 
-    file.close();
-    return HtmlScript;
+      file.close();
+      return HtmlScript;
+    }else{
+      std::cerr << "[ WARNING ] Failed to open subtitles config File: "<<subConfigPath<<"\n";
+    }
   }
   void loadFonts(std::string FONTSDIRECTORY){
     for(const auto & fileEntry : std::filesystem::directory_iterator(FONTSDIRECTORY)){
@@ -228,19 +237,22 @@ public:
   void createdefaultjson(){
     json defaultsettings;
 
-      defaultsettings["bg-color"] = "#000000";
-      defaultsettings["bg-opacity"]= 20;
-      defaultsettings["font-color"]= "#ffffff";
-      defaultsettings["font-familly"]="Noto Sans Arabic";
-      defaultsettings["font-opacity"]= 100;
-      defaultsettings["font-size"]= 24;
-      defaultsettings["margin-bottom"]= 61;
-      defaultsettings["padding"]= 26;
-    
-    std::ofstream file(Configsdirectory+"subconfig.json");
+    defaultsettings["bg-color"] = "#000000";
+    defaultsettings["bg-opacity"]= 20;
+    defaultsettings["font-color"]= "#ffffff";
+    defaultsettings["font-familly"]="Noto Sans Arabic";
+    defaultsettings["font-opacity"]= 100;
+    defaultsettings["font-size"]= 24;
+    defaultsettings["margin-bottom"]= 61;
+    defaultsettings["padding"]= 26;
+   
+    std::string subConfigPath = Configsdirectory+"subconfig.json";
+    std::ofstream file(subConfigPath);
     if(file){
       file << defaultsettings.dump(4);
       file.close();
+    }else{
+      std::cerr << "[ WARNING ] Cannot create a default subtitles config File: "<<subConfigPath<<"\n";
     }
   }
 };
