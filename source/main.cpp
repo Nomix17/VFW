@@ -55,7 +55,7 @@ int main(int argc,char* argv[]){
   if(argc>1){
     for(int i=1;i<argc;i++){
       //add the paths to the playlist
-      std::string fileExtention = std::filesystem::path(argv[i]).extension();
+      std::string fileExtention = std::filesystem::path(argv[i]).extension().string();
       if(std::find(supportedMediaFormats.begin(),supportedMediaFormats.end(),fileExtention) != supportedMediaFormats.end())
         w.playlist.push_back(QUrl(argv[i]));
     }
