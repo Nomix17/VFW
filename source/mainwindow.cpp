@@ -245,7 +245,7 @@ void MainWindow::LoadingInDirectorySubtitles(QString currenturl){
   std::string directoryPath = currentVideoPath.parent_path().string();
   
   for(const auto & fileEntry : std::filesystem::directory_iterator(directoryPath)){
-    std::string fileExtention = fileEntry.path().extension();
+    std::string fileExtention = fileEntry.path().extension().string();
     if(std::find(supportedSubtitlesFormats.begin(), supportedSubtitlesFormats.end(), fileExtention) != supportedSubtitlesFormats.end()){
       std::string filePathWithoutExtention = fileEntry.path().stem().string();
       std::string currentVideoPathWithoutExtension = currentVideoPath.stem().string();
@@ -450,7 +450,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
         playlist.clear();  // clearing the playlist
         // saving all the urls in a list
         for (auto i : std::filesystem::directory_iterator(url.toStdString())) {
-          if(std::find(supportedMediaFormats.begin(), supportedMediaFormats.end(),i.path().extension()) != supportedMediaFormats.end()){
+          if(std::find(supportedMediaFormats.begin(), supportedMediaFormats.end(),i.path().extension().string()) != supportedMediaFormats.end()){
             playlist.push_back(QUrl(QString::fromStdString(i.path().string())));
           }
         }
