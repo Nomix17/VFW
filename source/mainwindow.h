@@ -239,6 +239,14 @@ class PATHS {
 
     std::string Projectdir(){
       std::string projectpath;
+
+      // if the code is running from a .appimage file return the project path from the env
+      const char* appimage_root = std::getenv("VFW_ROOT");
+      if (appimage_root != nullptr) {
+          projectpath = appimage_root;
+          return projectpath;
+      }
+
       #ifdef _WIN32
         wchar_t path[1024];
         GetModuleFileName(NULL,path,sizeof(path)/sizeof(wchar_t));
