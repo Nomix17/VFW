@@ -1463,43 +1463,61 @@ void moveSomethingToPos(QGraphicsWidget *widget, QPointF targetPos, int animatio
   animation->start(QPropertyAnimation::DeleteWhenStopped);  // start the animation
 }
 
+//check the mouse is inside the floating panel
+bool MainWindow::mouseInsideFloatingPanel(QEvent* event){
+  QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+  
+  QPoint mousePos = mouseEvent->pos();// getting the position of the mouse
+  //getting the dimentions of the floating pannel
+  int floatingPannel_height = floatingControlPannelProxy->boundingRect().height();
+  int floatingPannel_width = floatingControlPannelProxy->boundingRect().width();
+
+  // getting the position of each side of the floating pannel
+  int floatingPannel_Top = floatingControlPannelProxy->pos().ry();
+  int floatingPannel_Left = floatingControlPannelProxy->pos().rx();
+  int floatingPannel_Bottom = floatingPannel_Top + floatingPannel_height;
+  int floatingPannel_Right = floatingPannel_Left + floatingPannel_width;
+
+  // checking if the mouse is inside the pannel X wise, and Y wise
+  bool mouseInsideX = (mousePos.rx() >= floatingPannel_Left) && (mousePos.rx() <= floatingPannel_Right);
+  bool mouseInsideY = (mousePos.ry() >= floatingPannel_Top) && (mousePos.ry() <= floatingPannel_Bottom);
+
+  return (mouseInsideX && mouseInsideY);
+}
+
 //function to detect mouse movement
 bool MainWindow::eventFilter(QObject *obj, QEvent *event){
   static bool floatingPannelDisplayed = false; //this variable stores if the floating pannel is displayed already or not
+  
+  // this if condition check if the event is a mouse event, and if the element the mouse is moving on top of is not a widget 
+  if(event->type() == QEvent::MouseMove &&!static_cast<QWidget* >(obj)->isWidgetType())
+    MouseIsInsideFloatingPanel = mouseInsideFloatingPanel(event); // check if mouse inside the floating panel 
+  
+  
   if (event->type() == QEvent::MouseMove && !floatingPannelDisplayed) {
     if(fullscreened){
       //getting the position of the floating pannel
       int viewheight = view->size().height();
       int floatingPannel_Xpos = floatingControlPannelProxy->pos().rx();
       int floatingPannel_height = floatingControlPannelProxy->boundingRect().height();
-      //calculate the targetPosition that we want to move the pannel into, and then calling moveSomethingToPos function
+
+      // calculate the targetPosition that we want to move the pannel into, and then calling moveSomethingToPos function
       QPointF targetPos = QPointF(floatingPannel_Xpos,viewheight-floatingPannel_height);
       moveSomethingToPos(floatingControlPannelProxy,targetPos,200);
+
+      // keeping the same subtitles margin
       int Oldsubmarginbottom = submarginbottom;
       submarginbottom += floatingPannel_height;
       resizelements("sub");
       floatingPannelDisplayed = true; //the floating pannel is displayed
 
-      //check if mouse inside the layout
-      // QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-      // QPoint mousePos = mouseEvent->pos();
-      // int floatingPannel_width = floatingControlPannelProxy->boundingRect().width();
-
-      // int floatingPannel_Top = floatingControlPannelProxy->pos().ry();
-      // int floatingPannel_Left = floatingControlPannelProxy->pos().rx();
-      // int floatingPannel_Botttom = floatingPannel_Top + floatingPannel_height;
-      // int floatingPannel_Right = floatingPannel_Left + floatingPannel_width;
-
-      // bool mouseInsideX = (mousePos.rx() >= floatingPannel_Left) && (mousePos.rx() <= floatingPannel_Right);
-      // bool mouseInsideY = (mousePos.ry() >= floatingPannel_Top) && (mousePos.ry() <= floatingPannel_Botttom);
-      
-      // mouseInsideFloatingLayout = mouseInsideX && mouseInsideY;
-
-      QTimer::singleShot(2000,[this,Oldsubmarginbottom](){
-        resizelements("floatingPannel",200);// restoring the floating pannel to default (means it will be hidden)
+      QTimer::singleShot(800,[this,Oldsubmarginbottom](){
+        if(!MouseIsInsideFloatingPanel && floatingPannelDisplayed){
+          resizelements("floatingPannel",200);// restoring the floating pannel to default (means it will be hidden)
+          submarginbottom = Oldsubmarginbottom;
+          resizelements("sub");
+        }
         floatingPannelDisplayed = false;// the floating pannel is not displayed
-        submarginbottom = Oldsubmarginbottom;
-        resizelements("sub");
       });
     }
     return false;

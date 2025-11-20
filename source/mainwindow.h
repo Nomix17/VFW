@@ -135,6 +135,8 @@ public:
   bool eventFilter(QObject *obj, QEvent *event) override;
 
   void FullScreen();
+  bool mouseInsideFloatingPanel(QEvent* event);
+
   void showingthings(std::string texttoshow, int xposition, int yposition,int animationduration);
   void topbarlayoutvisibility(std::string status);
   void updateButtonsIcon(std::string button_name = "all");
@@ -225,6 +227,7 @@ public:
   std::vector<QUrl> playlist;
   QString playertype;
   // bool mouseInsideFloatingLayout = false;
+  bool MouseIsInsideFloatingPanel = false;
 };
 
 class PATHS {
