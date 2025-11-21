@@ -242,17 +242,17 @@ void MainWindow::createBottomLayout(){
 }
 void MainWindow::LoadingInDirectorySubtitles(QString currenturl){
   std::filesystem::path currentVideoPath(currenturl.toStdString()); 
-  std::string directoryPath = currentVideoPath.parent_path().string();
+  std::string directoryPath = currentVideoPath.parent_path().generic_string();
   
   for(const auto & fileEntry : std::filesystem::directory_iterator(directoryPath)){
     std::string fileExtention = fileEntry.path().extension().string();
     if(std::find(supportedSubtitlesFormats.begin(), supportedSubtitlesFormats.end(), fileExtention) != supportedSubtitlesFormats.end()){
-      std::string filePathWithoutExtention = fileEntry.path().stem().string();
-      std::string currentVideoPathWithoutExtension = currentVideoPath.stem().string();
+      std::string filePathWithoutExtention = fileEntry.path().stem().generic_string();
+      std::string currentVideoPathWithoutExtension = currentVideoPath.stem().generic_string();
       if(filePathWithoutExtention == currentVideoPathWithoutExtension){
-        subsInVideo.push_back(QString::fromStdString(fileEntry.path().string()));
+        subsInVideo.push_back(QString::fromStdString(fileEntry.path().generic_string()));
         if(currentLoadedSubPath == ""){
-          currentLoadedSubPath = QString::fromStdString(fileEntry.path().string());
+          currentLoadedSubPath = QString::fromStdString(fileEntry.path().generic_string());
           SubFileParsing(currentLoadedSubPath.toStdString());
           QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
           ToggleSubs->setText("Remove Subtitles");
@@ -312,7 +312,7 @@ void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
 
   for(int i=0; i < subStreams.size(); i++) {
     std::filesystem::path currentVideoPath(currenturl.toStdString());
-    std::string currentVideoPathWithoutExtension = currentVideoPath.parent_path().string() +"/"+currentVideoPath.stem().string();
+    std::string currentVideoPathWithoutExtension = currentVideoPath.parent_path().generic_string() +"/"+currentVideoPath.stem().generic_string();
 
     QString fileSubPath = QString("%1_Sub%2.srt").arg(QString::fromStdString(currentVideoPathWithoutExtension)).arg(i);
     QString subId = QString("0:s:%1").arg(i);
@@ -372,10 +372,10 @@ void MainWindow::mediaplayer(QString url) {
   std::filesystem::path currentPath (currenturl.toStdString());
 
   // getting the title of the video that is currently playing for later uses
-  current_video_title = currentPath.stem().string();
+  current_video_title = currentPath.stem().generic_string();
 
   //get the current path of directory that the video is playing in
-  currentworkdirectory = currentPath.parent_path().string();
+  currentworkdirectory = currentPath.parent_path().generic_string();
 
   ExtranctingChapterData(currenturl);
   ExtractingBuiltInSubs(currenturl);
@@ -451,7 +451,8 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
         // saving all the urls in a list
         for (auto i : std::filesystem::directory_iterator(url.toStdString())) {
           if(std::find(supportedMediaFormats.begin(), supportedMediaFormats.end(),i.path().extension().string()) != supportedMediaFormats.end()){
-            playlist.push_back(QUrl(QString::fromStdString(i.path().string())));
+            playlist.push_back(QUrl(QString::fromStdString(i.path().generic_string())));
+            std::cout<<"Loading Video: "<<i.path().generic_string()<<"\n";
           }
         }
         if (playlist.size()) {
