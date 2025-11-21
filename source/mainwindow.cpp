@@ -240,24 +240,26 @@ void MainWindow::createBottomLayout(){
   updateButtonsIcon();
 
 }
+
 void MainWindow::LoadingInDirectorySubtitles(QString currenturl){
   std::filesystem::path currentVideoPath(currenturl.toStdString()); 
   std::string directoryPath = currentVideoPath.parent_path().generic_string();
-  
-  for(const auto & fileEntry : std::filesystem::directory_iterator(directoryPath)){
-    std::string fileExtention = fileEntry.path().extension().string();
-    if(std::find(supportedSubtitlesFormats.begin(), supportedSubtitlesFormats.end(), fileExtention) != supportedSubtitlesFormats.end()){
-      std::string filePathWithoutExtention = fileEntry.path().stem().generic_string();
-      std::string currentVideoPathWithoutExtension = currentVideoPath.stem().generic_string();
-      if(filePathWithoutExtention == currentVideoPathWithoutExtension){
-        subsInVideo.push_back(QString::fromStdString(fileEntry.path().generic_string()));
-        if(currentLoadedSubPath == ""){
-          currentLoadedSubPath = QString::fromStdString(fileEntry.path().generic_string());
-          SubFileParsing(currentLoadedSubPath.toStdString());
-          QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
-          ToggleSubs->setText("Remove Subtitles");
+  if (std::filesystem::exists(directoryPath) && std::filesystem::is_directory(directoryPath)) {
+    for(const auto & fileEntry : std::filesystem::directory_iterator(directoryPath)){
+      std::string fileExtention = fileEntry.path().extension().string();
+      if(std::find(supportedSubtitlesFormats.begin(), supportedSubtitlesFormats.end(), fileExtention) != supportedSubtitlesFormats.end()){
+        std::string filePathWithoutExtention = fileEntry.path().stem().generic_string();
+        std::string currentVideoPathWithoutExtension = currentVideoPath.stem().generic_string();
+        if(filePathWithoutExtention == currentVideoPathWithoutExtension){
+          subsInVideo.push_back(QString::fromStdString(fileEntry.path().generic_string()));
+          if(currentLoadedSubPath == ""){
+            currentLoadedSubPath = QString::fromStdString(fileEntry.path().generic_string());
+            SubFileParsing(currentLoadedSubPath.toStdString());
+            QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
+            ToggleSubs->setText("Remove Subtitles");
+          }
+          break;
         }
-        break;
       }
     }
   }
@@ -386,6 +388,8 @@ void MainWindow::mediaplayer(QString url) {
   player->setVideoOutput(video);
   player->setAudioOutput(audio);
 
+  std::cout<<"Playing: "<<currenturl.toStdString()<<"\n";
+
   if(Settings.find("defaultVolume") != Settings.end())
     audio->setVolume(Settings["defaultVolume"]);
   volumeslider->setRange(0, 1000);
@@ -429,6 +433,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
       url = QFileDialog::getOpenFileName(this, tr("Select Video File"), displaydir, tr(SupportecFormatsString.str().c_str()));
 
       if (!url.isEmpty()) {
+        std::cout<<"Loading Video: "<<url.toStdString()<<"\n";
         mediaplayer(url);
         playertype = "vid";
       }
