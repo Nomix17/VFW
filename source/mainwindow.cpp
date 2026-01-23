@@ -259,7 +259,6 @@ void MainWindow::LoadingInDirectorySubtitles(QString currenturl){
             QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
             ToggleSubs->setText("Remove Subtitles");
           }
-          break;
         }
       }
     }
