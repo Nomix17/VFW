@@ -118,9 +118,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   win.loadFonts(FONTSDIRECTORY);
   htmlstyle = win.makehtml(CONFIGSDIRECTORY);
   subpadding = win.padding;
-  submarginbottom = win.marginbottom;
-
+  subBottomMargin = win.marginbottom;
+  currentSubBottomSpace = win.marginbottom;
 }
+
 //function to create the top layout elements
 void MainWindow::createTopLayout(){
   if(topbarlayout != nullptr) delete topbarlayout;
@@ -402,7 +403,7 @@ void MainWindow::mediaplayer(QString url) {
 
   // displaying the title for a brief of time
   int xposition = view->size().width() / 2;
-  int yposition = view->size().height() - submarginbottom;
+  int yposition = view->size().height() - currentSubBottomSpace;
 
   showingthings(current_video_title, xposition, yposition, 2000);
   //load the last saved position if it's availble
@@ -691,7 +692,8 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
       win.exec();
       htmlstyle = win.makehtml(CONFIGSDIRECTORY);
       subpadding = win.padding;
-      submarginbottom = win.marginbottom;
+      subBottomMargin = win.marginbottom;
+      currentSubBottomSpace = win.marginbottom;
       break;
     }
 
@@ -699,7 +701,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
     case TITLE: {
       if (current_video_title.size()) {
         int xposition = view->size().width() / 2;
-        int yposition = view->size().height() - submarginbottom;
+        int yposition = view->size().height() - subBottomMargin;
         showingthings(current_video_title, xposition, yposition, 3000);
       }
       break;
@@ -1270,7 +1272,7 @@ void MainWindow::resizelements(std::string elementtorezise, int animationTime ){
   }
   //if the element being resized is the sub Label
   if(elementtorezise=="sub" || elementtorezise=="all"){
-    sublabel->setPos((VIEWWIDTH - SUBWIDTH) / 2, (VIEWHEIGHT - SUBHEIGHT / 2) - submarginbottom);
+    sublabel->setPos((VIEWWIDTH - SUBWIDTH) / 2, (VIEWHEIGHT - SUBHEIGHT / 2) - currentSubBottomSpace);
   }
   showingthings("",0,0,0);
 }
@@ -1512,15 +1514,14 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event){
       moveSomethingToPos(floatingControlPannelProxy,targetPos,200);
 
       // keeping the same subtitles margin
-      int Oldsubmarginbottom = submarginbottom;
-      submarginbottom += floatingPannel_height;
+      currentSubBottomSpace = subBottomMargin + floatingPannel_height;
       resizelements("sub");
       floatingPannelDisplayed = true; //the floating pannel is displayed
 
-      QTimer::singleShot(800,[this,Oldsubmarginbottom](){
+      QTimer::singleShot(800,[this](){
         if(!MouseIsInsideFloatingPanel && floatingPannelDisplayed){
           resizelements("floatingPannel",200);// restoring the floating pannel to default (means it will be hidden)
-          submarginbottom = Oldsubmarginbottom;
+          currentSubBottomSpace = subBottomMargin;
           resizelements("sub");
         }
         floatingPannelDisplayed = false;// the floating pannel is not displayed

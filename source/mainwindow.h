@@ -209,7 +209,10 @@ private:
   QString htmlstyle;
   QGraphicsTextItem *toshowtext = nullptr;
   int subpadding;
-  int submarginbottom;
+  
+  int subBottomMargin;
+  int currentSubBottomSpace;
+
   SubObject* subobject;
   std::vector <SubObject*> subslist;
   std::string current_video_title="";
