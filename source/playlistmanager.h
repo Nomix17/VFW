@@ -79,7 +79,7 @@ class PlaylistManager:public QDialog{
       }
       //create buttons based on the medias loaded into the playlist
       for(size_t i=0;i<playlist_vector.size();i++){
-        QString media_url = playlist_vector[i].toString();
+        QString media_url = playlist_vector[i].toLocalFile();
 
         //getting the video title
         int slashPosition = media_url.toStdString().rfind("/");

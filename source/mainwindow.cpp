@@ -363,7 +363,7 @@ void MainWindow::mediaplayer(QString url) {
     return ;
 
   } else if (url == "play a list") {  // if pass "play a list" as an argunent a video from the playlist will play
-    currenturl = playlist[videoindex].toString();
+    currenturl = playlist[videoindex].toLocalFile();
 
   } else {  // if we pass a url, a video with the url will play and the playlist will be cleared
     currenturl = url;
@@ -371,7 +371,7 @@ void MainWindow::mediaplayer(QString url) {
   }
 
   //getting the path of the video playing as std::string
-  std::filesystem::path currentPath (currenturl.toStdString());
+  std::filesystem::path currentPath(currenturl.toStdString());
 
   // getting the title of the video that is currently playing for later uses
   current_video_title = currentPath.stem().generic_string();
