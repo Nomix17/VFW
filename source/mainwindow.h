@@ -220,7 +220,6 @@ private:
   std::string currentworkdirectory;
   int lastsavedposition=0;
   std::vector <ChapterObject> ChaptersVectors = {};
-  std::vector <QString> subsInVideo = {};
   QString currentLoadedSubPath = "";
 
   //default Values
@@ -228,8 +227,8 @@ private:
 
 public:
   std::vector<QUrl> playlist;
+  std::vector <QString> subsInVideo = {};
   QString playertype;
-  // bool mouseInsideFloatingLayout = false;
   bool MouseIsInsideFloatingPanel = false;
 };
 

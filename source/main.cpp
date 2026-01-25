@@ -57,10 +57,15 @@ int main(int argc,char* argv[]){
     for(int i=1;i<argc;i++){
       //add the paths to the playlist
       std::string fileExtention = std::filesystem::path(argv[i]).extension().string();
-      if(std::find(supportedMediaFormats.begin(),supportedMediaFormats.end(),fileExtention) != supportedMediaFormats.end()){
+      if (std::find(supportedMediaFormats.begin(),supportedMediaFormats.end(),fileExtention) != supportedMediaFormats.end()) {
         QUrl VideoPath = QUrl::fromLocalFile(QString::fromStdString(std::filesystem::path(argv[i]).generic_string()));
         w.playlist.push_back(VideoPath);
         std::cout<<"Loading Video: "<<std::filesystem::path(argv[i]).generic_string()<<"\n";
+
+      } else if(std::find(supportedSubtitlesFormats.begin(),supportedSubtitlesFormats.end(),fileExtention) != supportedSubtitlesFormats.end()) {
+        QString subPath = QString::fromStdString(std::filesystem::path(argv[i]).generic_string());
+        w.subsInVideo.push_back(subPath);
+        std::cout<<"Loading Subtitle: "<<std::filesystem::path(argv[i]).generic_string()<<"\n";
       }
     }
     //run the Playlist when the app open
