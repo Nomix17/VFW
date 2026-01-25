@@ -28,8 +28,14 @@
 #include <QGraphicsVideoItem>
 #include <QGraphicsView>
 #include <QGraphicsScene>
+#include <limits.h>
 #include <string>
 #include <fstream>
+#include <filesystem>
+
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
 
 #ifdef _WIN32
   #include <windows.h>
@@ -39,12 +45,6 @@
   #include <unistd.h>
 #endif
 
-// struct ChapterObject{
-//   QString id;
-//   QString title;
-//   float startTime;
-//   float endTime;
-// };
 
 struct SubObject{
   float starttime;
@@ -243,38 +243,49 @@ class PATHS {
     ));
 
     std::string Projectdir(){
-      std::string projectpath;
+      std::string executablePath;
 
       // if the code is running from a .appimage file return the project path from the env
       const char* appimage_root = std::getenv("VFW_ROOT");
       if (appimage_root != nullptr) {
-          projectpath = appimage_root;
-          return projectpath;
+          executablePath = appimage_root;
+          return executablePath;
       }
 
       #ifdef _WIN32
-        wchar_t path[1024];
+        wchar_t path[PATH_MAX];
         GetModuleFileName(NULL,path,sizeof(path)/sizeof(wchar_t));
         std::wstring ws(path);
         std::string str(ws.begin(),ws.end());
-        projectpath = str;
+        executablePath = str;
       #elif __APPLE__
-        char path[102];
+        char path[PATH_MAX];
         uint32_t size = sizeof(path);
         NSGetModuleFileName(path,&size);
-        projectpath = path;
+        executablePath = path;
       #else
-        char path[102];
+        char path[PATH_MAX];
         ssize_t len = readlink("/proc/self/exe",path,sizeof(path)-1);
         if(len != -1) path[len]='\0';
-        projectpath = path;
+        executablePath = path;
       #endif
+  
+      std::filesystem::path fullExecutablePath(executablePath);
 
-      size_t position = projectpath.rfind("bin");
-      projectpath = projectpath.substr(0,position);
-      return projectpath ;
+      return getRootDirectory(fullExecutablePath);
     }
 
+    std::string getRootDirectory(std::filesystem::path fullPath) {
+      while (!fullPath.empty() && fullPath.filename() != "bin") {
+          fullPath = fullPath.parent_path();
+      }
+
+      if (!fullPath.empty()) {
+          return fullPath.parent_path().string();
+      }
+
+      return "" ;
+    }
 
     std::string GETTHEME(std::string configDirectory){
       std::ifstream themefile(configDirectory+"/theme");
