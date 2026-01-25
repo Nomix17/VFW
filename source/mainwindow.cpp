@@ -471,7 +471,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
     // if the user choose to open a media file
     case Open_media: {
       // launching the constructor for url window input
-      UrlWindow x(nullptr, STYLESDIRECTORY);
+      UrlWindow x(nullptr, THEMEDIRECTORY);
       x.exec();
       // getting the url inputed by the user
       url = x.url;
@@ -504,7 +504,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
 
     // jump to a specific time
     case JUMP_TO_TIME: {
-      JumpTime x(nullptr, STYLESDIRECTORY);
+      JumpTime x(nullptr, THEMEDIRECTORY);
       x.exec();
       if (x.targettime >= 0) {
         changingposition(x.targettime * 1000);
@@ -527,7 +527,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
       QAction * toggleLoopAction = TopBarButtonsObjectList[TOGGLE_LOOPSEGMENT];
       if(!currenturl.isEmpty()){
         if(!repeatfromposition){
-          SRepeatWindow win(nullptr, STYLESDIRECTORY);
+          SRepeatWindow win(nullptr, THEMEDIRECTORY);
           win.exec();
           if (win.startingpoint >= 0 && win.finishingpoint >= 0 && win.finishingpoint != win.startingpoint) {
             repeatfromposition = true;
@@ -606,7 +606,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
       break;
     } 
     case LOADSUBTITLES:{
-      subWindow subWin(nullptr,STYLESDIRECTORY,ICONSDIRECTORY.toStdString(),subsInVideo,currentLoadedSubPath);
+      subWindow subWin(nullptr,THEMEDIRECTORY,ICONSDIRECTORY.toStdString(),subsInVideo,currentLoadedSubPath);
       subWin.exec();
       if(!subWin.clickedSubPath.isEmpty()){
         currentLoadedSubPath = subWin.clickedSubPath;
@@ -687,7 +687,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
     // if the user choose to custumize the sub
     case SUBSETTINGS: {
       SubConfig win;
-      win.gui(CONFIGSDIRECTORY, FONTSDIRECTORY, STYLESDIRECTORY);
+      win.gui(CONFIGSDIRECTORY, FONTSDIRECTORY, THEMEDIRECTORY);
       win.exec();
       htmlstyle = win.makehtml(CONFIGSDIRECTORY);
       subpadding = win.padding;
@@ -708,7 +708,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
 
     //changing the theme of the app
     case THEME:{
-      ChangeThemeWindow win(nullptr,CONFIGSDIRECTORY,projectdir+"cache/styles",STYLESDIRECTORY);
+      ChangeThemeWindow win(nullptr,CONFIGSDIRECTORY,STYLESDIRECTORY,THEMEDIRECTORY);
       win.exec();
       int xposition = view->size().width() / 2;
       int yposition = view->size().height()/2 ;
@@ -720,7 +720,7 @@ void MainWindow::topbarlayoutclick(int buttonindex) {
 
     // showing the shortcuts instructions
     case SHORTCUTS: {
-      ShortcutsInst win(nullptr,STYLESDIRECTORY,CONFIGSDIRECTORY);
+      ShortcutsInst win(nullptr,THEMEDIRECTORY,CONFIGSDIRECTORY);
       win.exec();
       break;
     }
@@ -770,7 +770,7 @@ void MainWindow::controlbuttonslayoutclick(int buttonindex) {
     }
 
     case PLAYLIST_BUTTON: {
-      PlaylistManager win(nullptr, STYLESDIRECTORY, ICONSDIRECTORY.toStdString(), playlist, currenturl);
+      PlaylistManager win(nullptr, THEMEDIRECTORY, ICONSDIRECTORY.toStdString(), playlist, currenturl);
       win.exec();
       if (win.new_video_index != (int)videoindex && win.new_video_index != -1) {
         videoindex = win.new_video_index;

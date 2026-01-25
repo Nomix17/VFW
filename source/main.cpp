@@ -13,17 +13,19 @@
 PATHS path;
 QString homedir = path.homedir;
 std::string projectdir = path.Projectdir();
-std::string CONFIGSDIRECTORY = projectdir + "/cache/configs/";
-std::string FONTSDIRECTORY = projectdir + "/cache/fonts/";
+std::string CONFIGSDIRECTORY = projectdir + "/assets/configs/";
+std::string FONTSDIRECTORY = projectdir + "/assets/fonts/";
 std::string theme = path.GETTHEME(CONFIGSDIRECTORY);
-QString ICONSDIRECTORY = QString::fromStdString(projectdir + "/cache/icons/"+theme+"/");
-std::string STYLESDIRECTORY = projectdir + "/cache/styles/"+theme+"/";
+QString ICONSDIRECTORY = QString::fromStdString(projectdir + "/assets/icons/"+theme+"/");
+std::string STYLESDIRECTORY = projectdir + "/assets/styles/";
+std::string THEMEDIRECTORY = STYLESDIRECTORY+theme+"/";
 
-std::array <std::string,4> essentialDirectories = {
+std::array <std::string,5> essentialDirectories = {
   CONFIGSDIRECTORY,
   FONTSDIRECTORY,
   ICONSDIRECTORY.toStdString(),
-  STYLESDIRECTORY
+  STYLESDIRECTORY,
+  THEMEDIRECTORY
 };
 
 std::vector<std::string> supportedMediaFormats = {
@@ -40,7 +42,7 @@ int main(int argc,char* argv[]){
   QApplication a(argc, argv);
   createMissingDirectories();
 
-  std::ifstream stylefile(STYLESDIRECTORY+"mainwindow.css");
+  std::ifstream stylefile(THEMEDIRECTORY+"mainwindow.css");
 
   if(stylefile){
     std::string script;
