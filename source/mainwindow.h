@@ -54,6 +54,7 @@ struct SubObject{
 
 struct ChapterObject;
 class CustomSlider;
+class TopBar;
 
 // main window class
 class MainWindow: public QMainWindow{
@@ -168,7 +169,7 @@ private:
   QWidget *mainwidget;
   QStackedLayout *stackedlayout;
   QVBoxLayout *mainlayout;
-  QHBoxLayout *topbarlayout=nullptr;
+  TopBar *topbarlayout=nullptr;
   QGridLayout *videolayout;
   QVBoxLayout *controlbuttonslayout=nullptr;
   QMediaPlayer *player;
@@ -194,15 +195,6 @@ private:
   QList<QString> mcbuttons = {"BPause","BBack","BStop","BNext","BFullscreen","BPlaylist","BRepeating","BContinueFLP","BVolumeControl"};
   std::vector <QPushButton*> ButtonsObjectList = {};
   std::vector <QAction*> TopBarButtonsObjectList= {};
-  QList<QString> topbarlayoutbuttons = {"Media","Playback","Audio","Video","Subtitle","View","Help"};
-
-  QList<QList <QString> > actionslist = {{"Open File","Open Folder","Open Media","Quit"},
-                                {"Jump Backward","Jump Forward","Jump to Time","Move To Next Chapter","Move To Previous Chapter","Start Segment Loop"},
-                                {"Full Volume","Mute"},
-                                {"Stretch to Fit"},
-                                {"Add Subtitle File","Load Subtitle","Hide Subtitles","Add Delay","Reduce Delay","Subtitle Settings"},
-                                {"Video Title","Display Chapters Indicators","Change Theme"},
-                                {"Shortcuts Instructions"}};
 
   bool ShowSubs = true;
   bool showChaptersIndicators = false;

@@ -1,52 +1,62 @@
-#ifndef TOPBAEBUTTON
-#define TOPBAEBUTTON
+#ifndef TOPBARBUTTON
+#define TOPBARBUTTON
 
 #include <iostream>
 #include <QToolButton>
 #include <QMenu>
+#include <QWidget>
+#include <QHBoxLayout>
 
 
-class topBarButton:public QToolButton{
-
+class TopBarToolButton : public QWidget {
   Q_OBJECT
   signals:
-    void handleButtonsClick(int ButtonNumber);
+    void buttonClicked(int actionNumber);
 
   public:
-  QToolButton *button;
+    QToolButton* Button;
+    QString buttonName;
+    inline static std::vector <QAction*> buttonsActionsList;
 
-  static std::vector <QAction*> TopBarButtonsObjectList;
-
-  topBarButton(QString buttonName):QToolButton(nullptr){
-    this->button = new QToolButton(this);
-    button->setPopupMode(QToolButton::InstantPopup);
-    button->setText(buttonName);
-    button->setObjectName(buttonName);
-  }
-
-  std::vector <QAction*> setupMenu(QList<QString> actionslist){
-    QMenu *menu = new QMenu(this);
-
-    for (qsizetype j = 0; j < actionslist.size(); j++) {
-
-      QAction *action = new QAction(this);
-      action->setObjectName(actionslist[j]);
-      action->setText(actionslist[j]);
-
-      TopBarButtonsObjectList.push_back(action);
-      int numberOfActions = TopBarButtonsObjectList.size()-1;
-
-      connect(action, &QAction::triggered, [this,numberOfActions]() {
-        emit handleButtonsClick(numberOfActions); 
-      });
-
-      menu->addAction(action);
-      numberOfActions++;
+    TopBarToolButton(QString buttonName, QWidget* parent = nullptr) 
+        : QWidget(parent) {
+      Button = new QToolButton(this);
+      this->buttonName = buttonName;
+      Button->setPopupMode(QToolButton::InstantPopup);
+      Button->setText(buttonName);
+      Button->setObjectName(buttonName);
+      
+      // Add layout so Button fills the widget
+      QHBoxLayout* layout = new QHBoxLayout(this);
+      layout->setContentsMargins(0, 0, 0, 0);
+      layout->addWidget(Button);
+      this->setLayout(layout);
     }
-    button->setMenu(menu);
-    return TopBarButtonsObjectList;
-  }
 
+    void createMenuElements(QList<QString> actionslist) {
+      QMenu *menu = new QMenu(this);
+      for (qsizetype i = 0; i < actionslist.size(); i++) {
+        QAction *action = new QAction(this);
+        action->setObjectName(actionslist[i]);
+        action->setText(actionslist[i]);
+        int actionNumber = buttonsActionsList.size();
+        connect(action, &QAction::triggered, [this,actionNumber]() {
+          emit buttonClicked(actionNumber); 
+        });
+        buttonsActionsList.push_back(action);
+        menu->addAction(action);
+      }
+
+      Button->setMenu(menu);
+    }
+
+    static std::vector <QAction*> getActionsList(){
+      return buttonsActionsList;
+    }
+    
+    void setText(QString text){
+      Button->setText(text);
+    }
 };
 
 

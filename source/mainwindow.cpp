@@ -13,7 +13,7 @@
 #include "mediaurl.h"
 #include "subWindow.h"
 #include "subconfig.h"
-#include "topBarButton.h"
+#include "topBar.h"
 
 #include <iostream>
 #include <string>
@@ -52,8 +52,6 @@
 
 void moveSomethingToPos(QGraphicsWidget *widget, QPointF targetPos, int animationTime);
 void deletelayout(QLayout* layout);
-
-std::vector <QAction*> topBarButton::TopBarButtonsObjectList;
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   setFocusPolicy(Qt::StrongFocus);
@@ -126,25 +124,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 void MainWindow::createTopLayout(){
   if(topbarlayout != nullptr) delete topbarlayout;
 
-  topbarlayout = new QHBoxLayout();
-
-  for (qsizetype i = 0; i < topbarlayoutbuttons.size(); i++) {
-
-    // create a menu for eachbutton
-    topBarButton *TButton = new topBarButton(topbarlayoutbuttons[i]);
-    TButton->setupMenu(actionslist[i]);
- 
-    connect(TButton,&topBarButton::handleButtonsClick,[this](int ButtonNumber){
-      this->topbarlayoutclick(ButtonNumber);
-    });
-
-    topbarlayout->addWidget(TButton);
-  }
-
-  TopBarButtonsObjectList = topBarButton::TopBarButtonsObjectList;
-
-  topbarlayout->setAlignment(Qt::AlignLeft);
-
+  topbarlayout = new TopBar();
+  TopBarButtonsObjectList = TopBar::getTopBarActionsList();
+  connect(topbarlayout, &TopBar::handleButtonsClick,[this](int actionNumber) {
+     topbarlayoutclick(actionNumber);
+  });
 }
 
 
@@ -414,9 +398,9 @@ void MainWindow::mediaplayer(QString url) {
 }
 
 // topbarlayout buttons logic
-void MainWindow::topbarlayoutclick(int buttonindex) {
+void MainWindow::topbarlayoutclick(int actionNumber) {
   QString url;
-  switch (buttonindex) {
+  switch (actionNumber) {
     // if the user choose to open a file
     case Open_file: {
       QString displaydir;
