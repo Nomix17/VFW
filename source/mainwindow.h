@@ -7,6 +7,7 @@
 #include <QStyleHints>
 #include "qboxlayout.h"
 #include "qevent.h"
+#include "qtypes.h"
 #include <QMainWindow>
 #include <QStyleHints>
 #include <QHBoxLayout>
@@ -74,8 +75,8 @@ public:
     FULLSCREEN_BUTTON,
     PLAYLIST_BUTTON,
     REPETITION_BUTTON,
-    CONTINUEFROMLASTPOS_BUTTON,
-    BVolumeControl,
+    CONTINUE_FROM_LAST_POS_BUTTON,
+    TOGGLE_VOLUME_BUTTON
   };
 
   enum controlbuttonslayout_LABEL_ELEMENTS{
@@ -106,18 +107,21 @@ public:
 
   MainWindow(QWidget *parent=nullptr);
   ~MainWindow();
-  void setupShortCuts();
+  void setupShortcuts();
   void createTopLayout();
   void createBottomLayout();
-  void topbarlayoutclick(int buttonindex);
-  void controlbuttonslayoutclick(int buttonindex);
-  void setsliderrange(qint64 position);
-  void playertimeline(qint64 position);
-  void updateTimer();
-  void mediaposition(int position);
-  void mediaplayer(QString url="blackscreen");
+  void topBarButtonsHandler(int buttonindex);
+  void controlButtonsHandler(int buttonindex);
+  void setVideoSliderRange(qint64 playbackPosition);
+  void syncSubtitles(qint64 playbackPosition);
+  void playbackPositionUpdated(qint64 playbackPosition);
+  void determineNextVideo();
+  void updateTimeLabels();
+  void setPlayerDefaultState();
+  void playNextVideoInPlaylist();
+  void startVideoPlayer(QString url);
   void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
-  void slidermanagement(qreal position);
+  void setVolumeSliderPosition(qreal position);
   void closeVideo();
   void toggleSubtitles();
   void toggleChaptersIndicators();
@@ -127,7 +131,6 @@ public:
   void srtSubFileParsing(std::string subpath);
   void assSubFileParsing(std::string subpath);
 
-  QString fixhtml(QString test);
   void changingposition(int newpos);
   void resizelements(std::string elementtorezise="all",int animationTime = 0);
 
@@ -148,8 +151,6 @@ public:
   void ExtractingBuiltInSubs(QString currenturl);
   void parseSettingsFile();
   void savingNewSettings();
-
-// savingNewSettings
 
   //turnning off the tab focusing
   bool focusNextPrevChild(bool next) override{

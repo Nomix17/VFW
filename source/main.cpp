@@ -72,9 +72,9 @@ int main(int argc,char* argv[]){
     }
     //run the Playlist when the app open
     if(w.playlist.size()){
-      w.mediaplayer("play a list");
+      w.playNextVideoInPlaylist();
     }else{
-      w.mediaplayer("blackscreen");
+      w.setPlayerDefaultState();
     }
     w.resize(750,551);
     w.playertype = "playlist";

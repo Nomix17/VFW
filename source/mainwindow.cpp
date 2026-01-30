@@ -55,7 +55,7 @@ void deletelayout(QLayout* layout);
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   setFocusPolicy(Qt::StrongFocus);
-  setupShortCuts();
+  setupShortcuts();
   this->resize(750, 550);
   // elements definition
   player = new QMediaPlayer(this);
@@ -109,7 +109,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   parseSettingsFile();
 
   // showing a blackscreen
-  mediaplayer();
+  setPlayerDefaultState();
 
   // load the sub style
   SubConfig win;
@@ -127,10 +127,9 @@ void MainWindow::createTopLayout(){
   topbarlayout = new TopBar();
   TopBarButtonsObjectList = TopBar::getTopBarActionsList();
   connect(topbarlayout, &TopBar::handleButtonsClick,[this](int actionNumber) {
-     topbarlayoutclick(actionNumber);
+     topBarButtonsHandler(actionNumber);
   });
 }
-
 
 //function to delete a layout passed as argument
 void deletelayout(QLayout* layout){
@@ -197,7 +196,7 @@ void MainWindow::createBottomLayout(){
 
     QPixmap pix(ICONSDIRECTORY + mcbuttons[j] + ".png");
     button->setIcon(pix);
-    if (mcbuttons[j] == "BVolumeControl") {
+    if (mcbuttons[j] == "TOGGLE_VOLUME_BUTTON") {
       button->setIconSize(QSize(24, 24));
     } else {
       button->setIconSize(QSize(16, 16));
@@ -205,7 +204,7 @@ void MainWindow::createBottomLayout(){
     if(mcbuttons[j] == "BContinueFLP"){
       button->hide();
     }
-    connect(button, &QPushButton::clicked, [this, j]() { controlbuttonslayoutclick(j);});
+    connect(button, &QPushButton::clicked, [this, j]() { controlButtonsHandler(j);});
 
     ButtonsObjectList.push_back(button);
 
@@ -215,12 +214,12 @@ void MainWindow::createBottomLayout(){
   controlbuttonslayout->setAlignment(Qt::AlignLeft);
 
   // adding volumeslider to the controlbuttonslayout
-  connect(audio, &QAudioOutput::volumeChanged, this, &MainWindow::slidermanagement);
+  connect(audio, &QAudioOutput::volumeChanged, this, &MainWindow::setVolumeSliderPosition);
   // connecting the slider and media with there logic
-  connect(player, &QMediaPlayer::positionChanged, this, &MainWindow::playertimeline);
-  connect(player, &QMediaPlayer::durationChanged, this, &MainWindow::setsliderrange);
+  connect(player, &QMediaPlayer::positionChanged, this, &MainWindow::playbackPositionUpdated);
+  connect(player, &QMediaPlayer::durationChanged, this, &MainWindow::setVideoSliderRange);
 
-  setsliderrange(player->duration());
+  setVideoSliderRange(player->duration());
   videoslider->setValue(player->position());
   updateButtonsIcon();
 
@@ -324,35 +323,36 @@ void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
   }
 }
 
-void MainWindow::mediaplayer(QString url) {
+void MainWindow::setPlayerDefaultState(){
+  player->setSource({});
+  currenttimer->setText("--:--:--");
+  totaltimer->setText("--:--:--");
+  currenturl="";
+  volumeslider->setRange(0, 1000);
+  volumeslider->setSliderPosition(Settings["defaultVolume"]*1000);
+  paused = true;
+  updateButtonsIcon();
+  QPushButton *SkipButton = ButtonsObjectList[CONTINUE_FROM_LAST_POS_BUTTON];
+  SkipButton->hide();
+}
+
+void MainWindow::playNextVideoInPlaylist() {
+  if (videoindex > playlist.size()) {
+    setPlayerDefaultState();
+    return;
+  }
+  QString nextToPlayPath = playlist[videoindex].toLocalFile();
+  startVideoPlayer(nextToPlayPath);
+}
+
+void MainWindow::startVideoPlayer(QString path) {
+
+  currenturl = path;
   video->setSize(view->size());
   QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
   ToggleSubs->setText("Add Subtitles");
   subsInVideo.clear();
   currentLoadedSubPath = "";
-
-  // if there is no video to play a black image will play (blackscreen)
-  if (videoindex > playlist.size() || url == "blackscreen") {
-    player->setSource({});
-    currenttimer->setText("--:--:--");
-    totaltimer->setText("--:--:--");
-    currenturl="";
-    volumeslider->setRange(0, 1000);
-    volumeslider->setSliderPosition(Settings["defaultVolume"]*1000);
-    paused = true;
-    updateButtonsIcon();
-    QPushButton *SkipButton = ButtonsObjectList[CONTINUEFROMLASTPOS_BUTTON];
-    SkipButton->hide();
-
-    return ;
-
-  } else if (url == "play a list") {  // if pass "play a list" as an argunent a video from the playlist will play
-    currenturl = playlist[videoindex].toLocalFile();
-
-  } else {  // if we pass a url, a video with the url will play and the playlist will be cleared
-    currenturl = url;
-
-  }
 
   //getting the path of the video playing as std::string
   std::filesystem::path currentPath(currenturl.toStdString());
@@ -367,7 +367,7 @@ void MainWindow::mediaplayer(QString url) {
   ExtractingBuiltInSubs(currenturl);
   LoadingInDirectorySubtitles(currenturl);
 
-  // mediaplayer setup (sound and video widget)
+  // startVideoPlayer setup (sound and video widget)
   player->setSource(QUrl(currenturl));
   player->setVideoOutput(video);
   player->setAudioOutput(audio);
@@ -378,27 +378,28 @@ void MainWindow::mediaplayer(QString url) {
     audio->setVolume(Settings["defaultVolume"]);
   volumeslider->setRange(0, 1000);
   volumeslider->setSliderPosition(Settings["defaultVolume"]*1000);
+  paused = false;
+
   video->show();
   player->play();
-  paused = false;
-  //resize some ui elements based on the media opened
+
+  //resize ui elements based on the media opened
   resizelements();
 
   // displaying the title for a brief of time
   int xposition = view->size().width() / 2;
   int yposition = view->size().height() - currentSubBottomSpace;
-
   showingthings(current_video_title, xposition, yposition, 2000);
+
   //load the last saved position if it's availble
   getlastsavedposition();
 
   //save the position of the video what was playing before
   savevideoposition();
-
 }
 
 // topbarlayout buttons logic
-void MainWindow::topbarlayoutclick(int actionNumber) {
+void MainWindow::topBarButtonsHandler(int actionNumber) {
   QString url;
   switch (actionNumber) {
     // if the user choose to open a file
@@ -418,7 +419,7 @@ void MainWindow::topbarlayoutclick(int actionNumber) {
 
       if (!url.isEmpty()) {
         std::cout<<"Loading Video: "<<url.toStdString()<<"\n";
-        mediaplayer(url);
+        startVideoPlayer(url);
         playertype = "vid";
       }
       playlist.clear();  // clearing the playlist
@@ -446,7 +447,7 @@ void MainWindow::topbarlayoutclick(int actionNumber) {
         }
         if (playlist.size()) {
           playertype = "playlist";
-          mediaplayer("play a list");
+          playNextVideoInPlaylist();
         }
       }
       break;
@@ -463,7 +464,7 @@ void MainWindow::topbarlayoutclick(int actionNumber) {
       if (!url.isEmpty()) {
         playlist.clear();
         playertype = "vid";
-        mediaplayer(url);
+        startVideoPlayer(url);
       }
       break;
     }
@@ -531,13 +532,13 @@ void MainWindow::topbarlayoutclick(int actionNumber) {
 
     // setting the audio to full volume
     case FULL_VOLUME: {
-      slidermanagement(1);
+      setVolumeSliderPosition(1);
       break;
     }
 
     // setting the audio to mute
     case MUTE: {
-      slidermanagement(0);
+      setVolumeSliderPosition(0);
       break;
     }
 
@@ -712,7 +713,7 @@ void MainWindow::topbarlayoutclick(int actionNumber) {
 }
 
 // controlbuttonslayout buttons logic
-void MainWindow::controlbuttonslayoutclick(int buttonindex) {
+void MainWindow::controlButtonsHandler(int buttonindex) {
   switch (buttonindex) {
     // if the pause button is clicked
     case PAUSE_BUTTON: {
@@ -727,7 +728,7 @@ void MainWindow::controlbuttonslayoutclick(int buttonindex) {
     case BACK_BUTTON: {
       if (playertype == "playlist" && videoindex > 0) {
         videoindex--;
-        mediaplayer("play a list");
+        playNextVideoInPlaylist();
       }
       break;
     }
@@ -758,7 +759,7 @@ void MainWindow::controlbuttonslayoutclick(int buttonindex) {
       win.exec();
       if (win.new_video_index != (int)videoindex && win.new_video_index != -1) {
         videoindex = win.new_video_index;
-        mediaplayer("play a list");
+        playNextVideoInPlaylist();
       }
       break;
     }
@@ -774,19 +775,19 @@ void MainWindow::controlbuttonslayoutclick(int buttonindex) {
     }
 
     // Continue from last position you stoped
-    case CONTINUEFROMLASTPOS_BUTTON:{
+    case CONTINUE_FROM_LAST_POS_BUTTON:{
       changingposition(lastsavedposition);
-      QPushButton *skipbutton = ButtonsObjectList[CONTINUEFROMLASTPOS_BUTTON];
+      QPushButton *skipbutton = ButtonsObjectList[CONTINUE_FROM_LAST_POS_BUTTON];
       skipbutton->hide();
       break;
     }
     // mute and unmute
-    case BVolumeControl: {
+    case TOGGLE_VOLUME_BUTTON: {
       if (audio->volume()) {
         oldvolume = audio->volume();
-        slidermanagement(0);
+        setVolumeSliderPosition(0);
       } else {
-        slidermanagement(oldvolume);
+        setVolumeSliderPosition(oldvolume);
       }
       break;
     }
@@ -795,14 +796,14 @@ void MainWindow::controlbuttonslayoutclick(int buttonindex) {
 }
 
 // keyboard event catching function
-void MainWindow::setupShortCuts(){
+void MainWindow::setupShortcuts(){
     setFocusPolicy(Qt::StrongFocus);
 
     // --- Playback controls ---
     auto pause = new QShortcut(QKeySequence(Qt::Key_Space), this);
     pause->setContext(Qt::ApplicationShortcut);
     connect(pause, &QShortcut::activated, this, [this]{
-        controlbuttonslayoutclick(PAUSE_BUTTON);
+        controlButtonsHandler(PAUSE_BUTTON);
     });
 
     auto seekFwd = new QShortcut(QKeySequence(Qt::Key_Right), this);
@@ -821,14 +822,14 @@ void MainWindow::setupShortCuts(){
     auto volUp = new QShortcut(QKeySequence(Qt::Key_Up), this);
     volUp->setContext(Qt::ApplicationShortcut);
     connect(volUp, &QShortcut::activated, this, [this]{
-        slidermanagement(audio->volume() + 0.1f);
+        setVolumeSliderPosition(audio->volume() + 0.1f);
         volumeslider->setValue(volumeslider->value() + 1);
     });
 
     auto volDown = new QShortcut(QKeySequence(Qt::Key_Down), this);
     volDown->setContext(Qt::ApplicationShortcut);
     connect(volDown, &QShortcut::activated, this, [this]{
-        slidermanagement(audio->volume() - 0.1f);
+        setVolumeSliderPosition(audio->volume() - 0.1f);
         volumeslider->setValue(volumeslider->value() - 1);
     });
 
@@ -874,19 +875,19 @@ void MainWindow::setupShortCuts(){
     auto volPanel = new QShortcut(QKeySequence(Qt::Key_M), this);
     volPanel->setContext(Qt::ApplicationShortcut);
     connect(volPanel, &QShortcut::activated, this, [this]{
-      controlbuttonslayoutclick(BVolumeControl);
+      controlButtonsHandler(TOGGLE_VOLUME_BUTTON);
     });
 
     auto reduceDelay = new QShortcut(QKeySequence(Qt::Key_G), this);
     reduceDelay->setContext(Qt::ApplicationShortcut);
     connect(reduceDelay, &QShortcut::activated, this, [this]{
-      topbarlayoutclick(REDUCEDELAY);
+      topBarButtonsHandler(REDUCEDELAY);
     });
 
     auto addDelay = new QShortcut(QKeySequence(Qt::Key_H), this);
     addDelay->setContext(Qt::ApplicationShortcut);
     connect(addDelay, &QShortcut::activated, this, [this]{
-      topbarlayoutclick(ADDDELAY);
+      topBarButtonsHandler(ADDDELAY);
     });
 }
 
@@ -949,105 +950,106 @@ void MainWindow::moveToPrevChapter(){
 } 
 
 
-// slider and player relationship
 // setting the range of the slider basing on the player
-void MainWindow::setsliderrange(qint64 position) { videoslider->setRange(0, position); }
+void MainWindow::setVideoSliderRange(qint64 playbackPosition) {
+  videoslider->setRange(0, playbackPosition); 
+}
+
+void MainWindow::syncSubtitles(qint64 playbackPosition) {
+  for(size_t i=0;i<subslist.size();i++){
+    // checking if the player position is between the 2 times
+    int subDisplayingDelay = 200;  // adding delay to the subtitles displaying, until the sub is fully rendered
+
+    if (ShowSubs && (subslist[i]->starttime * 1000) - subDisplayingDelay <= playbackPosition && playbackPosition <= subslist[i]->endtime * 1000) {
+      sublabel->setOpacity(1);
+      if (playbackPosition <= subslist[i]->starttime * 1000 + subDisplayingDelay ) {
+        sublabel->setOpacity(0);
+      }
+
+      // merge the html style with the subtitle and pass it as html script
+      sublabel->setHtml(htmlstyle + QString::fromStdString(subslist[i]->textContent) + "</td></tr></table>");
+
+      resizelements("sub");
+      break;
+
+    }else if (i == subslist.size() - 2) {
+      sublabel->setHtml("");
+    }
+  }
+}
 
 // setting the app elements in there relation with the player
-void MainWindow::playertimeline(qint64 position) {
+void MainWindow::playbackPositionUpdated(qint64 playbackPosition) {
 
-  videoslider->setValue(position);//syncing the slider with the player position
+  videoslider->setValue(playbackPosition);//syncing the slider with the player position
 
   // setting the current timer basing on the player position
-  if (position != player->duration()) updateTimer();
+  if (playbackPosition != player->duration())
+    updateTimeLabels();
 
   // if the video is finished
-  else if (position == player->duration()) {
-    // if the reloading button is in the "reload full playlist" mode
-    if (rep == PlaylistRepeat) {
-      if (playlist.size()){
-        if (videoindex == playlist.size() - 1) {
-          videoindex = 0;
-        } else {
-          videoindex++;
-        }
-        mediaplayer("play a list");
-      }else closeVideo();
-    }
-
-    // if the reloading button is in the "reload one video" mode
-    else if (rep == VideoRepeat) changingposition(0);
-
-    // if the reloading button is in the "random video" mode
-    else if (rep == Shuffle) {
-      videoindex = rand() % playlist.size();
-      mediaplayer("play a list");
-    }
-    videoslider->setValue(0);
+  else if (playbackPosition == player->duration()) {
+    determineNextVideo();
   }
 
   //if the user created a loop
   if (repeatfromposition) {
-    if (position >= finishpoint * 1000) {
+    if (playbackPosition >= finishpoint * 1000) {
       changingposition(startingpoint * 1000);
     }
   }
 
   // syncing subtitles to the player position
-  for(size_t i=0;i<subslist.size();i++){
-    // checking if the player position is between the 2 times
-    if (ShowSubs && (subslist[i]->starttime * 1000) - 200 <= position && position <= subslist[i]->endtime * 1000) {
-      // getting the size of the view and the sub
-      sublabel->setOpacity(1);
-      // adding 10ms delay to the sub apearence until the sub is fully randered to hide the animation
-      if (position <= subslist[i]->starttime * 1000 + 200 ) {
-        sublabel->setOpacity(0);
-      }
+  syncSubtitles(playbackPosition);
 
-      // if the media is in the targeted position we merge the html style with the subtitle and pass it as html script
-      sublabel->setHtml(htmlstyle + QString::fromStdString(subslist[i]->textContent) + "</td></tr></table>");
-
-      resizelements("sub");
-      break;
-    }else if (i == subslist.size() - 2) {
-      // if the media is not in a target position we pass an empty string
-      sublabel->setHtml("");
-    }
-  }
   updateButtonsIcon();
 }
 
-void MainWindow::updateTimer(){
+void MainWindow::determineNextVideo() {
+  if (rep == PlaylistRepeat) {
+    if (playlist.size()) {
+      if (videoindex == playlist.size() - 1) videoindex = 0;
+      else videoindex++;
+      playNextVideoInPlaylist();
 
-  if(currenturl == "") return;
+    } else {
+      closeVideo();
+    }
 
-  int position = player->position();
+  } else if(rep == VideoRepeat) {
+     changingposition(0);
 
-  // setting the current timer basing on the player position
-  int hour = position / (1000 * 60 * 60);
-  int min = (position / 1000 - hour * 60 * 60) / 60;
-  int second = position  / 1000 - min * 60 - hour * 60 * 60;
+  } else if (rep == Shuffle) {
+    videoindex = rand() % playlist.size();
+    playNextVideoInPlaylist();
+
+  }
+
+  videoslider->setValue(0);
+}
+
+std::string formatTime(int timeInMs){
+  int hour = timeInMs / (1000 * 60 * 60);
+  int min = (timeInMs / 1000 - hour * 60 * 60) / 60;
+  int second = timeInMs / 1000 - min * 60 - hour * 60 * 60;
   std::ostringstream osshour, ossmin, osssecond;
   osshour << std::setfill('0') << std::setw(2) << hour;
   ossmin << std::setfill('0') << std::setw(2) << min;
   osssecond << std::setfill('0') << std::setw(2) << second;
-  currenttimer->setText(QString::fromStdString(osshour.str()) + ":"+
-    QString::fromStdString(ossmin.str()) +":" +
-    QString::fromStdString(osssecond.str()));
-
-  // setting the total timer basing on the player duration
-  int thour = player->duration() / (1000 * 60 * 60);
-  int tmin = (player->duration() / 1000 - thour * 60 * 60) / 60;
-  int tsecond = player->duration() / 1000 - tmin * 60 - thour * 60 * 60;
-  std::ostringstream tosshour, tossmin, tosssecond;
-  tosshour << std::setfill('0') << std::setw(2) << thour;
-  tossmin << std::setfill('0') << std::setw(2) << tmin;
-  tosssecond << std::setfill('0') << std::setw(2) << tsecond;
-  totaltimer->setText(QString::fromStdString(tosshour.str()) + ":" +
-    QString::fromStdString(tossmin.str()) +
-    ":" + QString::fromStdString(tosssecond.str()));
-
+  return osshour.str() +":"+ ossmin.str() +":"+ osssecond.str();
 }
+
+void MainWindow::updateTimeLabels(){
+  if(currenturl == "") return;
+
+  int position = player->position();
+  int duration = player->duration();
+  std::string playBackTimer = formatTime(position);  // setting the current timer basing on the player position
+  std::string totalDuration = formatTime(duration);  // setting the total timer basing on the player duration
+  currenttimer->setText(QString::fromStdString(playBackTimer));
+  totaltimer->setText(QString::fromStdString(totalDuration));
+}
+
 
 
 /*
@@ -1080,14 +1082,14 @@ void MainWindow::changingposition(int newpos) {
 
 
 // managing the interactions with the volume slider
-void MainWindow::slidermanagement(qreal position) {
+void MainWindow::setVolumeSliderPosition(qreal position) {
   updateButtonsIcon("volume");
   volumeslider->setSliderPosition(static_cast<int>(position * 1000));
   Settings["defaultVolume"] = position;
 }
 
 void MainWindow::closeVideo(){
-  mediaplayer("blackscreen");
+  setPlayerDefaultState();
   playlist.clear();
   playertype = "video";
 }
@@ -1289,7 +1291,7 @@ void MainWindow::FullScreen(){
   volumeslider->setRange(0, 1000);
   volumeslider->setValue(currentVolume*1000);
   updateButtonsIcon();
-  updateTimer();
+  updateTimeLabels();
 }
 
 //function that display text on the top of the video with fading animation
@@ -1347,7 +1349,7 @@ void MainWindow::updateButtonsIcon(std::string button_name){
 
   //update volume button icons
   if(button_name == "volume" || button_name == "all"){
-    QPushButton *VolumeControlButton = ButtonsObjectList[BVolumeControl];
+    QPushButton *VolumeControlButton = ButtonsObjectList[TOGGLE_VOLUME_BUTTON];
     float currentvolume = audio->volume() * 1000;
     if (currentvolume == 0) {
       VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BMute.png"));
@@ -1400,7 +1402,7 @@ void MainWindow::getlastsavedposition(){
     }
 
     if(lastsavedposition){
-      QPushButton *skipbutton = ButtonsObjectList[CONTINUEFROMLASTPOS_BUTTON];
+      QPushButton *skipbutton = ButtonsObjectList[CONTINUE_FROM_LAST_POS_BUTTON];
       skipbutton->show();
     }
   }else{
