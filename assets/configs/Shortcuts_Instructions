@@ -1,12 +1,14 @@
-Functionality:Shortcut
-Toggle FullScreen:F
-Unfullscreen:Escape
-Pause/Unpause:Space
-Go Back:LeftArowkey
-Go Forward:RightArowkey
-Mute/Unmute:M
-Volume Up:UpArrowKey
-Volume Down:DownArrowKey
-Toggle Subtitles:V
-Increase Subtitles Delay:H
-Reduce Subtitles Delay:G
+Pause/Unpause: Space
+Seek Forward (+5s): Right Arrow Key
+Seek Backward (-5s): Left Arrow Key
+Volume Up: Up Arrow Key
+Volume Down: Down Arrow Key
+Toggle Fullscreen: F
+Exit Fullscreen: Escape
+Toggle Subtitles: V
+Toggle Chapter Indicators: C
+Next Chapter: N
+Previous Chapter: B
+Mute/Unmute: M
+Reduce Subtitles Delay: G
+Increase Subtitles Delay: H
