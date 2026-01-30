@@ -1,57 +1,43 @@
-#include "qaction.h"
-#include "qboxlayout.h"
-#include "qevent.h"
-#include "qpoint.h"
-#include "qpushbutton.h"
-#include "qtoolbutton.h"
 #include "mainwindow.h"
-#include "SRepeatWindow.h"
-#include "jumptotime.h"
-#include "playlistmanager.h"
-#include "shortcutsinstructions.h"
-#include "ChangeThemeWindow.h"
-#include "mediaurl.h"
-#include "subWindow.h"
-#include "subconfig.h"
-#include "topBar.h"
-
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <fstream>
-#include <filesystem>
-#include <bits/stdc++.h>
 
 #include <QApplication>
+#include <QMediaPlayer>
+#include <QAudioOutput>
 #include <QMediaMetaData>
-#include <QLabel>
+#include <QVideoWidget>
+
+#include <QPushButton>
 #include <QToolButton>
+#include <QSlider>
 #include <QMenu>
 #include <QAction>
-
-#include <QAudioOutput>
-#include <QMediaPlayer>
+#include <QShortcut>
 
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QStackedLayout>
+#include <QGridLayout>
 
-#include <QKeyEvent>
-#include <QPropertyAnimation>
 #include <QFileDialog>
 #include <QTimer>
 #include <QProcess>
+#include <QKeyEvent>
+#include <QStyleHints>
 
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QGraphicsVideoItem>
-#include <QGraphicsTextItem>
 #include <QGraphicsOpacityEffect>
 #include <QGraphicsDropShadowEffect>
 #include <QGraphicsProxyWidget>
+#include <QPropertyAnimation>
 
+#include <fstream>
+#include <sstream>
+#include <filesystem>
+#include <limits.h>
 
 void moveSomethingToPos(QGraphicsWidget *widget, QPointF targetPos, int animationTime);
-void deletelayout(QLayout* layout);
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   setFocusPolicy(Qt::StrongFocus);
@@ -120,9 +106,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   currentSubBottomSpace = win.marginbottom;
 }
 
-//function to create the top layout elements
+//function to create the top layout
 void MainWindow::createTopLayout(){
-  if(topbarlayout != nullptr) delete topbarlayout;
+  if(topbarlayout != nullptr) delete topbarlayout; // gets triggered when toggling fullscreen
 
   topbarlayout = new TopBar();
   TopBarButtonsObjectList = TopBar::getTopBarActionsList();
@@ -131,98 +117,31 @@ void MainWindow::createTopLayout(){
   });
 }
 
-//function to delete a layout passed as argument
-void deletelayout(QLayout* layout){
-  if(!layout) return;
-
-  while(QLayoutItem* item = layout->takeAt(0)){
-    if(QLayout* childlayout = item->layout()){
-      deletelayout(childlayout);
-    }
-
-    if(QWidget* childwidget = item->widget()){
-     childwidget->deleteLater();
-    }
-
-    delete item;
-  }
-
-}
-
 //function to create the bottom layout
-void MainWindow::createBottomLayout(){
-  // if the layout isn't null (this means that eather we entered or exited fullscreen mode)
-  if(controlbuttonslayout != nullptr){
-    deletelayout(controlbuttonslayout);// deleting elements in the layout
-    delete controlbuttonslayout; // deleting the layout
-    delete volumeslider;
-    delete currenttimer;
-    delete totaltimer;
+void MainWindow::createBottomLayout() {
+  if (controlbuttonslayout != nullptr) {
+    delete controlbuttonslayout;
   }
+
   controlbuttonslayout=nullptr;
-  ButtonsObjectList.clear(); // clearing the vector that hold the buttons of the bottom layout
 
-  controlbuttonslayout = new QVBoxLayout();//creating new layout
-  QHBoxLayout *firsthalflayout = new QHBoxLayout();
-  QHBoxLayout *secondhalflayout = new QHBoxLayout();
+  controlbuttonslayout = new BottomControlPanel(ICONSDIRECTORY);//creating new layout
+  // controlButtonsObjects = controlbuttonslayout->getControlButtonsObjects();
 
+  connect(controlbuttonslayout, &BottomControlPanel::controlButtonsHandler, this, &MainWindow::controlButtonsHandler);
+  connect(controlbuttonslayout, &BottomControlPanel::videoSliderMoved, this, &MainWindow::changingposition);
+  connect(controlbuttonslayout, &BottomControlPanel::volumeSliderMoved,[this](int value) {
+    audio->setVolume((float)value / 1000);
+  });
 
-  videoslider = new CustomSlider(Qt::Horizontal);// creating video slider
-  currenttimer = new QLabel("--:--:--");
-  totaltimer = new QLabel("--:--:--");
-  volumeslider = new CustomSlider(Qt::Horizontal);// create volume slider
-  volumeslider->setObjectName("volumeslider");
-
-  connect(videoslider, &QSlider::sliderMoved, [this]() {changingposition(videoslider->sliderPosition());});
-  firsthalflayout->addWidget(currenttimer);
-  firsthalflayout->addWidget(videoslider);
-  firsthalflayout->addWidget(totaltimer);
-
-  connect(volumeslider, &QSlider::valueChanged,[this]() {audio->setVolume((float)volumeslider->value() / 1000);});
-  controlbuttonslayout->addLayout(firsthalflayout);
-  controlbuttonslayout->addLayout(secondhalflayout);
-
-  // setting controlbuttonslayout pushbuttons
-  for (int j = 0; j < mcbuttons.size(); j++) {
-    // adding space for the style
-    if (j == 1 || j == 4 || j == 7) {
-      secondhalflayout->addSpacing(20);
-    } else if (j == 8) {
-      // adding space for the style between buttons and volume parameters
-      secondhalflayout->addStretch(1);
-    }
-    QPushButton *button = new QPushButton(this);
-    button->setObjectName(mcbuttons[j]);
-
-    QPixmap pix(ICONSDIRECTORY + mcbuttons[j] + ".png");
-    button->setIcon(pix);
-    if (mcbuttons[j] == "TOGGLE_VOLUME_BUTTON") {
-      button->setIconSize(QSize(24, 24));
-    } else {
-      button->setIconSize(QSize(16, 16));
-    }
-    if(mcbuttons[j] == "BContinueFLP"){
-      button->hide();
-    }
-    connect(button, &QPushButton::clicked, [this, j]() { controlButtonsHandler(j);});
-
-    ButtonsObjectList.push_back(button);
-
-    secondhalflayout->addWidget(button);
-  }
-  secondhalflayout->addWidget(volumeslider);
-  controlbuttonslayout->setAlignment(Qt::AlignLeft);
-
-  // adding volumeslider to the controlbuttonslayout
-  connect(audio, &QAudioOutput::volumeChanged, this, &MainWindow::setVolumeSliderPosition);
-  // connecting the slider and media with there logic
   connect(player, &QMediaPlayer::positionChanged, this, &MainWindow::playbackPositionUpdated);
-  connect(player, &QMediaPlayer::durationChanged, this, &MainWindow::setVideoSliderRange);
+  connect(player, &QMediaPlayer::durationChanged, [this](qint64 duration){
+    controlbuttonslayout->setVideoSliderRange(0,duration);
+  });
 
   setVideoSliderRange(player->duration());
-  videoslider->setValue(player->position());
+  controlbuttonslayout->setVideoSliderValue(player->position());
   updateButtonsIcon();
-
 }
 
 void MainWindow::LoadingInDirectorySubtitles(QString currenturl){
@@ -235,11 +154,11 @@ void MainWindow::LoadingInDirectorySubtitles(QString currenturl){
         std::string filePathWithoutExtention = fileEntry.path().stem().generic_string();
         std::string currentVideoPathWithoutExtension = currentVideoPath.stem().generic_string();
         if(filePathWithoutExtention == currentVideoPathWithoutExtension){
-          subsInVideo.push_back(QString::fromStdString(fileEntry.path().generic_string()));
+          currentVideoSubtitlePaths.push_back(QString::fromStdString(fileEntry.path().generic_string()));
           if(currentLoadedSubPath == ""){
             currentLoadedSubPath = QString::fromStdString(fileEntry.path().generic_string());
             SubFileParsing(currentLoadedSubPath.toStdString());
-            QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
+            QAction * ToggleSubs = TopBarButtonsObjectList[TopBar::TOGGLE_SUB];
             ToggleSubs->setText("Remove Subtitles");
           }
         }
@@ -276,7 +195,7 @@ void MainWindow::ExtranctingChapterData(QString currenturl){
     }
     ChaptersVectors.push_back(newChapter);
   }
-  videoslider->setChaptersMarks(ChaptersVectors, showChaptersIndicators);
+  controlbuttonslayout->setChaptersMarks(ChaptersVectors, showChaptersIndicators);
 }
 
 void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
@@ -306,7 +225,7 @@ void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
     connect(ffmpegProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), ffmpegProcess, &QProcess::deleteLater); // delete the process when finished
     ffmpegProcess->start("/usr/bin/ffmpeg", {"-y","-i", currenturl, "-map", subId, fileSubPath});
 
-    subsInVideo.push_back(fileSubPath);
+    currentVideoSubtitlePaths.push_back(fileSubPath);
 
     if(i == 0){
       currentLoadedSubPath = fileSubPath;
@@ -314,7 +233,7 @@ void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
       connect(ffmpegProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), ffmpegProcess,[this](){
         SubFileParsing(currentLoadedSubPath.toStdString());
         // change the text of the QAction 
-        QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
+        QAction * ToggleSubs = TopBarButtonsObjectList[TopBar::TOGGLE_SUB];
         ToggleSubs->setText("Remove Subtitles");
       });
     }
@@ -323,63 +242,59 @@ void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
   }
 }
 
-void MainWindow::setPlayerDefaultState(){
+void MainWindow::setPlayerDefaultState() {
+  currentVideoUrl = "";
+  videoIsPaused = true;
   player->setSource({});
-  currenttimer->setText("--:--:--");
-  totaltimer->setText("--:--:--");
-  currenturl="";
-  volumeslider->setRange(0, 1000);
-  volumeslider->setSliderPosition(Settings["defaultVolume"]*1000);
-  paused = true;
+  controlbuttonslayout->hideSkipButton();
+  controlbuttonslayout->setDefaultState();
+  setVolumeSliderPosition(Settings["defaultVolume"]);
   updateButtonsIcon();
-  QPushButton *SkipButton = ButtonsObjectList[CONTINUE_FROM_LAST_POS_BUTTON];
-  SkipButton->hide();
 }
 
 void MainWindow::playNextVideoInPlaylist() {
-  if (videoindex > playlist.size()) {
+  if (currentVideoIndex > playlist.size()) {
     setPlayerDefaultState();
     return;
   }
-  QString nextToPlayPath = playlist[videoindex].toLocalFile();
+  QString nextToPlayPath = playlist[currentVideoIndex].toLocalFile();
   startVideoPlayer(nextToPlayPath);
 }
 
 void MainWindow::startVideoPlayer(QString path) {
 
-  currenturl = path;
+  currentVideoUrl = path;
   video->setSize(view->size());
-  QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
+  QAction * ToggleSubs = TopBarButtonsObjectList[TopBar::TOGGLE_SUB];
   ToggleSubs->setText("Add Subtitles");
-  subsInVideo.clear();
+  currentVideoSubtitlePaths.clear();
   currentLoadedSubPath = "";
 
   //getting the path of the video playing as std::string
-  std::filesystem::path currentPath(currenturl.toStdString());
+  std::filesystem::path currentPath(currentVideoUrl.toStdString());
 
   // getting the title of the video that is currently playing for later uses
-  current_video_title = currentPath.stem().generic_string();
+  currentVideoTitle = currentPath.stem().generic_string();
 
   //get the current path of directory that the video is playing in
-  currentworkdirectory = currentPath.parent_path().generic_string();
+  currentVideoParentDirectory = currentPath.parent_path().generic_string();
 
-  ExtranctingChapterData(currenturl);
-  ExtractingBuiltInSubs(currenturl);
-  LoadingInDirectorySubtitles(currenturl);
+  ExtranctingChapterData(currentVideoUrl);
+  ExtractingBuiltInSubs(currentVideoUrl);
+  LoadingInDirectorySubtitles(currentVideoUrl);
 
   // startVideoPlayer setup (sound and video widget)
-  player->setSource(QUrl(currenturl));
+  player->setSource(QUrl(currentVideoUrl));
   player->setVideoOutput(video);
   player->setAudioOutput(audio);
 
-  std::cout<<"Playing: "<<currenturl.toStdString()<<"\n";
+  std::cout<<"Playing: "<<currentVideoUrl.toStdString()<<"\n";
 
-  if(Settings.find("defaultVolume") != Settings.end())
-    audio->setVolume(Settings["defaultVolume"]);
-  volumeslider->setRange(0, 1000);
-  volumeslider->setSliderPosition(Settings["defaultVolume"]*1000);
-  paused = false;
+  if(Settings.find("defaultVolume") != Settings.end()) {
+    setVolumeSliderPosition(Settings["defaultVolume"]);
+  }
 
+  videoIsPaused = false;
   video->show();
   player->play();
 
@@ -389,7 +304,7 @@ void MainWindow::startVideoPlayer(QString path) {
   // displaying the title for a brief of time
   int xposition = view->size().width() / 2;
   int yposition = view->size().height() - currentSubBottomSpace;
-  showingthings(current_video_title, xposition, yposition, 2000);
+  showingthings(currentVideoTitle, xposition, yposition, 2000);
 
   //load the last saved position if it's availble
   getlastsavedposition();
@@ -400,13 +315,13 @@ void MainWindow::startVideoPlayer(QString path) {
 
 // topbarlayout buttons logic
 void MainWindow::topBarButtonsHandler(int actionNumber) {
+
   QString url;
   switch (actionNumber) {
-    // if the user choose to open a file
-    case Open_file: {
+    case TopBar::Open_file: {
       QString displaydir;
-      if (currentworkdirectory.size())
-        displaydir = QString::fromStdString(currentworkdirectory);
+      if (currentVideoParentDirectory.size())
+        displaydir = QString::fromStdString(currentVideoParentDirectory);
       else{
         displaydir = homedir;
       }
@@ -420,24 +335,23 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       if (!url.isEmpty()) {
         std::cout<<"Loading Video: "<<url.toStdString()<<"\n";
         startVideoPlayer(url);
-        playertype = "vid";
+        currentPlayerMode = PlayerMode::Single;
       }
-      playlist.clear();  // clearing the playlist
+      playlist.clear();
       break;
     }
 
-    // if the user choose to open a directory (playlist)
-    case Open_folder: {
+    case TopBar::Open_folder: {
       QString displaydir;
-      if (currentworkdirectory.size())
-        displaydir = QString::fromStdString(currentworkdirectory);
+      if (currentVideoParentDirectory.size())
+        displaydir = QString::fromStdString(currentVideoParentDirectory);
       else{
         displaydir = homedir;
       }
 
       url = QFileDialog::getExistingDirectory(this, tr("Setect Playlist Directory", "", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks), displaydir);
       if (!url.isEmpty()) {
-        playlist.clear();  // clearing the playlist
+        playlist.clear();
         // saving all the urls in a list
         for (auto i : std::filesystem::directory_iterator(url.toStdString())) {
           if(std::find(supportedMediaFormats.begin(), supportedMediaFormats.end(),i.path().extension().string()) != supportedMediaFormats.end()){
@@ -446,49 +360,41 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
           }
         }
         if (playlist.size()) {
-          playertype = "playlist";
+          currentPlayerMode = PlayerMode::Playlist;
           playNextVideoInPlaylist();
         }
       }
       break;
     }
 
-    // if the user choose to open a media file
-    case Open_media: {
-      // launching the constructor for url window input
+    case TopBar::Open_media: {
       UrlWindow x(nullptr, THEMEDIRECTORY);
       x.exec();
-      // getting the url inputed by the user
       url = x.url;
-      // checking if the user set a url or not
       if (!url.isEmpty()) {
         playlist.clear();
-        playertype = "vid";
+        currentPlayerMode = PlayerMode::Single;
         startVideoPlayer(url);
       }
       break;
     }
 
-    // if the user choose to quit the app
-    case Quit: {
+    case TopBar::Quit: {
       QApplication::quit();
       break;
     }
 
-    // jump backward (player)
-    case JUMP_BACKWARD: {
+    case TopBar::JUMP_BACKWARD: {
       changingposition(player->position() - 5000);
       break;
     }
 
-    // jump forward (player)
-    case JUMP_FORWARD: {
+    case TopBar::JUMP_FORWARD: {
       changingposition(player->position() + 5000);
       break;
     }
 
-    // jump to a specific time
-    case JUMP_TO_TIME: {
+    case TopBar::JUMP_TO_TIME: {
       JumpTime x(nullptr, THEMEDIRECTORY);
       x.exec();
       if (x.targettime >= 0) {
@@ -496,55 +402,51 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       }
       break;
     }
-    // jump to next chapter
-    case JUMP_TO_NEXT_CHAP:{
+
+    case TopBar::JUMP_TO_NEXT_CHAP:{
       moveToNextChapter();
       break;
     }
-    // jump to previous chapter
-    case JUMP_TO_PREV_CHAP:{
+
+    case TopBar::JUMP_TO_PREV_CHAP:{
       moveToPrevChapter();
       break;
     }
 
-    // loop on segment of the video
-    case TOGGLE_LOOPSEGMENT: {
-      QAction * toggleLoopAction = TopBarButtonsObjectList[TOGGLE_LOOPSEGMENT];
-      if(!currenturl.isEmpty()){
-        if(!repeatfromposition){
+    case TopBar::TOGGLE_LOOPSEGMENT: {
+      QAction * toggleLoopAction = TopBarButtonsObjectList[TopBar::TOGGLE_LOOPSEGMENT];
+      if(!currentVideoUrl.isEmpty()){
+        if(!segmentLoopEnabled){
           SRepeatWindow win(nullptr, THEMEDIRECTORY);
           win.exec();
           if (win.startingpoint >= 0 && win.finishingpoint >= 0 && win.finishingpoint != win.startingpoint) {
-            repeatfromposition = true;
-            startingpoint = win.startingpoint;
-            finishpoint = win.finishingpoint;
-            changingposition(startingpoint * 1000);
+            segmentLoopEnabled = true;
+            segmentLoopStart = win.startingpoint;
+            segmentLoopEnd = win.finishingpoint;
+            changingposition(segmentLoopStart * 1000);
             toggleLoopAction->setText("Exit The Loop");
 
           }
         }else{
-          repeatfromposition = false;
+          segmentLoopEnabled = false;
           toggleLoopAction->setText("Start Segment Loop");
         }
       }
       break;
     }
 
-    // setting the audio to full volume
-    case FULL_VOLUME: {
+    case TopBar::FULL_VOLUME: {
       setVolumeSliderPosition(1);
       break;
     }
 
-    // setting the audio to mute
-    case MUTE: {
+    case TopBar::MUTE: {
       setVolumeSliderPosition(0);
       break;
     }
 
-    // make the videofill the view
-    case TOGGLE_ASPRadio: {
-      QAction * toggleFillAction = TopBarButtonsObjectList[TOGGLE_ASPRadio];
+    case TopBar::TOGGLE_ASPRadio: {
+      QAction * toggleFillAction = TopBarButtonsObjectList[TopBar::TOGGLE_ASPRadio];
       if(CurrentAspectMode == Qt::KeepAspectRatio){
         CurrentAspectMode = Qt::IgnoreAspectRatio; 
         toggleFillAction->setText("Lock Aspect Ratio");
@@ -556,13 +458,12 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       break;
     }
 
-    // if the user choose to open a sub file
-    case TOGGLE_SUB: {
-      QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
+    case TopBar::TOGGLE_SUB: {
+      QAction * ToggleSubs = TopBarButtonsObjectList[TopBar::TOGGLE_SUB];
       QString displaydir;
-      if(subslist.size() == 0){
-        if (currentworkdirectory.size())
-          displaydir = QString::fromStdString(currentworkdirectory);
+      if(currentLoadedSubList.size() == 0){
+        if (currentVideoParentDirectory.size())
+          displaydir = QString::fromStdString(currentVideoParentDirectory);
         else{
           displaydir = homedir;
         }
@@ -580,33 +481,34 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
           ToggleSubs->setText("Remove Subtitles");
         }
       }else{
-        for (SubObject* ptr:subslist){
+        for (SubObject* ptr:currentLoadedSubList){
           delete ptr;
         }
         sublabel->setOpacity(0);
-        subslist.clear();
+        currentLoadedSubList.clear();
         currentLoadedSubPath = "";
         ToggleSubs->setText("Add Subtitles");
       }
       break;
     } 
-    case LOADSUBTITLES:{
-      subWindow subWin(nullptr,THEMEDIRECTORY,ICONSDIRECTORY.toStdString(),subsInVideo,currentLoadedSubPath);
+
+    case TopBar::LOADSUBTITLES:{
+      subWindow subWin(nullptr,THEMEDIRECTORY,ICONSDIRECTORY.toStdString(),currentVideoSubtitlePaths,currentLoadedSubPath);
       subWin.exec();
       if(!subWin.clickedSubPath.isEmpty()){
         currentLoadedSubPath = subWin.clickedSubPath;
         sublabel->setOpacity(0);
-        subslist.clear();
+        currentLoadedSubList.clear();
         SubFileParsing(currentLoadedSubPath.toStdString());
         std::cout<<"[ INFO ] Subtitles were Loaded: "<<currentLoadedSubPath.toStdString()<<"\n";
-        QAction * ToggleSubs = TopBarButtonsObjectList[TOGGLE_SUB];
+        QAction * ToggleSubs = TopBarButtonsObjectList[TopBar::TOGGLE_SUB];
         ToggleSubs->setText("Remove Subtitles");
       }
       break;
     }
 
-    case TOGGLE_SUBDISPLAY: {
-      QAction * ToggleSubsDisplay = TopBarButtonsObjectList[TOGGLE_SUBDISPLAY];
+    case TopBar::TOGGLE_SUBDISPLAY: {
+      QAction * ToggleSubsDisplay = TopBarButtonsObjectList[TopBar::TOGGLE_SUBDISPLAY];
       toggleSubtitles();
       if(ShowSubs){
         ToggleSubsDisplay->setText("Hide Subtitles");
@@ -615,8 +517,9 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       }
       break;
     }
-    case TOGGLE_CHAPTERSINDICATORS: {
-      QAction * toggleChapters = TopBarButtonsObjectList[TOGGLE_CHAPTERSINDICATORS];
+
+    case TopBar::TOGGLE_CHAPTERSINDICATORS: {
+      QAction * toggleChapters = TopBarButtonsObjectList[TopBar::TOGGLE_CHAPTERSINDICATORS];
       toggleChaptersIndicators();
       if(showChaptersIndicators){
         toggleChapters->setText("Hide Chapters Indicators");
@@ -625,19 +528,19 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       }
       break;
     }
-    // add delay to the subtitles time
-    case ADDDELAY: {
-      if (subslist.size()) {
-        for (size_t i = 0; i < subslist.size(); i++) {
-          subslist[i]->starttime += 0.1;
-          subslist[i]->endtime += 0.1;
+
+    case TopBar::ADDDELAY: {
+      if (currentLoadedSubList.size()) {
+        for (size_t i = 0; i < currentLoadedSubList.size(); i++) {
+          currentLoadedSubList[i]->starttime += 0.1;
+          currentLoadedSubList[i]->endtime += 0.1;
         }
-        subdelay += 0.1;
-        if (-0.1 < subdelay && subdelay < 0.1) {
-          subdelay = 0;
+        currentSubDelay += 0.1;
+        if (-0.1 < currentSubDelay && currentSubDelay < 0.1) {
+          currentSubDelay = 0;
         }
         // add animation so the user can see that the delay has been changed
-        std::string text = "Subtitles Delay:" + std::to_string((int)(subdelay * 1000)) + " ms";
+        std::string text = "Subtitles Delay:" + std::to_string((int)(currentSubDelay * 1000)) + " ms";
         int xposition = view->size().width();
         int yposition = view->size().height();
         showingthings(text, xposition / 2, yposition / 2, 1000);
@@ -645,23 +548,22 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       break;
     }
 
-    // reducing delay to the subtitles time
-    case REDUCEDELAY: {
-      if (subslist.size()) {
-        for (size_t i = 0; i < subslist.size(); i++) {
-          if (subslist[0]->starttime > 0) {
-            subslist[i]->starttime -= 0.1;
-            subslist[i]->endtime -= 0.1;
+    case TopBar::REDUCEDELAY: {
+      if (currentLoadedSubList.size()) {
+        for (size_t i = 0; i < currentLoadedSubList.size(); i++) {
+          if (currentLoadedSubList[0]->starttime > 0) {
+            currentLoadedSubList[i]->starttime -= 0.1;
+            currentLoadedSubList[i]->endtime -= 0.1;
 
           }
         }
-        subdelay -= 0.1;
+        currentSubDelay -= 0.1;
 
-        if (-0.1 < subdelay && subdelay < 0.1) {
-          subdelay = 0;
-        }
+        if (-0.1 < currentSubDelay && currentSubDelay < 0.1)  
+          currentSubDelay = 0;
+
         // add animation so the user can see that the delay has been changed
-        std::string text = "Subtitles Delay:" + std::to_string((int)(subdelay * 1000)) + " ms";
+        std::string text = "Subtitles Delay:" + std::to_string((int)(currentSubDelay * 1000)) + " ms";
         int xposition = view->size().width();
         int yposition = view->size().height();
         showingthings(text, xposition / 2, yposition / 2, 1000);
@@ -669,8 +571,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       break;
     }
 
-    // if the user choose to custumize the sub
-    case SUBSETTINGS: {
+    case TopBar::SUBSETTINGS: {
       SubConfig win;
       win.gui(CONFIGSDIRECTORY, FONTSDIRECTORY, THEMEDIRECTORY);
       win.exec();
@@ -681,18 +582,16 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       break;
     }
 
-    // showing the title of the video
-    case TITLE: {
-      if (current_video_title.size()) {
+    case TopBar::TITLE: {
+      if (currentVideoTitle.size()) {
         int xposition = view->size().width() / 2;
         int yposition = view->size().height() - subBottomMargin;
-        showingthings(current_video_title, xposition, yposition, 3000);
+        showingthings(currentVideoTitle, xposition, yposition, 3000);
       }
       break;
     }
 
-    //changing the theme of the app
-    case THEME:{
+    case TopBar::THEME:{
       ChangeThemeWindow win(nullptr,CONFIGSDIRECTORY,STYLESDIRECTORY,THEMEDIRECTORY);
       win.exec();
       int xposition = view->size().width() / 2;
@@ -703,96 +602,90 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       break;
     }
 
-    // showing the shortcuts instructions
-    case SHORTCUTS: {
+    case TopBar::SHORTCUTS: {
       ShortcutsInst win(nullptr,THEMEDIRECTORY,CONFIGSDIRECTORY);
       win.exec();
       break;
     }
+
   }
 }
 
 // controlbuttonslayout buttons logic
 void MainWindow::controlButtonsHandler(int buttonindex) {
   switch (buttonindex) {
-    // if the pause button is clicked
-    case PAUSE_BUTTON: {
-      if (!paused) player->pause();
+
+    case BottomControlPanel::PAUSE_BUTTON: {
+      if (!videoIsPaused) player->pause();
       else player->play();
-      paused = !paused ;
+      videoIsPaused = !videoIsPaused ;
       updateButtonsIcon();
       break;
     }
 
-    // if the prevous video button is clicked
-    case BACK_BUTTON: {
-      if (playertype == "playlist" && videoindex > 0) {
-        videoindex--;
+    case BottomControlPanel::BACK_BUTTON: {
+      if (currentPlayerMode == PlayerMode::Playlist && currentVideoIndex > 0) {
+        currentVideoIndex--;
         playNextVideoInPlaylist();
       }
       break;
     }
 
-    // if the stop button is clicked
-    case STOP_BUTTON: {
+    case BottomControlPanel::STOP_BUTTON: {
       savevideoposition();
       closeVideo();
       break;
     }
 
-    // if the next video button is clicked
-    case NEXT_BUTTON: {
-      if (playertype == "playlist") {
-        // we set the player to the end of the video so it trigger the logic in the lines (326,...354)
+    case BottomControlPanel::NEXT_BUTTON: {
+      if (currentPlayerMode == PlayerMode::Playlist) {
         player->setPosition(player->duration());
       }
       break;
     }
-    // if fullscreen button is clicked
-    case FULLSCREEN_BUTTON: {
+
+    case BottomControlPanel::FULLSCREEN_BUTTON: {
       FullScreen();
       break;
     }
 
-    case PLAYLIST_BUTTON: {
-      PlaylistManager win(nullptr, THEMEDIRECTORY, ICONSDIRECTORY.toStdString(), playlist, currenturl);
+    case BottomControlPanel::PLAYLIST_BUTTON: {
+      PlaylistManager win(nullptr, THEMEDIRECTORY, ICONSDIRECTORY.toStdString(), playlist, currentVideoUrl);
       win.exec();
-      if (win.new_video_index != (int)videoindex && win.new_video_index != -1) {
-        videoindex = win.new_video_index;
+      if (win.new_video_index != (int)currentVideoIndex && win.new_video_index != -1) {
+        currentVideoIndex = win.new_video_index;
         playNextVideoInPlaylist();
       }
       break;
     }
 
-    // if reloading behavior is clicked
-    case REPETITION_BUTTON: {
-      if (rep == PlaylistRepeat) rep = VideoRepeat;
-      else if (rep == VideoRepeat) rep = Shuffle;
-      else if (rep == Shuffle) rep = PlaylistRepeat;
+    case BottomControlPanel::REPETITION_BUTTON: {
+      if (rep == BottomControlPanel::PlaylistRepeat) rep = BottomControlPanel::VideoRepeat;
+      else if (rep == BottomControlPanel::VideoRepeat) rep = BottomControlPanel::Shuffle;
+      else if (rep == BottomControlPanel::Shuffle) rep = BottomControlPanel::PlaylistRepeat;
       updateButtonsIcon("repetition");
 
       break;
     }
 
-    // Continue from last position you stoped
-    case CONTINUE_FROM_LAST_POS_BUTTON:{
-      changingposition(lastsavedposition);
-      QPushButton *skipbutton = ButtonsObjectList[CONTINUE_FROM_LAST_POS_BUTTON];
-      skipbutton->hide();
+    case BottomControlPanel::CONTINUE_FROM_LAST_POS_BUTTON:{
+      changingposition(lastPlaybackPosition);
+      controlbuttonslayout->hideSkipButton();
       break;
     }
-    // mute and unmute
-    case TOGGLE_VOLUME_BUTTON: {
-      if (audio->volume()) {
-        oldvolume = audio->volume();
+
+    case BottomControlPanel::TOGGLE_VOLUME_BUTTON: {
+      static float oldVolume = 0.5;
+      if (audio->volume() > 0.0f) {
+         oldVolume = audio->volume();
         setVolumeSliderPosition(0);
       } else {
-        setVolumeSliderPosition(oldvolume);
+        setVolumeSliderPosition(oldVolume);
       }
       break;
     }
+
   }
-  ;
 }
 
 // keyboard event catching function
@@ -803,7 +696,7 @@ void MainWindow::setupShortcuts(){
     auto pause = new QShortcut(QKeySequence(Qt::Key_Space), this);
     pause->setContext(Qt::ApplicationShortcut);
     connect(pause, &QShortcut::activated, this, [this]{
-        controlButtonsHandler(PAUSE_BUTTON);
+        controlButtonsHandler(BottomControlPanel::PAUSE_BUTTON);
     });
 
     auto seekFwd = new QShortcut(QKeySequence(Qt::Key_Right), this);
@@ -823,14 +716,12 @@ void MainWindow::setupShortcuts(){
     volUp->setContext(Qt::ApplicationShortcut);
     connect(volUp, &QShortcut::activated, this, [this]{
         setVolumeSliderPosition(audio->volume() + 0.1f);
-        volumeslider->setValue(volumeslider->value() + 1);
     });
 
     auto volDown = new QShortcut(QKeySequence(Qt::Key_Down), this);
     volDown->setContext(Qt::ApplicationShortcut);
     connect(volDown, &QShortcut::activated, this, [this]{
         setVolumeSliderPosition(audio->volume() - 0.1f);
-        volumeslider->setValue(volumeslider->value() - 1);
     });
 
     // --- Fullscreen ---
@@ -841,7 +732,7 @@ void MainWindow::setupShortcuts(){
     auto escFS = new QShortcut(QKeySequence(Qt::Key_Escape), this);
     escFS->setContext(Qt::ApplicationShortcut);
     connect(escFS, &QShortcut::activated, this, [this]{
-        fullscreened = true;
+        fullScreenEnabled = true;
         FullScreen();
     });
 
@@ -875,19 +766,19 @@ void MainWindow::setupShortcuts(){
     auto volPanel = new QShortcut(QKeySequence(Qt::Key_M), this);
     volPanel->setContext(Qt::ApplicationShortcut);
     connect(volPanel, &QShortcut::activated, this, [this]{
-      controlButtonsHandler(TOGGLE_VOLUME_BUTTON);
+      controlButtonsHandler(BottomControlPanel::TOGGLE_VOLUME_BUTTON);
     });
 
     auto reduceDelay = new QShortcut(QKeySequence(Qt::Key_G), this);
     reduceDelay->setContext(Qt::ApplicationShortcut);
     connect(reduceDelay, &QShortcut::activated, this, [this]{
-      topBarButtonsHandler(REDUCEDELAY);
+      topBarButtonsHandler(TopBar::REDUCEDELAY);
     });
 
     auto addDelay = new QShortcut(QKeySequence(Qt::Key_H), this);
     addDelay->setContext(Qt::ApplicationShortcut);
     connect(addDelay, &QShortcut::activated, this, [this]{
-      topBarButtonsHandler(ADDDELAY);
+      topBarButtonsHandler(TopBar::ADDDELAY);
     });
 }
 
@@ -906,7 +797,7 @@ void MainWindow::toggleChaptersIndicators(){
   int yposition = view->size().height() /2;
   std::string displayMessage = showChaptersIndicators ? "Chapters Indicators On" : "Chapters Indicators Off";
   showingthings(displayMessage, xposition, yposition, 2000);
-  videoslider->setChaptersMarks(ChaptersVectors, showChaptersIndicators);
+  controlbuttonslayout->setChaptersMarks(ChaptersVectors, showChaptersIndicators);
 }
 
 std::vector<int> calculatingTextDimentions(QString text){
@@ -952,27 +843,27 @@ void MainWindow::moveToPrevChapter(){
 
 // setting the range of the slider basing on the player
 void MainWindow::setVideoSliderRange(qint64 playbackPosition) {
-  videoslider->setRange(0, playbackPosition); 
+  controlbuttonslayout->setVideoSliderRange(0, playbackPosition); 
 }
 
 void MainWindow::syncSubtitles(qint64 playbackPosition) {
-  for(size_t i=0;i<subslist.size();i++){
+  for(size_t i=0;i<currentLoadedSubList.size();i++){
     // checking if the player position is between the 2 times
     int subDisplayingDelay = 200;  // adding delay to the subtitles displaying, until the sub is fully rendered
 
-    if (ShowSubs && (subslist[i]->starttime * 1000) - subDisplayingDelay <= playbackPosition && playbackPosition <= subslist[i]->endtime * 1000) {
+    if (ShowSubs && (currentLoadedSubList[i]->starttime * 1000) - subDisplayingDelay <= playbackPosition && playbackPosition <= currentLoadedSubList[i]->endtime * 1000) {
       sublabel->setOpacity(1);
-      if (playbackPosition <= subslist[i]->starttime * 1000 + subDisplayingDelay ) {
+      if (playbackPosition <= currentLoadedSubList[i]->starttime * 1000 + subDisplayingDelay ) {
         sublabel->setOpacity(0);
       }
 
       // merge the html style with the subtitle and pass it as html script
-      sublabel->setHtml(htmlstyle + QString::fromStdString(subslist[i]->textContent) + "</td></tr></table>");
+      sublabel->setHtml(htmlstyle + QString::fromStdString(currentLoadedSubList[i]->textContent) + "</td></tr></table>");
 
       resizelements("sub");
       break;
 
-    }else if (i == subslist.size() - 2) {
+    }else if (i == currentLoadedSubList.size() - 2) {
       sublabel->setHtml("");
     }
   }
@@ -981,73 +872,53 @@ void MainWindow::syncSubtitles(qint64 playbackPosition) {
 // setting the app elements in there relation with the player
 void MainWindow::playbackPositionUpdated(qint64 playbackPosition) {
 
-  videoslider->setValue(playbackPosition);//syncing the slider with the player position
+  controlbuttonslayout->setVideoSliderValue(playbackPosition);//syncing the slider with the player position
 
-  // setting the current timer basing on the player position
-  if (playbackPosition != player->duration())
+  if (playbackPosition != player->duration()) {
     updateTimeLabels();
 
-  // if the video is finished
-  else if (playbackPosition == player->duration()) {
+  } else if (playbackPosition == player->duration()) {
     determineNextVideo();
+
   }
 
-  //if the user created a loop
-  if (repeatfromposition) {
-    if (playbackPosition >= finishpoint * 1000) {
-      changingposition(startingpoint * 1000);
-    }
+  if (segmentLoopEnabled && playbackPosition >= segmentLoopEnd * 1000) {
+    changingposition(segmentLoopStart * 1000);
   }
 
   // syncing subtitles to the player position
   syncSubtitles(playbackPosition);
 
-  updateButtonsIcon();
+  // updateButtonsIcon();
 }
 
 void MainWindow::determineNextVideo() {
-  if (rep == PlaylistRepeat) {
+  if (rep == BottomControlPanel::PlaylistRepeat) {
     if (playlist.size()) {
-      if (videoindex == playlist.size() - 1) videoindex = 0;
-      else videoindex++;
+      if (currentVideoIndex == playlist.size() - 1) currentVideoIndex = 0;
+      else currentVideoIndex++;
       playNextVideoInPlaylist();
 
     } else {
       closeVideo();
     }
 
-  } else if(rep == VideoRepeat) {
+  } else if(rep == BottomControlPanel::VideoRepeat) {
      changingposition(0);
 
-  } else if (rep == Shuffle) {
-    videoindex = rand() % playlist.size();
+  } else if (rep == BottomControlPanel::Shuffle) {
+    currentVideoIndex = rand() % playlist.size();
     playNextVideoInPlaylist();
 
   }
 
-  videoslider->setValue(0);
-}
-
-std::string formatTime(int timeInMs){
-  int hour = timeInMs / (1000 * 60 * 60);
-  int min = (timeInMs / 1000 - hour * 60 * 60) / 60;
-  int second = timeInMs / 1000 - min * 60 - hour * 60 * 60;
-  std::ostringstream osshour, ossmin, osssecond;
-  osshour << std::setfill('0') << std::setw(2) << hour;
-  ossmin << std::setfill('0') << std::setw(2) << min;
-  osssecond << std::setfill('0') << std::setw(2) << second;
-  return osshour.str() +":"+ ossmin.str() +":"+ osssecond.str();
+  controlbuttonslayout->setVideoSliderValue(0);
 }
 
 void MainWindow::updateTimeLabels(){
-  if(currenturl == "") return;
-
-  int position = player->position();
-  int duration = player->duration();
-  std::string playBackTimer = formatTime(position);  // setting the current timer basing on the player position
-  std::string totalDuration = formatTime(duration);  // setting the total timer basing on the player duration
-  currenttimer->setText(QString::fromStdString(playBackTimer));
-  totaltimer->setText(QString::fromStdString(totalDuration));
+  if(currentVideoUrl == "") return;
+  controlbuttonslayout->updatePlayBackTimer(player->position());
+  controlbuttonslayout->updateDurationTimer(player->duration());
 }
 
 
@@ -1071,10 +942,11 @@ void MainWindow::changingposition(int newpos) {
     player->setPosition(newpos);
     player->setAudioOutput(audio);
     audio->setVolume(oldvol);
-    if (!paused){
+    if (!videoIsPaused){
       player->play();
-      paused = false;
+      videoIsPaused = false;
     }
+
   }else{
     player->setPosition(newpos);
   }
@@ -1084,14 +956,14 @@ void MainWindow::changingposition(int newpos) {
 // managing the interactions with the volume slider
 void MainWindow::setVolumeSliderPosition(qreal position) {
   updateButtonsIcon("volume");
-  volumeslider->setSliderPosition(static_cast<int>(position * 1000));
+  controlbuttonslayout->setVolumeSliderPosition(static_cast<int>(position * 1000));
   Settings["defaultVolume"] = position;
 }
 
 void MainWindow::closeVideo(){
   setPlayerDefaultState();
   playlist.clear();
-  playertype = "video";
+  currentPlayerMode = PlayerMode::Single;
 }
 
 bool lineIsEmpty(const std::string& str){
@@ -1120,10 +992,11 @@ void MainWindow::assSubFileParsing(std::string subpath){
   }
 
   std::string line;
-  subslist.clear();
+  currentLoadedSubList.clear();
   int startTimeIndex=1; 
   int endTimeIndex=2;
   int textIndex=9;
+  SubObject *newSubObj = nullptr;
 
   while(getline(file,line)){
     if(line.find("Format:") != std::string::npos){
@@ -1138,7 +1011,7 @@ void MainWindow::assSubFileParsing(std::string subpath){
     }else if(line.find("Dialogue:") != std::string::npos){
       QStringList splitedDialogLine = QString::fromStdString(line).split(",");
 
-      subobject = new SubObject;
+      newSubObj = new SubObject;
 
       char step;     
       std::istringstream ss1(splitedDialogLine[startTimeIndex].toStdString());
@@ -1169,10 +1042,10 @@ void MainWindow::assSubFileParsing(std::string subpath){
       }
 
 
-      subobject->starttime = firsttime;
-      subobject->endtime = secondtime;
-      subobject->textContent = subText;
-      subslist.push_back(subobject);
+      newSubObj->starttime = firsttime;
+      newSubObj->endtime = secondtime;
+      newSubObj->textContent = subText;
+      currentLoadedSubList.push_back(newSubObj);
     }
   }
 }
@@ -1186,6 +1059,7 @@ void MainWindow::srtSubFileParsing(std::string subpath){
   std::string line;
   std::string nextline;
   std::string fulltext = "";
+  SubObject *newSubObj = nullptr;
 
   // looping the lines in the file
   while (getline(file, line)) {
@@ -1204,9 +1078,9 @@ void MainWindow::srtSubFileParsing(std::string subpath){
       // calculating the ending time from the string line (hour, minutes, seconds)
       double secondtime = h2*60*60 + min2*60 + sec2 + milsec2*0.001;
 
-      subobject = new SubObject;
-      subobject->starttime = firsttime;
-      subobject->endtime = secondtime;
+      newSubObj = new SubObject;
+      newSubObj->starttime = firsttime;
+      newSubObj->endtime = secondtime;
 
       while(getline(file,nextline)){
         nextline.erase(std::remove(nextline.begin(), nextline.end(), '\r'), nextline.end());
@@ -1218,8 +1092,8 @@ void MainWindow::srtSubFileParsing(std::string subpath){
 
       if(!fulltext.empty()){
         int brPosition = fulltext.rfind("<br/>");
-        subobject->textContent = fulltext.substr(0,brPosition);
-        subslist.push_back(subobject);
+        newSubObj->textContent = fulltext.substr(0,brPosition);
+        currentLoadedSubList.push_back(newSubObj);
         fulltext = "";
       }
 
@@ -1229,8 +1103,8 @@ void MainWindow::srtSubFileParsing(std::string subpath){
 
 // scraping the subtitles from the sub file
 void MainWindow::SubFileParsing(std::string subpath) {
-  for (SubObject* ptr:subslist) delete ptr;
-  subslist.clear();
+  for (SubObject* ptr:currentLoadedSubList) delete ptr;
+  currentLoadedSubList.clear();
   if(std::filesystem::path(subpath).extension().string() == ".ass") assSubFileParsing(subpath);
   else srtSubFileParsing(subpath);
 }
@@ -1270,12 +1144,15 @@ void MainWindow::resizeEvent(QResizeEvent *event) {
 
 //function to toggle the fullscreen
 void MainWindow::FullScreen(){
-  if (fullscreened){
+  float currentVolume = audio->volume();
+
+  if (fullScreenEnabled){
     this->showMaximized();
     topbarlayoutvisibility("show");// calling function to show topbar
     mainlayout->setContentsMargins(10, 10, 10, 10);
     createBottomLayout();//recreating bottom layout
     mainlayout->addLayout(controlbuttonslayout);// adding the bottom layout into the mainlayout
+
   } else {
     this->showFullScreen();
     topbarlayoutvisibility("hide");// calling function to hide topbar
@@ -1284,12 +1161,13 @@ void MainWindow::FullScreen(){
     view->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
     createBottomLayout();//recreating bottom layout
     floatingControlPannelContainerLayout->addLayout(controlbuttonslayout);// adding the bottom layout into the floating pannel
+
   }
-  fullscreened = !fullscreened;
+
+  fullScreenEnabled = !fullScreenEnabled;
+
   // resetting the volume slider
-  float currentVolume = audio->volume();
-  volumeslider->setRange(0, 1000);
-  volumeslider->setValue(currentVolume*1000);
+  setVolumeSliderPosition(currentVolume);
   updateButtonsIcon();
   updateTimeLabels();
 }
@@ -1337,51 +1215,29 @@ void MainWindow::topbarlayoutvisibility(std::string status){
   }
 }
 
-//this function update buttons icons
 void MainWindow::updateButtonsIcon(std::string button_name){
-
-  //update play/pause button icon
   if(button_name == "play/pause" || button_name == "all"){
-    QPushButton *Pause_button = ButtonsObjectList[PAUSE_BUTTON];
-    if(!paused || currenturl == "") Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "BPause.png"));
-    else Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "BPlay.png"));
+    bool Paused = (!videoIsPaused || currentVideoUrl == "");
+    controlbuttonslayout->updatePausePlayButtonIcon(Paused);
   }
 
   //update volume button icons
   if(button_name == "volume" || button_name == "all"){
-    QPushButton *VolumeControlButton = ButtonsObjectList[TOGGLE_VOLUME_BUTTON];
-    float currentvolume = audio->volume() * 1000;
-    if (currentvolume == 0) {
-      VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BMute.png"));
-      volumeslider->setStyleSheet("QSlider#volumeslider::handle{background:#1e1e1e;}");
-
-    } else if (currentvolume <= 333 && currentvolume > 0) {
-      VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeLow.png"));
-      volumeslider->setStyleSheet("QSlider#volumeslider::handle{background:#484949;}");
-
-    } else if (currentvolume >= 333 && currentvolume <= 666) {
-      VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeMid.png"));
-
-    } else if (currentvolume >= 666) {
-      VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeControl.png"));
-    }
+    float currentVolume = audio->volume() * 1000;
+    controlbuttonslayout->updateVolumeButtonIcon(currentVolume);
   }
 
   //update repetition button icon
   if(button_name == "repetition" || button_name == "all"){
-    QPushButton *Repeatition_button = ButtonsObjectList[REPETITION_BUTTON];
-    if (rep == PlaylistRepeat) Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BRepeating.png"));
-    else if (rep == VideoRepeat) Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BRepeatingone.png"));
-    else if (rep == Shuffle) Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BSuffle.png"));
+    controlbuttonslayout->updateRepetitionButtonIcon(rep);
   }
-
 }
 
 //function to save the position of a video after closing it
 void MainWindow::savevideoposition(){
-  if(current_video_title.size() && player->position() > 5000){
+  if(currentVideoTitle.size() && player->position() > 5000){
     std::ofstream possavefile(CONFIGSDIRECTORY+"/.positionsave.csv",std::ios::app);
-    std::string line = current_video_title+" ; "+QString::number(player->position()).toStdString()+'\n';
+    std::string line = currentVideoTitle+" ; "+QString::number(player->position()).toStdString()+'\n';
     possavefile<<line;
     possavefile.close();
   }
@@ -1389,21 +1245,20 @@ void MainWindow::savevideoposition(){
 
 //load old position of a video if available
 void MainWindow::getlastsavedposition(){
-  if(current_video_title == "") return;
-  lastsavedposition = 0;
+  if(currentVideoTitle == "") return;
+  lastPlaybackPosition = 0;
   std::string LPPPath = CONFIGSDIRECTORY+"/.positionsave.csv";
   std::ifstream possavefile(LPPPath);
   if (possavefile){
     std::string line;
     while(getline(possavefile,line)){
-      if(line.find(current_video_title)!=std::string::npos){
-        lastsavedposition = std::stoi(line.substr(line.rfind(";")+1,line.size()-1));
+      if(line.find(currentVideoTitle)!=std::string::npos){
+        lastPlaybackPosition = std::stoi(line.substr(line.rfind(";")+1,line.size()-1));
       }
     }
 
-    if(lastsavedposition){
-      QPushButton *skipbutton = ButtonsObjectList[CONTINUE_FROM_LAST_POS_BUTTON];
-      skipbutton->show();
+    if(lastPlaybackPosition){
+      controlbuttonslayout->showSkipButton();
     }
   }else{
       std::cerr << "[ WARNING ] Failed to open LPP  File: "<<LPPPath<<"\n";
@@ -1488,7 +1343,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event){
   
   
   if (event->type() == QEvent::MouseMove && !floatingPannelDisplayed) {
-    if(fullscreened){
+    if(fullScreenEnabled){
       //getting the position of the floating pannel
       int viewheight = view->size().height();
       int floatingPannel_Xpos = floatingControlPannelProxy->pos().rx();
@@ -1566,7 +1421,7 @@ void MainWindow::savingNewSettings(){
 MainWindow::~MainWindow(){
   savingNewSettings();
   savevideoposition();
-  for (SubObject* ptr:subslist){
+  for (SubObject* ptr:currentLoadedSubList){
     delete ptr;
   }
 }

@@ -1,38 +1,34 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "CustomObjects.h"
-#include <QApplication>
-#include <QShortcut>
-#include <QStyleHints>
-#include "qboxlayout.h"
-#include "qevent.h"
-#include "qtypes.h"
 #include <QMainWindow>
-#include <QStyleHints>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QToolButton>
-#include <QSlider>
-#include <QWidget>
-#include <QLabel>
-#include <QList>
-#include <QVideoWidget>
-#include <QAudioOutput>
 #include <QMediaPlayer>
-#include <QKeyEvent>
 #include <QUrl>
+#include <QString>
+#include <QLabel>
 #include <QStackedLayout>
-#include <vector>
+#include <QVBoxLayout>
+#include <QGridLayout>
 #include <QGraphicsTextItem>
 #include <QGraphicsVideoItem>
 #include <QGraphicsView>
-#include <QGraphicsScene>
-#include <limits.h>
+
+#include <vector>
 #include <string>
-#include <fstream>
-#include <filesystem>
+#include <map>
+
+#include "SRepeatWindow.h"
+#include "jumptotime.h"
+#include "playlistmanager.h"
+#include "shortcutsinstructions.h"
+#include "ChangeThemeWindow.h"
+#include "mediaurl.h"
+#include "subWindow.h"
+#include "subconfig.h"
+#include "CustomObjects.h"
+#include "topBar.h"
+#include "bottomControlPanel.h"
+
 
 #ifndef PATH_MAX
 #define PATH_MAX 4096
@@ -53,56 +49,14 @@ struct SubObject{
   float endtime;
 };
 
-struct ChapterObject;
-class CustomSlider;
-class TopBar;
-
 // main window class
 class MainWindow: public QMainWindow{
   Q_OBJECT
 public:
-  enum RepeatMode{
-    PlaylistRepeat,
-    VideoRepeat,
-    Shuffle,
-  };
 
-  enum topbarlayout_LABEL_ELEMENTS{
-    PAUSE_BUTTON,
-    BACK_BUTTON,
-    STOP_BUTTON,
-    NEXT_BUTTON,
-    FULLSCREEN_BUTTON,
-    PLAYLIST_BUTTON,
-    REPETITION_BUTTON,
-    CONTINUE_FROM_LAST_POS_BUTTON,
-    TOGGLE_VOLUME_BUTTON
-  };
-
-  enum controlbuttonslayout_LABEL_ELEMENTS{
-    Open_file,
-    Open_folder,
-    Open_media,
-    Quit,
-    JUMP_BACKWARD,
-    JUMP_FORWARD,
-    JUMP_TO_TIME,
-    JUMP_TO_NEXT_CHAP,
-    JUMP_TO_PREV_CHAP,
-    TOGGLE_LOOPSEGMENT,
-    FULL_VOLUME,
-    MUTE,
-    TOGGLE_ASPRadio,
-    TOGGLE_SUB,
-    LOADSUBTITLES,
-    TOGGLE_SUBDISPLAY,
-    ADDDELAY,
-    REDUCEDELAY,
-    SUBSETTINGS,
-    TITLE,
-    TOGGLE_CHAPTERSINDICATORS,
-    THEME,
-    SHORTCUTS,
+  enum PlayerMode {
+    Single,
+    Playlist
   };
 
   MainWindow(QWidget *parent=nullptr);
@@ -159,70 +113,75 @@ public:
   }
 
 private:
-  bool paused=false;
-  bool fullscreened = false;
-  bool finished = false;
-  size_t videoindex=0;
-  RepeatMode  rep = PlaylistRepeat ;
-  Qt::AspectRatioMode CurrentAspectMode = Qt::KeepAspectRatio;
+  // playback status variables
+  bool videoIsPaused=false;
+  bool fullScreenEnabled = false;
+  size_t currentVideoIndex=0;
 
+  bool segmentLoopEnabled = false;
+  int segmentLoopStart;
+  int segmentLoopEnd;
+
+  Qt::AspectRatioMode CurrentAspectMode = Qt::KeepAspectRatio;
+  BottomControlPanel::RepeatMode  rep = BottomControlPanel::PlaylistRepeat;
+
+  // ui Status variables
+  bool ShowSubs = true;
+  bool showChaptersIndicators = false;
+  bool MouseIsInsideFloatingPanel = false;
+
+  // ui variables
   QLabel* image;
   QWidget *mainwidget;
   QStackedLayout *stackedlayout;
   QVBoxLayout *mainlayout;
   TopBar *topbarlayout=nullptr;
   QGridLayout *videolayout;
-  QVBoxLayout *controlbuttonslayout=nullptr;
-  QMediaPlayer *player;
+  BottomControlPanel *controlbuttonslayout=nullptr;
   QGraphicsTextItem *sublabel;
-  QAudioOutput *audio;
+  QMediaPlayer *player;
   QGraphicsVideoItem *video;
+  QAudioOutput *audio;
   QGraphicsView *view;
   QGraphicsScene *scene;
-  CustomSlider *videoslider;
-  CustomSlider *volumeslider;
-  QLabel *currenttimer;
-  QLabel *totaltimer;
-  qreal oldvolume;
-  float subdelay=0;
-  bool repeatfromposition = false;
-  int startingpoint;
-  int finishpoint;
-  // floating control layout elements
+
+  // floating control pannel ui variables 
   QWidget* floatingControlPannelWidget;
   QVBoxLayout * floatingControlPannelContainerLayout;
   QGraphicsProxyWidget * floatingControlPannelProxy;
 
-  QList<QString> mcbuttons = {"BPause","BBack","BStop","BNext","BFullscreen","BPlaylist","BRepeating","BContinueFLP","BVolumeControl"};
-  std::vector <QPushButton*> ButtonsObjectList = {};
-  std::vector <QAction*> TopBarButtonsObjectList= {};
 
-  bool ShowSubs = true;
-  bool showChaptersIndicators = false;
-  QString htmlstyle;
-  QGraphicsTextItem *toshowtext = nullptr;
+  // running video variables
+  std::string currentVideoParentDirectory;
+  QString currentVideoUrl = "";
+  std::string currentVideoTitle="";
+
+  // buttons Objects
+  std::vector <QAction*> TopBarButtonsObjectList= {};
+  std::vector <QPushButton*> controlButtonsObjects = {}; // no longer used, might use it later, Idk I'll just leave it here
+
+  // subtiles ui variables
   int subpadding;
-  
   int subBottomMargin;
   int currentSubBottomSpace;
+  QString htmlstyle;
+  QGraphicsTextItem *toshowtext = nullptr;
 
-  SubObject* subobject;
-  std::vector <SubObject*> subslist;
-  std::string current_video_title="";
-  QString currenturl = "";
-  std::string currentworkdirectory;
-  int lastsavedposition=0;
-  std::vector <ChapterObject> ChaptersVectors = {};
+  // subtiles logic variables
+  float currentSubDelay=0;
+  std::vector <SubObject*> currentLoadedSubList;
   QString currentLoadedSubPath = "";
+
+  int lastPlaybackPosition=0;
+  std::vector <ChapterObject> ChaptersVectors = {};
 
   //default Values
   std::map<std::string,float> Settings;
 
 public:
   std::vector<QUrl> playlist;
-  std::vector <QString> subsInVideo = {};
-  QString playertype;
-  bool MouseIsInsideFloatingPanel = false;
+  std::vector <QString> currentVideoSubtitlePaths = {};
+  PlayerMode currentPlayerMode;
 };
 
 class PATHS {

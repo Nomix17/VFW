@@ -66,7 +66,7 @@ int main(int argc,char* argv[]){
 
       } else if(std::find(supportedSubtitlesFormats.begin(),supportedSubtitlesFormats.end(),fileExtention) != supportedSubtitlesFormats.end()) {
         QString subPath = QString::fromStdString(std::filesystem::path(argv[i]).generic_string());
-        w.subsInVideo.push_back(subPath);
+        w.currentVideoSubtitlePaths.push_back(subPath);
         std::cout<<"Loading Subtitle: "<<std::filesystem::path(argv[i]).generic_string()<<"\n";
       }
     }
@@ -77,7 +77,7 @@ int main(int argc,char* argv[]){
       w.setPlayerDefaultState();
     }
     w.resize(750,551);
-    w.playertype = "playlist";
+    w.currentPlayerMode = MainWindow::PlayerMode::Playlist;
   }
   a.installEventFilter(&w);
   return a.exec();

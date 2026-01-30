@@ -1,7 +1,6 @@
 #ifndef CUSTOMOBJ
 #define CUSTOMOBJ
 
-#include "mainwindow.h"
 #include <iostream>
 #include <QSlider>
 #include <QMouseEvent>

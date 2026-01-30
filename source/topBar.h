@@ -8,6 +8,32 @@
 #include "topBarButton.h"
 
 class TopBar : public QHBoxLayout {
+  public:
+    enum controlbuttonslayout_LABEL_ELEMENTS{
+      Open_file,
+      Open_folder,
+      Open_media,
+      Quit,
+      JUMP_BACKWARD,
+      JUMP_FORWARD,
+      JUMP_TO_TIME,
+      JUMP_TO_NEXT_CHAP,
+      JUMP_TO_PREV_CHAP,
+      TOGGLE_LOOPSEGMENT,
+      FULL_VOLUME,
+      MUTE,
+      TOGGLE_ASPRadio,
+      TOGGLE_SUB,
+      LOADSUBTITLES,
+      TOGGLE_SUBDISPLAY,
+      ADDDELAY,
+      REDUCEDELAY,
+      SUBSETTINGS,
+      TITLE,
+      TOGGLE_CHAPTERSINDICATORS,
+      THEME,
+      SHORTCUTS,
+    };
 
   Q_OBJECT
   signals:
