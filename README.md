@@ -4,7 +4,7 @@ Before using this code, please ensure you have the following dependencies instal
 
 - **Qt6**: Required for the GUI framework
   
-### Installting Dependencies 
+### Installing Dependencies 
 
 #### Ubuntu/Debian
 ```bash
@@ -26,7 +26,7 @@ sudo pacman -S git qt6-base qt6-multimedia ffmpeg
 ```bash
 git clone https://github.com/Nomix17/VFW
 cd VFW
-chmod +x source/build.sh cache/run.sh source/uninstall.sh
+chmod +x source/build.sh source/uninstall.sh
 cd source
 sudo ./build.sh
 sudo chown -R $(whoami):$(whoami) /opt/VFW
