@@ -168,7 +168,7 @@ private:
   QGraphicsTextItem *toshowtext = nullptr;
 
   // subtiles logic variables
-  float currentSubDelay=0;
+  int currentSubDelay=0;
   std::vector <SubObject*> currentLoadedSubList;
   QString currentLoadedSubPath = "";
 

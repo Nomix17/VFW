@@ -531,16 +531,12 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
 
     case TopBar::ADDDELAY: {
       if (currentLoadedSubList.size()) {
-        for (size_t i = 0; i < currentLoadedSubList.size(); i++) {
-          currentLoadedSubList[i]->starttime += 0.1;
-          currentLoadedSubList[i]->endtime += 0.1;
-        }
-        currentSubDelay += 0.1;
-        if (-0.1 < currentSubDelay && currentSubDelay < 0.1) {
+        currentSubDelay += 100;
+        if (-100 < currentSubDelay && currentSubDelay < 100)
           currentSubDelay = 0;
-        }
+
         // add animation so the user can see that the delay has been changed
-        std::string text = "Subtitles Delay:" + std::to_string((int)(currentSubDelay * 1000)) + " ms";
+        std::string text = "Subtitles Delay: " + std::to_string((int)(currentSubDelay)) + " ms";
         int xposition = view->size().width();
         int yposition = view->size().height();
         showingthings(text, xposition / 2, yposition / 2, 1000);
@@ -550,20 +546,12 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
 
     case TopBar::REDUCEDELAY: {
       if (currentLoadedSubList.size()) {
-        for (size_t i = 0; i < currentLoadedSubList.size(); i++) {
-          if (currentLoadedSubList[0]->starttime > 0) {
-            currentLoadedSubList[i]->starttime -= 0.1;
-            currentLoadedSubList[i]->endtime -= 0.1;
-
-          }
-        }
-        currentSubDelay -= 0.1;
-
-        if (-0.1 < currentSubDelay && currentSubDelay < 0.1)  
+        currentSubDelay -= 100;
+        if (-100 < currentSubDelay && currentSubDelay < 100)
           currentSubDelay = 0;
 
         // add animation so the user can see that the delay has been changed
-        std::string text = "Subtitles Delay:" + std::to_string((int)(currentSubDelay * 1000)) + " ms";
+        std::string text = "Subtitles Delay: " + std::to_string((int)(currentSubDelay)) + " ms";
         int xposition = view->size().width();
         int yposition = view->size().height();
         showingthings(text, xposition / 2, yposition / 2, 1000);
@@ -848,12 +836,14 @@ void MainWindow::setVideoSliderRange(qint64 playbackPosition) {
 
 void MainWindow::syncSubtitles(qint64 playbackPosition) {
   for(size_t i=0;i<currentLoadedSubList.size();i++){
-    // checking if the player position is between the 2 times
-    int subDisplayingDelay = 200;  // adding delay to the subtitles displaying, until the sub is fully rendered
+    int subDisplayingDelay = 200; // adding delay to the subtitles displaying, until the sub is fully rendered
 
-    if (ShowSubs && (currentLoadedSubList[i]->starttime * 1000) - subDisplayingDelay <= playbackPosition && playbackPosition <= currentLoadedSubList[i]->endtime * 1000) {
+    bool hasPlaybackPassedNextSubStart = (playbackPosition >= (currentLoadedSubList[i]->starttime + currentSubDelay - subDisplayingDelay));
+    bool isPlaybackBeforeNextSubEnd = (playbackPosition <= (currentLoadedSubList[i]->endtime + currentSubDelay));
+
+    if (ShowSubs && hasPlaybackPassedNextSubStart && isPlaybackBeforeNextSubEnd) {
       sublabel->setOpacity(1);
-      if (playbackPosition <= currentLoadedSubList[i]->starttime * 1000 + subDisplayingDelay ) {
+      if (playbackPosition <= currentLoadedSubList[i]->starttime + subDisplayingDelay ) {
         sublabel->setOpacity(0);
       }
 
@@ -984,6 +974,24 @@ bool lineContainsTime(std::string text){
   return (text.find("-->") != std::string::npos);
 }
 
+std::pair<double,double> parseTimeIntervalToMs(std::string stringTimeInterval){
+  std::istringstream ss(stringTimeInterval);
+  int h1, min1, sec1, milsec1, h2, min2, sec2, milsec2;
+  std::string arrow;
+  char step;
+  ss>>h1>>step>>min1>>step>>sec1>>step>>milsec1;
+  ss>>std::ws>>arrow>>std::ws;
+  ss>>h2>>step>>min2>>step>>sec2>>step>>milsec2;
+
+  // calculating the starting time from the string line (hour, minutes, seconds, ms)
+  double firstTime = (h1*60*60 + min1*60 + sec1) * 1000 + milsec1;// ms
+
+  // calculating the ending time from the string line (hour, minutes, seconds, ms)
+  double secondTime = (h2*60*60 + min2*60 + sec2) * 1000 + milsec2; // ms
+  return std::pair<double,double> (firstTime, secondTime);
+
+}
+
 void MainWindow::assSubFileParsing(std::string subpath){
   std::ifstream file(subpath);
   if(!file){
@@ -1008,22 +1016,20 @@ void MainWindow::assSubFileParsing(std::string subpath){
         if(splitedLine[i] == "End") endTimeIndex = i;
         if(splitedLine[i] == "Text") textIndex = i;
       }
+
     }else if(line.find("Dialogue:") != std::string::npos){
       QStringList splitedDialogLine = QString::fromStdString(line).split(",");
 
       newSubObj = new SubObject;
 
-      char step;     
-      std::istringstream ss1(splitedDialogLine[startTimeIndex].toStdString());
-      int h1, min1, sec1, milsec1;
-      ss1>>h1>>step>>min1>>step>>sec1>>step>>milsec1;
-      double firsttime = h1*60*60 + min1*60 + sec1 + milsec1*0.001;
+      std::pair <int,int> timesPair = parseTimeIntervalToMs(line);
+      double firstTime = timesPair.first;
+      double secondTime = timesPair.second;
 
-      std::istringstream ss2(splitedDialogLine[endTimeIndex].toStdString());
-      int h2, min2, sec2, milsec2;
-      ss2>>h2>>step>>min2>>step>>sec2>>step>>milsec2;
-      double secondtime = h2*60*60 + min2*60 + sec2 + milsec2*0.001;
-      
+      newSubObj = new SubObject;
+      newSubObj->starttime = firstTime;
+      newSubObj->endtime = secondTime;
+
       std::string subText="";
       for(int i = textIndex; i<splitedDialogLine.size(); i++){
         subText += splitedDialogLine[i].toStdString();
@@ -1041,9 +1047,6 @@ void MainWindow::assSubFileParsing(std::string subpath){
         pos += 1;
       }
 
-
-      newSubObj->starttime = firsttime;
-      newSubObj->endtime = secondtime;
       newSubObj->textContent = subText;
       currentLoadedSubList.push_back(newSubObj);
     }
@@ -1064,23 +1067,13 @@ void MainWindow::srtSubFileParsing(std::string subpath){
   // looping the lines in the file
   while (getline(file, line)) {
     if(lineContainsTime(line)){
-      std::istringstream ss(line);
-      int h1, min1, sec1, milsec1, h2, min2, sec2, milsec2;
-      std::string arrow;
-      char step;
-      ss>>h1>>step>>min1>>step>>sec1>>step>>milsec1;
-      ss>>std::ws>>arrow>>std::ws;
-      ss>>h2>>step>>min2>>step>>sec2>>step>>milsec2;
-
-      // calculating the starting time from the string line (hour, minutes, seconds)
-      double firsttime = h1*60*60 + min1*60 + sec1 + milsec1*0.001;
-
-      // calculating the ending time from the string line (hour, minutes, seconds)
-      double secondtime = h2*60*60 + min2*60 + sec2 + milsec2*0.001;
+      std::pair <int,int> timesPair = parseTimeIntervalToMs(line);
+      double firstTime = timesPair.first;
+      double secondTime = timesPair.second;
 
       newSubObj = new SubObject;
-      newSubObj->starttime = firsttime;
-      newSubObj->endtime = secondtime;
+      newSubObj->starttime = firstTime;
+      newSubObj->endtime = secondTime;
 
       while(getline(file,nextline)){
         nextline.erase(std::remove(nextline.begin(), nextline.end(), '\r'), nextline.end());
