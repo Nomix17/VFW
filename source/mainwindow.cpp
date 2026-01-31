@@ -284,7 +284,7 @@ void MainWindow::startVideoPlayer(QString path) {
   LoadingInDirectorySubtitles(currentVideoUrl);
 
   // startVideoPlayer setup (sound and video widget)
-  player->setSource(QUrl(currentVideoUrl));
+  player->setSource(QUrl::fromLocalFile(currentVideoUrl));
   player->setVideoOutput(video);
   player->setAudioOutput(audio);
 

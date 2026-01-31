@@ -56,20 +56,23 @@ int main(int argc,char* argv[]){
   w.show();
   //if the user pass video paths as arguments
   if(argc>1){
-    for(int i=1;i<argc;i++){
-      //add the paths to the playlist
-      std::string fileExtention = std::filesystem::path(argv[i]).extension().string();
-      if (std::find(supportedMediaFormats.begin(),supportedMediaFormats.end(),fileExtention) != supportedMediaFormats.end()) {
-        QUrl VideoPath = QUrl::fromLocalFile(QString::fromStdString(std::filesystem::path(argv[i]).generic_string()));
-        w.playlist.push_back(VideoPath);
-        std::cout<<"Loading Video: "<<std::filesystem::path(argv[i]).generic_string()<<"\n";
 
-      } else if(std::find(supportedSubtitlesFormats.begin(),supportedSubtitlesFormats.end(),fileExtention) != supportedSubtitlesFormats.end()) {
-        QString subPath = QString::fromStdString(std::filesystem::path(argv[i]).generic_string());
+    for(int i=1;i<argc;i++){
+      std::filesystem::path path = std::filesystem::absolute(argv[i]);
+      std::string fileExtention = path.extension().string();
+
+      if (std::find(supportedMediaFormats.begin(), supportedMediaFormats.end(), fileExtention) != supportedMediaFormats.end()) {
+        QUrl videoPath = QUrl::fromLocalFile(QString::fromLocal8Bit(path.c_str()));
+        w.playlist.push_back(videoPath);
+        std::cout << "Loading Video: " << path.string() << "\n";
+
+      } else if (std::find(supportedSubtitlesFormats.begin(), supportedSubtitlesFormats.end(), fileExtention) != supportedSubtitlesFormats.end()) {
+        QString subPath = QString::fromLocal8Bit(path.c_str());
         w.currentVideoSubtitlePaths.push_back(subPath);
-        std::cout<<"Loading Subtitle: "<<std::filesystem::path(argv[i]).generic_string()<<"\n";
+        std::cout << "Loading Subtitle: " << path.string() << "\n";
       }
     }
+
     //run the Playlist when the app open
     if(w.playlist.size()){
       w.playNextVideoInPlaylist();
