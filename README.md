@@ -1,6 +1,6 @@
 ## Dependencies
 
-Before using this code, please ensure you have the following dependencies installed:
+Before using this app, please ensure you have the following dependencies installed:
 
 - **Qt6**: Required for the GUI framework
   
@@ -28,10 +28,10 @@ git clone https://github.com/Nomix17/VFW
 cd VFW
 chmod +x source/build.sh source/uninstall.sh
 cd source
-sudo ./build.sh
-sudo chown -R $(whoami):$(whoami) /opt/VFW
+./build.sh
 ```
+
 ## Customization
 
-To Edit or/and add a theme check the directory ```cache/styles/```.   
+To Edit or/and add a theme check the directory ```assets/styles/```.   
 It's easy to customize, just some css files.
