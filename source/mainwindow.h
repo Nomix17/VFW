@@ -31,9 +31,9 @@
 #include "Paths.h"
 
 struct SubObject{
-  float starttime;
+  float startTime;
   std::string textContent;
-  float endtime;
+  float endTime;
 };
 
 // main window class

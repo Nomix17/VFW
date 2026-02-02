@@ -838,12 +838,12 @@ void MainWindow::syncSubtitles(qint64 playbackPosition) {
   for(size_t i=0;i<currentLoadedSubList.size();i++){
     int subDisplayingDelay = 200; // adding delay to the subtitles displaying, until the sub is fully rendered
 
-    bool hasPlaybackPassedNextSubStart = (playbackPosition >= (currentLoadedSubList[i]->starttime + currentSubDelay - subDisplayingDelay));
-    bool isPlaybackBeforeNextSubEnd = (playbackPosition <= (currentLoadedSubList[i]->endtime + currentSubDelay));
+    bool hasPlaybackPassedNextSubStart = (playbackPosition >= (currentLoadedSubList[i]->startTime + currentSubDelay - subDisplayingDelay));
+    bool isPlaybackBeforeNextSubEnd = (playbackPosition <= (currentLoadedSubList[i]->endTime + currentSubDelay));
 
     if (ShowSubs && hasPlaybackPassedNextSubStart && isPlaybackBeforeNextSubEnd) {
       sublabel->setOpacity(1);
-      if (playbackPosition <= currentLoadedSubList[i]->starttime + subDisplayingDelay ) {
+      if (playbackPosition <= currentLoadedSubList[i]->startTime + subDisplayingDelay ) {
         sublabel->setOpacity(0);
       }
 
@@ -974,7 +974,7 @@ bool lineContainsTime(std::string text){
   return (text.find("-->") != std::string::npos);
 }
 
-std::pair<double,double> parseTimeIntervalToMs(std::string stringTimeInterval){
+std::pair<double,double> parseSrtArrowTimeLineToMs(std::string stringTimeInterval){
   std::istringstream ss(stringTimeInterval);
   int h1, min1, sec1, milsec1, h2, min2, sec2, milsec2;
   std::string arrow;
@@ -992,7 +992,15 @@ std::pair<double,double> parseTimeIntervalToMs(std::string stringTimeInterval){
 
 }
 
-void MainWindow::assSubFileParsing(std::string subpath){
+double formatStringTime(std::string stringTimer) {
+  std::istringstream ss(stringTimer);
+  char step;
+  int h1, min1, sec1, milsec1;
+  ss>>h1>>step>>min1>>step>>sec1>>step>>milsec1;
+  return (h1*60*60 + min1*60 + sec1) * 1000 + milsec1; // ms
+}
+
+void MainWindow::assSubFileParsing(std::string subpath) {
   std::ifstream file(subpath);
   if(!file){
     std::cerr << "[ WARNING ] Cannot find .ass subtitle File: "<<subpath<<"\n";
@@ -1004,10 +1012,9 @@ void MainWindow::assSubFileParsing(std::string subpath){
   int startTimeIndex=1; 
   int endTimeIndex=2;
   int textIndex=9;
-  SubObject *newSubObj = nullptr;
 
   while(getline(file,line)){
-    if(line.find("Format:") != std::string::npos){
+    if (line.find("Format:") != std::string::npos) {
       line.erase(std::remove(line.begin(),line.end(),' '), line.end());
       line.erase(std::remove(line.begin(),line.end(),'\r'), line.end());
       QStringList splitedLine = QString::fromStdString(line).split(",");
@@ -1017,18 +1024,8 @@ void MainWindow::assSubFileParsing(std::string subpath){
         if(splitedLine[i] == "Text") textIndex = i;
       }
 
-    }else if(line.find("Dialogue:") != std::string::npos){
+    } else if(line.find("Dialogue:") != std::string::npos) {
       QStringList splitedDialogLine = QString::fromStdString(line).split(",");
-
-      newSubObj = new SubObject;
-
-      std::pair <int,int> timesPair = parseTimeIntervalToMs(line);
-      double firstTime = timesPair.first;
-      double secondTime = timesPair.second;
-
-      newSubObj = new SubObject;
-      newSubObj->starttime = firstTime;
-      newSubObj->endtime = secondTime;
 
       std::string subText="";
       for(int i = textIndex; i<splitedDialogLine.size(); i++){
@@ -1047,7 +1044,13 @@ void MainWindow::assSubFileParsing(std::string subpath){
         pos += 1;
       }
 
+      double startTime = formatStringTime(splitedDialogLine[startTimeIndex].toStdString());
+      double endTime = formatStringTime(splitedDialogLine[endTimeIndex].toStdString());
+
+      SubObject * newSubObj = new SubObject;
       newSubObj->textContent = subText;
+      newSubObj->startTime = startTime;
+      newSubObj->endTime = endTime;
       currentLoadedSubList.push_back(newSubObj);
     }
   }
@@ -1067,13 +1070,13 @@ void MainWindow::srtSubFileParsing(std::string subpath){
   // looping the lines in the file
   while (getline(file, line)) {
     if(lineContainsTime(line)){
-      std::pair <int,int> timesPair = parseTimeIntervalToMs(line);
+      std::pair <int,int> timesPair = parseSrtArrowTimeLineToMs(line);
       double firstTime = timesPair.first;
       double secondTime = timesPair.second;
 
       newSubObj = new SubObject;
-      newSubObj->starttime = firstTime;
-      newSubObj->endtime = secondTime;
+      newSubObj->startTime = firstTime;
+      newSubObj->endTime = secondTime;
 
       while(getline(file,nextline)){
         nextline.erase(std::remove(nextline.begin(), nextline.end(), '\r'), nextline.end());
