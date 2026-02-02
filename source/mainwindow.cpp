@@ -98,9 +98,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   setPlayerDefaultState();
 
   // load the sub style
-  SubConfig win;
-  win.loadFonts(FONTSDIRECTORY);
-  htmlstyle = win.makehtml(CONFIGSDIRECTORY);
+  SubConfig win(SYSTEMPATHS->configPath,SYSTEMPATHS->fontsDir,SYSTEMPATHS->currentThemeDir);
+  win.loadFonts();
+  htmlstyle = win.makehtml();
   subpadding = win.padding;
   subBottomMargin = win.marginbottom;
   currentSubBottomSpace = win.marginbottom;
@@ -125,7 +125,7 @@ void MainWindow::createBottomLayout() {
 
   controlbuttonslayout=nullptr;
 
-  controlbuttonslayout = new BottomControlPanel(ICONSDIRECTORY);//creating new layout
+  controlbuttonslayout = new BottomControlPanel(SYSTEMPATHS->currentIconsDir);//creating new layout
   // controlButtonsObjects = controlbuttonslayout->getControlButtonsObjects();
 
   connect(controlbuttonslayout, &BottomControlPanel::controlButtonsHandler, this, &MainWindow::controlButtonsHandler);
@@ -323,7 +323,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       if (currentVideoParentDirectory.size())
         displaydir = QString::fromStdString(currentVideoParentDirectory);
       else{
-        displaydir = homedir;
+        displaydir = QString::fromStdString(SYSTEMPATHS->HOME);
       }
       std::stringstream SupportecFormatsString; 
       SupportecFormatsString << "Video/Audio files ("; 
@@ -346,7 +346,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       if (currentVideoParentDirectory.size())
         displaydir = QString::fromStdString(currentVideoParentDirectory);
       else{
-        displaydir = homedir;
+        displaydir = QString::fromStdString(SYSTEMPATHS->HOME);
       }
 
       url = QFileDialog::getExistingDirectory(this, tr("Setect Playlist Directory", "", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks), displaydir);
@@ -368,7 +368,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
     }
 
     case TopBar::Open_media: {
-      UrlWindow x(nullptr, THEMEDIRECTORY);
+      UrlWindow x(SYSTEMPATHS->currentThemeDir);
       x.exec();
       url = x.url;
       if (!url.isEmpty()) {
@@ -395,7 +395,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
     }
 
     case TopBar::JUMP_TO_TIME: {
-      JumpTime x(nullptr, THEMEDIRECTORY);
+      JumpTime x(SYSTEMPATHS->currentThemeDir);
       x.exec();
       if (x.targettime >= 0) {
         changingposition(x.targettime * 1000);
@@ -417,7 +417,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       QAction * toggleLoopAction = TopBarButtonsObjectList[TopBar::TOGGLE_LOOPSEGMENT];
       if(!currentVideoUrl.isEmpty()){
         if(!segmentLoopEnabled){
-          SRepeatWindow win(nullptr, THEMEDIRECTORY);
+          SRepeatWindow win(SYSTEMPATHS->currentThemeDir);
           win.exec();
           if (win.startingpoint >= 0 && win.finishingpoint >= 0 && win.finishingpoint != win.startingpoint) {
             segmentLoopEnabled = true;
@@ -465,7 +465,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
         if (currentVideoParentDirectory.size())
           displaydir = QString::fromStdString(currentVideoParentDirectory);
         else{
-          displaydir = homedir;
+          displaydir = QString::fromStdString(SYSTEMPATHS->HOME);
         }
 
         std::stringstream SupportedSubtitlesFormatstring; 
@@ -493,7 +493,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
     } 
 
     case TopBar::LOADSUBTITLES:{
-      subWindow subWin(nullptr,THEMEDIRECTORY,ICONSDIRECTORY.toStdString(),currentVideoSubtitlePaths,currentLoadedSubPath);
+      subWindow subWin(SYSTEMPATHS->currentThemeDir,SYSTEMPATHS->currentIconsDir,currentVideoSubtitlePaths,currentLoadedSubPath);
       subWin.exec();
       if(!subWin.clickedSubPath.isEmpty()){
         currentLoadedSubPath = subWin.clickedSubPath;
@@ -560,10 +560,10 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
     }
 
     case TopBar::SUBSETTINGS: {
-      SubConfig win;
-      win.gui(CONFIGSDIRECTORY, FONTSDIRECTORY, THEMEDIRECTORY);
+      SubConfig win(SYSTEMPATHS->configPath,SYSTEMPATHS->fontsDir,SYSTEMPATHS->currentThemeDir);
+      win.gui();
       win.exec();
-      htmlstyle = win.makehtml(CONFIGSDIRECTORY);
+      htmlstyle = win.makehtml();
       subpadding = win.padding;
       subBottomMargin = win.marginbottom;
       currentSubBottomSpace = win.marginbottom;
@@ -580,7 +580,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
     }
 
     case TopBar::THEME:{
-      ChangeThemeWindow win(nullptr,CONFIGSDIRECTORY,STYLESDIRECTORY,THEMEDIRECTORY);
+      ChangeThemeWindow win(SYSTEMPATHS->configPath,SYSTEMPATHS->themesDir,SYSTEMPATHS->currentThemeDir);
       win.exec();
       int xposition = view->size().width() / 2;
       int yposition = view->size().height()/2 ;
@@ -591,7 +591,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
     }
 
     case TopBar::SHORTCUTS: {
-      ShortcutsInst win(nullptr,THEMEDIRECTORY,CONFIGSDIRECTORY);
+      ShortcutsInst win(nullptr,SYSTEMPATHS->currentThemeDir,SYSTEMPATHS->configPath);
       win.exec();
       break;
     }
@@ -638,7 +638,7 @@ void MainWindow::controlButtonsHandler(int buttonindex) {
     }
 
     case BottomControlPanel::PLAYLIST_BUTTON: {
-      PlaylistManager win(nullptr, THEMEDIRECTORY, ICONSDIRECTORY.toStdString(), playlist, currentVideoUrl);
+      PlaylistManager win(SYSTEMPATHS->currentThemeDir, SYSTEMPATHS->currentIconsDir, playlist, currentVideoUrl);
       win.exec();
       if (win.new_video_index != (int)currentVideoIndex && win.new_video_index != -1) {
         currentVideoIndex = win.new_video_index;
@@ -1229,7 +1229,7 @@ void MainWindow::updateButtonsIcon(std::string button_name){
 //function to save the position of a video after closing it
 void MainWindow::savevideoposition(){
   if(currentVideoTitle.size() && player->position() > 5000){
-    std::ofstream possavefile(CONFIGSDIRECTORY+"/.positionsave.csv",std::ios::app);
+    std::ofstream possavefile(SYSTEMPATHS->cachePath + "/playbackState",std::ios::app);
     std::string line = currentVideoTitle+" ; "+QString::number(player->position()).toStdString()+'\n';
     possavefile<<line;
     possavefile.close();
@@ -1240,7 +1240,7 @@ void MainWindow::savevideoposition(){
 void MainWindow::getlastsavedposition(){
   if(currentVideoTitle == "") return;
   lastPlaybackPosition = 0;
-  std::string LPPPath = CONFIGSDIRECTORY+"/.positionsave.csv";
+  std::string LPPPath = SYSTEMPATHS->cachePath + "/playbackState";
   std::ifstream possavefile(LPPPath);
   if (possavefile){
     std::string line;
@@ -1366,7 +1366,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event){
 }
 
 void MainWindow::parseSettingsFile(){
-  std::string settingsFilePath = CONFIGSDIRECTORY + "/settings";
+  std::string settingsFilePath = SYSTEMPATHS->configPath + "/settings";
   std::ifstream file(settingsFilePath);
   std::string line;
 
@@ -1397,7 +1397,7 @@ void MainWindow::parseSettingsFile(){
 }
 
 void MainWindow::savingNewSettings(){
-  std::string settingsFilePath = CONFIGSDIRECTORY + "/settings";
+  std::string settingsFilePath = SYSTEMPATHS->configPath + "/settings";
   std::ofstream settingsFile(settingsFilePath);
 
   std::stringstream sstr;

@@ -3,10 +3,17 @@
 set -e
 
 BASE_NAME=$(basename *.pro .pro)
+ASSETS_DIR="$HOME/.local/share/VFW"
+CONFIGS_DIR="$HOME/.config/VFW"
 
-if [ ! -d "../bin" ]; then
-  mkdir ../bin
-fi
+createDirs() {
+  mkdir -p ../bin "$ASSETS_DIR" "$CONFIGS_DIR"
+}
+
+createDirs
+
+cp -r ../assets/. "$ASSETS_DIR"/
+cp -r ../configs/. "$CONFIGS_DIR"/
 
 cd ../bin
 
@@ -14,8 +21,6 @@ qmake6 ../source/*.pro
 make clean
 make
 
-mkdir -p /opt/VFW
-cp -r ../assets /opt/VFW/
-cp -r ../bin /opt/VFW/
+sudo cp ./VFW /usr/local/bin
 
-cp ../cache/VFW.desktop /usr/share/applications/
+cp ../VFW.desktop "$HOME/.local/share/applications/"

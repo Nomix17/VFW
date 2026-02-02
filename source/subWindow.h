@@ -5,6 +5,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <filesystem>
 
 #include <QDialog>
 #include <QVBoxLayout>
@@ -18,9 +19,10 @@ class subWindow:public QDialog{
   Q_OBJECT
 
   public:
-    subWindow(QWidget *parent, std::string StyleDirectory, std::string IconDirectory, std::vector <QString> subArray, QString currentLoadedSubPath):QDialog(parent){
+    subWindow(std::string StyleDirectory, std::string IconDirectory, std::vector <QString> subArray, QString currentLoadedSubPath,QWidget *parent = nullptr):QDialog(parent){
       this->setFixedSize(400,500);
-      std::ifstream stylefile(StyleDirectory+"playlistmanager.css");
+      std::filesystem::path styleFullPath(std::filesystem::path(StyleDirectory) / "playlistmanager.css");
+      std::ifstream stylefile(styleFullPath.string());
       if(stylefile){
         std::string script;
         std::ostringstream sstr;
@@ -72,12 +74,13 @@ class subWindow:public QDialog{
         //creating a button that represent video
         QPushButton *Sub_Button= new QPushButton(QString::fromStdString("  "+sub_title));
         Sub_Button->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-        Sub_Button->setIcon(QPixmap(QString::fromStdString(IconDirectory+"sub.png")));
+        std::filesystem::path iconFullPath(std::filesystem::path(IconDirectory) / "sub.png");
+        Sub_Button->setIcon(QPixmap(QString::fromStdString(iconFullPath.string())));
         if(sub_path == currentLoadedSubPath){
           Sub_Button->setObjectName("currentlyplayingbutton");
         }
 
-        connect(Sub_Button,&QPushButton::clicked,[this,IconDirectory,sub_path,currentLoadedSubPath](){
+        connect(Sub_Button,&QPushButton::clicked,[this,sub_path](){
           clickedSubPath = sub_path;
           QDialog::accept();
         });

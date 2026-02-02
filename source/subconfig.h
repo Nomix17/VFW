@@ -8,7 +8,6 @@
 #include <fstream>
 #include <sstream>
 
-
 #include <QDialog>
 #include <QGridLayout>
 #include <QHBoxLayout>
@@ -45,16 +44,24 @@ private:
   QVBoxLayout * mainlayout;
   QGridLayout * gridlayout;
   QHBoxLayout * buttonlayout;
-  
+
 public: 
-  std::string Configsdirectory = "";
-  std::string StyleDirectory = "";
+  std::string fullSubConfigPath; 
   QList <QString> fontPaths;
 
-  void gui(std::string Configspath,std::string FONTSDIRECTORY,std::string StylePath){
+  std::string ConfigsPath;
+  std::string FONTSDIRECTORY;
+  std::string StyleDirectory;
+
+  SubConfig(std::string ConfigsPath,std::string FONTSDIRECTORY,std::string StyleDirectory){
+    this->ConfigsPath = ConfigsPath;
+    this->FONTSDIRECTORY = FONTSDIRECTORY;
+    this->StyleDirectory = StyleDirectory;
+    fullSubConfigPath = std::filesystem::path(std::filesystem::path(ConfigsPath) / "subconfig.json").string();
+  }
+
+  void gui(){
     this->setFixedSize(480,400);
-    StyleDirectory = StylePath;
-    Configsdirectory = Configspath;
     mainlayout = new QVBoxLayout(this);
     gridlayout = new QGridLayout();
     buttonlayout = new QHBoxLayout();
@@ -78,7 +85,7 @@ public:
         button->setPopupMode(QToolButton::InstantPopup);
         button->setText("Font");
         button->setObjectName(labels[i]);
-        loadFonts(FONTSDIRECTORY);
+        loadFonts();
         QMenu *font_familly = new QMenu();
         for(int i=0;i<fontPaths.size();i++){
           int id = QFontDatabase::addApplicationFont(fontPaths[i]);
@@ -125,7 +132,8 @@ public:
 
   void loadstylefiles(){
     //load style file
-    std::ifstream stylefile(StyleDirectory+"subconfig.css");
+    std::filesystem::path styleFullPath(std::filesystem::path(StyleDirectory) / "subconfig.css");
+    std::ifstream stylefile(styleFullPath);
     if(stylefile){
       std::ostringstream sstr;
       std::string script;
@@ -152,7 +160,7 @@ public:
     settings["font-color"]=this->findChild<QPushButton*>("FontColor")->palette().color(QPalette::Button).name().toStdString();
     settings["font-opacity"]=std::stoi(this->findChild<QLineEdit*>("Font Opacity:")->text().toStdString());
 
-    std::ofstream file(Configsdirectory+"subconfig.json");
+    std::ofstream file(fullSubConfigPath);
     file << settings.dump(4);
     file.close();
 
@@ -160,8 +168,7 @@ public:
   
   void loadconfig(){
     json configfile;
-    std::string subConfigPath = Configsdirectory+"subconfig.json";
-    std::ifstream file(subConfigPath);
+    std::ifstream file(fullSubConfigPath);
     if(file){
       file>>configfile;
 
@@ -181,19 +188,17 @@ public:
 
       file.close();
     }else{
-      std::cerr << "[ WARNING ] Cannot find subtitles config File: "<<subConfigPath<<"\n";
+      std::cerr << "[ WARNING ] Cannot find subtitles config File: "<<fullSubConfigPath<<"\n";
     }
   }
 
-  QString makehtml(std::string Configspath){
-    Configsdirectory = Configspath;
-    std::string subConfigPath = Configspath+"subconfig.json";
-    if(!std::filesystem::exists(subConfigPath)){
+  QString makehtml(){
+    if(!std::filesystem::exists(fullSubConfigPath)){
       createdefaultjson();
     }
 
     json settings;
-    std::ifstream file(subConfigPath);
+    std::ifstream file(fullSubConfigPath);
     if(file){
       file>>settings;
 
@@ -205,8 +210,6 @@ public:
       QString textColorRGB = QString::number(fontcolor.red()) + ", " + QString::number(fontcolor.green()) + ", " + QString::number(fontcolor.blue());
       QString textColorAlpha = QString::number(static_cast<double>(settings["font-opacity"]) / 100, 'f', 2);
       QString paddingValue = QString::number(static_cast<double>(settings["padding"]), 'f', 2);
-
-                // "text-shadow: -1px -1px 0 "+backgroundColorRGB+", 1px -1px 0 "+backgroundColorRGB+", -1px  1px 0 "+backgroundColorRGB+", 1px  1px 0 "+backgroundColorRGB+";"
 
     QString HtmlScript = "<table cellpadding='" + paddingValue + "' "
                          "style='"
@@ -223,12 +226,12 @@ public:
       file.close();
       return HtmlScript;
     }else{
-      std::cerr << "[ WARNING ] Failed to open subtitles config File: "<<subConfigPath<<"\n";
+      std::cerr << "[ WARNING ] Failed to open subtitles config File: "<<fullSubConfigPath<<"\n";
       return "";
     }
   }
 
-  void loadFonts(std::string FONTSDIRECTORY){
+  void loadFonts(){
     for(const auto & fileEntry : std::filesystem::directory_iterator(FONTSDIRECTORY)){
       std::filesystem::path filePath = fileEntry.path();
       std::string filePathString = filePath.string();
@@ -249,13 +252,12 @@ public:
     defaultsettings["margin-bottom"]= 61;
     defaultsettings["padding"]= 26;
    
-    std::string subConfigPath = Configsdirectory+"subconfig.json";
-    std::ofstream file(subConfigPath);
+    std::ofstream file(fullSubConfigPath);
     if(file){
       file << defaultsettings.dump(4);
       file.close();
     }else{
-      std::cerr << "[ WARNING ] Cannot create a default subtitles config File: "<<subConfigPath<<"\n";
+      std::cerr << "[ WARNING ] Cannot create a default subtitles config File: "<<fullSubConfigPath<<"\n";
     }
   }
 };

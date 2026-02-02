@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <filesystem>
 
 #include<QDialog>
 #include <QVBoxLayout>
@@ -16,11 +17,12 @@ class SRepeatWindow :public QDialog{
   Q_OBJECT;
   
 public:
-  SRepeatWindow(QWidget *parent,std::string StyleDirectory):QDialog(parent){
+  SRepeatWindow(std::string StyleDirectory, QWidget *parent=nullptr):QDialog(parent){
     this->setFixedSize(590,200);
    
     //load style file
-    std::ifstream stylefile(StyleDirectory+"/srepeat.css");
+    std::filesystem::path styleFullPath(std::filesystem::path(StyleDirectory) / "srepeat.css");
+    std::ifstream stylefile(styleFullPath.string());
     if(stylefile){
       std::ostringstream sstr;
       std::string script;

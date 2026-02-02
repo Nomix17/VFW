@@ -5,6 +5,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <filesystem>
 
 #include <QDialog>
 #include <QVBoxLayout>
@@ -28,10 +29,11 @@ class PlaylistManager:public QDialog{
   public:
     int new_video_index = -1;
 
-    PlaylistManager(QWidget *parent,std::string StyleDirectory,std::string IconDirectory,std::vector<QUrl> playlist_vector,QString currenturl):QDialog(parent){
+    PlaylistManager(std::string StyleDirectory,std::string IconDirectory,std::vector<QUrl> playlist_vector,QString currenturl, QWidget *parent = nullptr):QDialog(parent){
 
       //load style file
-      std::ifstream stylefile(StyleDirectory+"playlistmanager.css");
+      std::filesystem::path styleFullPath(std::filesystem::path(StyleDirectory) / "playlistmanager.css");
+      std::ifstream stylefile(styleFullPath);
       if(stylefile){
         std::string script;
         std::ostringstream sstr;
@@ -91,14 +93,18 @@ class PlaylistManager:public QDialog{
         //creating a button that represent video
         QPushButton *Video_Button= new QPushButton(QString::fromStdString("  "+video_title));
         Video_Button->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+        std::string iconName;
         if(media_url == currenturl){
-          Video_Button->setIcon(QPixmap(QString::fromStdString(IconDirectory+"BPause.png")));
+          iconName = "BPause.png";
           Video_Button->setObjectName("currentlyplayingbutton");
         }else{
-          Video_Button->setIcon(QPixmap(QString::fromStdString(IconDirectory+"BPlay.png")));
+          iconName = "BPlay.png";
         }
 
-        connect(Video_Button,&QPushButton::clicked,[this,IconDirectory,playlist_vector,currenturl,i](){
+        std::filesystem::path iconFullPath(std::filesystem::path(IconDirectory) / std::filesystem::path(iconName));
+        Video_Button->setIcon(QPixmap(QString::fromStdString(iconFullPath.string())));
+
+        connect(Video_Button,&QPushButton::clicked,[this,i](){
           new_video_index = i;
           QDialog::accept();
         });

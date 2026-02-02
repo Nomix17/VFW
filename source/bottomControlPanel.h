@@ -3,6 +3,7 @@
 
 #include "qboxlayout.h"
 #include <iomanip>
+#include <filesystem>
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QLabel>
@@ -47,8 +48,8 @@ class BottomControlPanel: public QVBoxLayout {
     CustomSlider *videoslider;
 
   public:
-    BottomControlPanel(QString ICONSDIRECTORY, QWidget *parent = nullptr):QVBoxLayout(parent){
-      this->ICONSDIRECTORY = ICONSDIRECTORY;
+    BottomControlPanel(std::string ICONSDIRECTORY, QWidget *parent = nullptr):QVBoxLayout(parent){
+      this->ICONSDIRECTORY = QString::fromStdString(ICONSDIRECTORY);
       QHBoxLayout *firsthalflayout = new QHBoxLayout();
       QHBoxLayout *secondhalflayout = new QHBoxLayout();
 
@@ -90,7 +91,9 @@ class BottomControlPanel: public QVBoxLayout {
         QPushButton *newButton = new QPushButton();
         newButton->setObjectName(mcbuttons[j]);
 
-        QPixmap pix(ICONSDIRECTORY + mcbuttons[j] + ".png");
+        std::string iconName = mcbuttons[j].toStdString() + ".png";
+        std::filesystem::path iconFullPath(std::filesystem::path(ICONSDIRECTORY.toStdString()) / std::filesystem::path(iconName));
+        QPixmap pix(QString::fromStdString(iconFullPath.string()));
         newButton->setIcon(pix);
         if (mcbuttons[j] == "TOGGLE_VOLUME_BUTTON") {
           newButton->setIconSize(QSize(24, 24));
@@ -164,23 +167,31 @@ class BottomControlPanel: public QVBoxLayout {
 
     void updatePausePlayButtonIcon(bool videoIsPaused) {
       QPushButton *Pause_button = ControlButtonsObjectsList[PAUSE_BUTTON];
-      if (videoIsPaused) Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "BPause.png"));
-      else Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "BPlay.png"));
+      if (videoIsPaused) Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "/BPause.png"));
+      else Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "/BPlay.png"));
     }
 
     void updateVolumeButtonIcon(int volume) {
       QPushButton *VolumeControlButton = ControlButtonsObjectsList[TOGGLE_VOLUME_BUTTON];
-      if (volume == 0) VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BMute.png"));
-      else if (volume <= 333 && volume > 0) VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeLow.png"));
-      else if (volume >= 333 && volume <= 666) VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeMid.png"));
-      else if (volume >= 666) VolumeControlButton->setIcon(QPixmap(ICONSDIRECTORY + "BVolumeControl.png"));
+      std::string iconFileName;
+      if (volume == 0) iconFileName = "BMute.png";
+      else if (volume <= 333 && volume > 0) iconFileName = "BVolumeLow.png";
+      else if (volume >= 333 && volume <= 666) iconFileName = "BVolumeMid.png";
+      else if (volume >= 666) iconFileName = "BVolumeControl.png";
+
+      std::filesystem::path newIconFullPath(std::filesystem::path(ICONSDIRECTORY.toStdString()) / std::filesystem::path(iconFileName));
+      VolumeControlButton->setIcon(QPixmap(QString::fromStdString(newIconFullPath.string())));
     }
 
     void updateRepetitionButtonIcon(RepeatMode rep) {
       QPushButton *Repeatition_button = ControlButtonsObjectsList[REPETITION_BUTTON];
-      if (rep == PlaylistRepeat) Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BRepeating.png"));
-      else if (rep == VideoRepeat) Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BRepeatingone.png"));
-      else if (rep == Shuffle) Repeatition_button->setIcon(QPixmap(ICONSDIRECTORY + "BSuffle.png"));
+      std::string iconFileName;
+      if (rep == PlaylistRepeat) iconFileName = "BRepeating.png";
+      else if (rep == VideoRepeat) iconFileName = "BRepeatingone.png";
+      else if (rep == Shuffle) iconFileName = "BSuffle.png";
+
+      std::filesystem::path newIconFullPath(std::filesystem::path(ICONSDIRECTORY.toStdString()) / std::filesystem::path(iconFileName));
+      Repeatition_button->setIcon(QPixmap(QString::fromStdString(newIconFullPath.string())));
     }
 
     void deletelayout(QLayout* layout){

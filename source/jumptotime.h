@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <filesystem>
 
 #include <QDialog>
 #include <QVBoxLayout>
@@ -14,10 +15,11 @@ class JumpTime : public QDialog{
   Q_OBJECT;
 
 public:
-  JumpTime(QWidget*parent,std::string StyleDirectory):QDialog(parent){
+  JumpTime(std::string StyleDirectory, QWidget*parent=nullptr):QDialog(parent){
 
     //load style file
-    std::ifstream stylefile(StyleDirectory+"/jumpwindow.css");
+    std::filesystem::path styleFullPath(std::filesystem::path(StyleDirectory) / "jumpwindow.css");
+    std::ifstream stylefile(styleFullPath);
     if(stylefile){
       std::string script;
       std::ostringstream ss;

@@ -28,20 +28,7 @@
 #include "CustomObjects.h"
 #include "topBar.h"
 #include "bottomControlPanel.h"
-
-
-#ifndef PATH_MAX
-#define PATH_MAX 4096
-#endif
-
-#ifdef _WIN32
-  #include <windows.h>
-#elif __APPLE__
-  #include <mach-o/dyld.h>
-#else
-  #include <unistd.h>
-#endif
-
+#include "Paths.h"
 
 struct SubObject{
   float starttime;
@@ -179,87 +166,10 @@ private:
   std::map<std::string,float> Settings;
 
 public:
+  PATHS *SYSTEMPATHS = new PATHS();
   std::vector<QUrl> playlist;
   std::vector <QString> currentVideoSubtitlePaths = {};
   PlayerMode currentPlayerMode;
 };
-
-class PATHS {
-  public:
-    QString homedir = QString::fromStdString(std::getenv(
-      #ifdef _WIN32
-        "USERPROFILE"
-      #else
-        "HOME"
-      #endif
-    ));
-
-    std::string Projectdir(){
-      std::string executablePath;
-
-      // if the code is running from a .appimage file return the project path from the env
-      const char* appimage_root = std::getenv("VFW_ROOT");
-      if (appimage_root != nullptr) {
-          executablePath = appimage_root;
-          return executablePath;
-      }
-
-      #ifdef _WIN32
-        wchar_t path[PATH_MAX];
-        GetModuleFileName(NULL,path,sizeof(path)/sizeof(wchar_t));
-        std::wstring ws(path);
-        std::string str(ws.begin(),ws.end());
-        executablePath = str;
-      #elif __APPLE__
-        char path[PATH_MAX];
-        uint32_t size = sizeof(path);
-        NSGetModuleFileName(path,&size);
-        executablePath = path;
-      #else
-        char path[PATH_MAX];
-        ssize_t len = readlink("/proc/self/exe",path,sizeof(path)-1);
-        if(len != -1) path[len]='\0';
-        executablePath = path;
-      #endif
-  
-      std::filesystem::path fullExecutablePath(executablePath);
-
-      return getRootDirectory(fullExecutablePath);
-    }
-
-    std::string getRootDirectory(std::filesystem::path fullPath) {
-      while (!fullPath.empty() && fullPath.filename() != "bin") {
-          fullPath = fullPath.parent_path();
-      }
-
-      if (!fullPath.empty()) {
-          return fullPath.parent_path().string();
-      }
-
-      return "" ;
-    }
-
-    std::string GETTHEME(std::string configDirectory){
-      std::ifstream themefile(configDirectory+"/theme");
-      std::string theme ="light";
-      if(themefile){
-        getline(themefile,theme);
-      }
-      return theme;
-    }
-};
-
-
-extern PATHS path;
-extern QString homedir;
-extern std::string projectdir;
-extern std::string theme;
-extern std::string CONFIGSDIRECTORY;
-extern std::string STYLESDIRECTORY;
-extern std::string THEMEDIRECTORY;
-extern std::string FONTSDIRECTORY;
-extern QString ICONSDIRECTORY;
-extern std::vector<std::string> supportedMediaFormats;
-extern std::vector<std::string> supportedSubtitlesFormats;
 
 #endif

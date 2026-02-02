@@ -24,7 +24,7 @@ class ChangeThemeWindow : public QDialog {
 public:
   std::string changetotheme = "";
 
-  ChangeThemeWindow(QWidget *parent, std::string ConfigDirectory, std::string ProjectDirectory, std::string StyleDirectory)
+  ChangeThemeWindow(std::string ConfigDirectory, std::string ProjectDirectory, std::string StyleDirectory, QWidget *parent=nullptr)
       : QDialog(parent) {
     this->setFixedSize(400,500);
     scrollarea->setWidgetResizable(true);
@@ -50,14 +50,15 @@ public:
     loadthemes(StyleDirectory, ProjectDirectory,ConfigDirectory);
 
     // Connect done button
-    connect(doneButton, &QPushButton::clicked, [this, ConfigDirectory]() {
+    connect(doneButton, &QPushButton::clicked, [this]() {
       QDialog::accept();
     });
   }
 
   void loadthemes(std::string StyleDirectory, std::string ProjectDirectory, std::string ConfigDirectory) {
     // Load stylesheet
-    std::ifstream stylefile(StyleDirectory + "/ChangeThemeWindow.css");
+    std::filesystem::path styleFullPath(std::filesystem::path(StyleDirectory) / "ChangeThemeWindow.css");
+    std::ifstream stylefile(styleFullPath);
     if (stylefile) {
       std::ostringstream sstr;
       sstr << stylefile.rdbuf();
@@ -77,7 +78,8 @@ public:
       connect(Theme_Button,&QPushButton::clicked, [this, themename, ConfigDirectory](){
         changetotheme = themename;
         if (changetotheme != "") {
-          std::ofstream themefile(ConfigDirectory + "/theme", std::ofstream::out | std::ofstream::trunc);
+          std::filesystem::path themePath(std::filesystem::path(ConfigDirectory) / "theme");
+          std::ofstream themefile(themePath.string(), std::ofstream::out | std::ofstream::trunc);
           themefile << changetotheme;
           themefile.close();
         }

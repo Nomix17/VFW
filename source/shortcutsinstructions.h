@@ -5,6 +5,7 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
+#include <filesystem>
 
 #include <QDialog>
 #include <QGridLayout>
@@ -24,7 +25,8 @@ class ShortcutsInst:public QDialog{
     ShortcutsInst(QWidget *parent,std::string StyleDirectory,std::string ConfigDirectory):QDialog(parent){
     
       //load style file
-      std::ifstream stylefile(StyleDirectory+"shortcutsinstructions.css");
+      std::filesystem::path styleFullPath(std::filesystem::path(StyleDirectory) / "shortcutsinstructions.css");
+      std::ifstream stylefile(styleFullPath);
       if(stylefile){
         std::ostringstream sstr;
         std::string script;
@@ -33,8 +35,9 @@ class ShortcutsInst:public QDialog{
         this->setStyleSheet(QString::fromStdString(script));
         stylefile.close();
       }
-      
-      std::ifstream shortcutfile(ConfigDirectory+"Shortcuts_Instructions");
+     
+      std::filesystem::path fullShortcutFilename(std::filesystem::path(ConfigDirectory) / "Shortcuts_Instructions");
+      std::ifstream shortcutfile(fullShortcutFilename.string());
       std::string shortcutsfilecontent;
       std::vector <std::string> elements;
 
@@ -49,7 +52,7 @@ class ShortcutsInst:public QDialog{
         }
       }else{
         //if it's not found we create a new one 
-        std::ofstream defaultshortcutsfile(ConfigDirectory+"Shortcuts_Instructions");
+        std::ofstream defaultshortcutsfile(fullShortcutFilename.string());
 
         //put the default configs into the vector
         elements={"Functionality:Shortcut",

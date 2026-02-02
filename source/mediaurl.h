@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <filesystem>
 
 #include <QDialog>
 #include <QVBoxLayout>
@@ -18,10 +19,11 @@ class UrlWindow : public QDialog {
 public:
 
   //constructor for the url window input
-  UrlWindow(QWidget *parent,std::string StyleDirectory):QDialog(parent){
+  UrlWindow(std::string StyleDirectory, QWidget *parent=nullptr):QDialog(parent){
 
     //load style file
-    std::ifstream stylefile(StyleDirectory+"/mediaurl.css");
+    std::filesystem::path styleFullPath(std::filesystem::path(StyleDirectory) / "mediaurl.css");
+    std::ifstream stylefile(styleFullPath);
     if(stylefile){
       std::string script;
       std::ostringstream ss;
