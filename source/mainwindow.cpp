@@ -155,7 +155,17 @@ std::string lowerCase(std::string text){
 void MainWindow::LoadingInDirectorySubtitles(QString currenturl){
   std::filesystem::path currentVideoPath(currenturl.toStdString()); 
   std::string directoryPath = currentVideoPath.parent_path().generic_string();
-  std::cout<<"\n";
+
+  if (!std::filesystem::exists(directoryPath)) {
+      std::cout << "[ WARN ] Directory does not exist: " << directoryPath << "\n";
+      return;
+  }
+
+  if (!std::filesystem::is_directory(directoryPath)) {
+      std::cout << "[ WARN ] Path is not a directory: " << directoryPath << "\n";
+      return;
+  }
+
   if (std::filesystem::exists(directoryPath) && std::filesystem::is_directory(directoryPath)) {
     for(const auto & fileEntry : std::filesystem::directory_iterator(directoryPath)){
       std::string fileExtention = fileEntry.path().extension().string();
@@ -293,9 +303,12 @@ void MainWindow::startVideoPlayer(QString path) {
   //get the current path of directory that the video is playing in
   currentVideoParentDirectory = currentPath.parent_path().generic_string();
 
+  std::cout<<"\n";
   ExtranctingChapterData(currentVideoUrl);
   ExtractingBuiltInSubs(currentVideoUrl);
+  std::cout<<"\n";
   LoadingInDirectorySubtitles(currentVideoUrl);
+  std::cout<<"\n";
 
   // startVideoPlayer setup (sound and video widget)
   player->setSource(QUrl::fromLocalFile(currentVideoUrl));
@@ -1017,7 +1030,7 @@ double formatStringTime(std::string stringTimer) {
 void MainWindow::assSubFileParsing(std::string subpath) {
   std::ifstream file(subpath);
   if(!file){
-    std::cerr << "[ WARNING ] Cannot find .ass subtitle File: "<<subpath<<"\n";
+    std::cerr << "[ WARN ] Cannot find .ass subtitle File: "<<subpath<<"\n";
     return;
   }
 
@@ -1073,7 +1086,7 @@ void MainWindow::assSubFileParsing(std::string subpath) {
 void MainWindow::srtSubFileParsing(std::string subpath){
   std::ifstream file(subpath);
   if(!file){
-    std::cerr << "[ WARNING ] Cannot open .srt subtitle File: "<<subpath<<"\n";
+    std::cerr << "[ WARN ] Cannot open .srt subtitle File: "<<subpath<<"\n";
     return;
   }
   std::string line;
@@ -1271,7 +1284,7 @@ void MainWindow::getlastsavedposition(){
       controlbuttonslayout->showSkipButton();
     }
   }else{
-      std::cerr << "[ WARNING ] Failed to open LPP  File: "<<LPPPath<<"\n";
+      std::cerr << "[ WARN ] Failed to open LPP  File: "<<LPPPath<<"\n";
   }
 }
 
@@ -1403,12 +1416,12 @@ void MainWindow::parseSettingsFile(){
           Settings[item] = value;
 
         }catch(const std::invalid_argument& e){
-          std::cout << "[ WARNING ] Failed to fetch from Settings File: "<<e.what()<<"\n";
+          std::cout << "[ WARN ] Failed to fetch from Settings File: "<<e.what()<<"\n";
         }
       }
     }
   }else{
-    std::cerr << "[ WARNING ] Cannot find Settings File: "<<settingsFilePath<<"\n";
+    std::cerr << "[ WARN ] Cannot find Settings File: "<<settingsFilePath<<"\n";
   }
 
 }
