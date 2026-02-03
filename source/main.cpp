@@ -35,12 +35,12 @@ int main(int argc,char* argv[]){
       std::string fileExtention = path.extension().string();
 
       if (std::find(supportedMediaFormats.begin(), supportedMediaFormats.end(), fileExtention) != supportedMediaFormats.end()) {
-        QUrl videoPath = QUrl::fromLocalFile(QString::fromLocal8Bit(path.c_str()));
+        QUrl videoPath = QUrl::fromLocalFile(QString::fromStdString(path.string()));
         mainWindow.playlist.push_back(videoPath);
         std::cout << "Loading Video: " << path.string() << "\n";
 
       } else if (std::find(supportedSubtitlesFormats.begin(), supportedSubtitlesFormats.end(), fileExtention) != supportedSubtitlesFormats.end()) {
-        QString subPath = QString::fromLocal8Bit(path.c_str());
+        QString subPath = QString::fromStdString(path.string());
         mainWindow.currentVideoSubtitlePaths.push_back(subPath);
         std::cout << "Loading Subtitle: " << path.string() << "\n";
       }

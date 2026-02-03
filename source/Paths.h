@@ -48,8 +48,8 @@ class PATHS {
         const char* localAppDataEnv = std::getenv("LOCALAPPDATA");
         const char* appDataEnv = std::getenv("APPDATA");
         if (localAppDataEnv && appDataEnv) {
-          fs::path localAppData(localAppDataEnv);
-          fs::path appData(appDataEnv);
+          std::filesystem::path localAppData(localAppDataEnv);
+          std::filesystem::path appData(appDataEnv);
           
           this->cachePath = (localAppData / "Cache" / APPNAME).string();
           this->configPath = (appData / APPNAME / "configs").string();
