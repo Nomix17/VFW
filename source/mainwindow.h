@@ -69,8 +69,8 @@ public:
   void moveToNextChapter();
   void moveToPrevChapter();
   void SubFileParsing(std::string subpath);
-  void srtSubFileParsing(std::string subpath);
-  void assSubFileParsing(std::string subpath);
+  void parsingSrtLikeSubsFile(std::string subpath);
+  void parsingAssSubsFile(std::string subpath);
 
   void changingposition(int newpos);
   void resizelements(std::string elementtorezise="all",int animationTime = 0);

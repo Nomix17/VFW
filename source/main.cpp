@@ -14,7 +14,7 @@ std::vector<std::string> supportedMediaFormats = {
     ".mp3", ".wav", ".aac", ".m4a", ".wma", ".ogg"
 };
 std::vector<std::string> supportedSubtitlesFormats = {
-  ".srt",".ass"
+  ".srt",".vtt",".ass",".ssa"
 };
 
 void loadAndApplyTheme(QApplication&,std::string);

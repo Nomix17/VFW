@@ -983,7 +983,7 @@ void MainWindow::closeVideo(){
   currentPlayerMode = PlayerMode::Single;
 }
 
-bool lineIsEmpty(const std::string& str){
+bool lineIsEmpty(const std::string str){
   return str.empty() || std::all_of(str.begin(), str.end(), [](unsigned char c){
       return std::isspace(c);
   });
@@ -991,17 +991,27 @@ bool lineIsEmpty(const std::string& str){
 
 bool stringIsInteger(std::string text){
   if(text.empty()) return false;
-  for(size_t i=0;i<text.size();i++){
-    if(((int)text[i] < '0' || (int)text[i] > '9') && (int)text[text.size()] != ' ' ) return false;
+  for(char c : text){
+    if(c < '0' || c > '9') {
+      if(c != ' ' && c != '\r') return false;
+    }
   }
   return true;
 }
 
-bool lineContainsTime(std::string text){
+bool lineContainsTimeArrow(std::string text){
   return (text.find("-->") != std::string::npos);
 }
 
-std::pair<double,double> parseSrtArrowTimeLineToMs(std::string stringTimeInterval){
+double formatStringTime(const std::string& stringTimer) {
+  std::istringstream ss(stringTimer);
+  char step;
+  int h, m, s, ms;
+  ss >> h >> step >> m >> step >> s >> step >> ms;
+  return (h*60*60 + m*60 + s) * 1000 + ms;
+}
+
+std::pair<double,double> parseTimeString(std::string stringTimeInterval){
   std::istringstream ss(stringTimeInterval);
   int h1, min1, sec1, milsec1, h2, min2, sec2, milsec2;
   std::string arrow;
@@ -1016,18 +1026,9 @@ std::pair<double,double> parseSrtArrowTimeLineToMs(std::string stringTimeInterva
   // calculating the ending time from the string line (hour, minutes, seconds, ms)
   double secondTime = (h2*60*60 + min2*60 + sec2) * 1000 + milsec2; // ms
   return std::pair<double,double> (firstTime, secondTime);
-
 }
 
-double formatStringTime(std::string stringTimer) {
-  std::istringstream ss(stringTimer);
-  char step;
-  int h1, min1, sec1, milsec1;
-  ss>>h1>>step>>min1>>step>>sec1>>step>>milsec1;
-  return (h1*60*60 + min1*60 + sec1) * 1000 + milsec1; // ms
-}
-
-void MainWindow::assSubFileParsing(std::string subpath) {
+void MainWindow::parsingAssSubsFile(std::string subpath) {
   std::ifstream file(subpath);
   if(!file){
     std::cerr << "[ WARN ] Cannot find .ass subtitle File: "<<subpath<<"\n";
@@ -1081,55 +1082,61 @@ void MainWindow::assSubFileParsing(std::string subpath) {
       currentLoadedSubList.push_back(newSubObj);
     }
   }
+  file.close();
 }
 
-void MainWindow::srtSubFileParsing(std::string subpath){
+void MainWindow::parsingSrtLikeSubsFile(std::string subpath) {
   std::ifstream file(subpath);
   if(!file){
-    std::cerr << "[ WARN ] Cannot open .srt subtitle File: "<<subpath<<"\n";
+    std::cerr << "[ WARN ] Cannot open subtitle File: "<<subpath<<"\n";
     return;
   }
-  std::string line;
-  std::string nextline;
-  std::string fulltext = "";
+
+  std::string currentLine;
   SubObject *newSubObj = nullptr;
 
   // looping the lines in the file
-  while (getline(file, line)) {
-    if(lineContainsTime(line)){
-      std::pair <int,int> timesPair = parseSrtArrowTimeLineToMs(line);
+  while (getline(file, currentLine)) {
+    if (lineContainsTimeArrow(currentLine)) {
+      std::pair <double,double> timesPair = parseTimeString(currentLine);
       double firstTime = timesPair.first;
       double secondTime = timesPair.second;
+
+      if (newSubObj != nullptr)
+        currentLoadedSubList.push_back(newSubObj);
 
       newSubObj = new SubObject;
       newSubObj->startTime = firstTime;
       newSubObj->endTime = secondTime;
 
-      while(getline(file,nextline)){
-        nextline.erase(std::remove(nextline.begin(), nextline.end(), '\r'), nextline.end());
-        if(stringIsInteger(nextline)) break;
-        else{
-          fulltext += nextline + "<br/>";
-        }
-      }
+    } else if(newSubObj != nullptr && !stringIsInteger(currentLine)) {
+      currentLine.erase(std::remove(currentLine.begin(), currentLine.end(), '\r'), currentLine.end());
 
-      if(!fulltext.empty()){
-        int brPosition = fulltext.rfind("<br/>");
-        newSubObj->textContent = fulltext.substr(0,brPosition);
-        currentLoadedSubList.push_back(newSubObj);
-        fulltext = "";
-      }
+      if (newSubObj->textContent.empty()) {
+        newSubObj->textContent = currentLine;
 
+      } else if(!lineIsEmpty(currentLine)) {
+        newSubObj->textContent += "<br/>" + currentLine;
+
+      }
     }
   }
+
+  if(newSubObj != nullptr)
+    currentLoadedSubList.push_back(newSubObj);
+
+  file.close();
 }
 
 // scraping the subtitles from the sub file
 void MainWindow::SubFileParsing(std::string subpath) {
   for (SubObject* ptr:currentLoadedSubList) delete ptr;
   currentLoadedSubList.clear();
-  if(std::filesystem::path(subpath).extension().string() == ".ass") assSubFileParsing(subpath);
-  else srtSubFileParsing(subpath);
+  if(std::filesystem::path(subpath).extension().string() == ".ass" ||
+     std::filesystem::path(subpath).extension().string() == ".ssa")
+    parsingAssSubsFile(subpath);
+
+  else parsingSrtLikeSubsFile(subpath);
 }
 
 //function to resize ui elements
