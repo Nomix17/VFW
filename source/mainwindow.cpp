@@ -36,6 +36,7 @@
 #include <sstream>
 #include <filesystem>
 #include <limits.h>
+#include <algorithm>
 
 void moveSomethingToPos(QGraphicsWidget *widget, QPointF targetPos, int animationTime);
 
@@ -144,18 +145,30 @@ void MainWindow::createBottomLayout() {
   updateButtonsIcon();
 }
 
+std::string lowerCase(std::string text){
+  std::transform(text.begin(), text.end(), text.begin(), [](unsigned char c){
+    return std::tolower(c); 
+  });
+  return text;
+}
+
 void MainWindow::LoadingInDirectorySubtitles(QString currenturl){
   std::filesystem::path currentVideoPath(currenturl.toStdString()); 
   std::string directoryPath = currentVideoPath.parent_path().generic_string();
+  std::cout<<"\n";
   if (std::filesystem::exists(directoryPath) && std::filesystem::is_directory(directoryPath)) {
     for(const auto & fileEntry : std::filesystem::directory_iterator(directoryPath)){
       std::string fileExtention = fileEntry.path().extension().string();
       if(std::find(supportedSubtitlesFormats.begin(), supportedSubtitlesFormats.end(), fileExtention) != supportedSubtitlesFormats.end()){
-        std::string filePathWithoutExtention = fileEntry.path().stem().generic_string();
-        std::string currentVideoPathWithoutExtension = currentVideoPath.stem().generic_string();
+
+        std::string filePathWithoutExtention = lowerCase(fileEntry.path().stem().generic_string());
+        std::string currentVideoPathWithoutExtension = lowerCase(currentVideoPath.stem().generic_string());
+
         if(filePathWithoutExtention == currentVideoPathWithoutExtension){
           currentVideoSubtitlePaths.push_back(QString::fromStdString(fileEntry.path().generic_string()));
+          std::cout<<"[ INFO ] Found subtitle: "<<fileEntry.path().generic_string()<<"\n";
           if(currentLoadedSubPath == ""){
+            std::cout<<"[ INFO ] Subtitles were Loaded: "<<fileEntry.path().generic_string()<<"\n";
             currentLoadedSubPath = QString::fromStdString(fileEntry.path().generic_string());
             SubFileParsing(currentLoadedSubPath.toStdString());
             QAction * ToggleSubs = TopBarButtonsObjectList[TopBar::TOGGLE_SUB];
@@ -165,6 +178,7 @@ void MainWindow::LoadingInDirectorySubtitles(QString currenturl){
       }
     }
   }
+  std::cout<<"\n";
 }
 
 void MainWindow::ExtranctingChapterData(QString currenturl){
