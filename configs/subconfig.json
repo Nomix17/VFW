@@ -5,6 +5,7 @@
     "font-familly": "Montserrat",
     "font-opacity": 100,
     "font-size": 30,
+    "font-weight":450,
     "margin-bottom": 70,
     "padding": 10
 }
