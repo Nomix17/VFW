@@ -1266,7 +1266,8 @@ void MainWindow::updateButtonsIcon(std::string button_name){
 //function to save the position of a video after closing it
 void MainWindow::savevideoposition(){
   if(currentVideoTitle.size() && player->position() > 5000){
-    std::ofstream possavefile(SYSTEMPATHS->cachePath + "/playbackState",std::ios::app);
+    std::string LPPPath = (std::filesystem::path(SYSTEMPATHS->cachePath) / "playbackState").string();
+    std::ofstream possavefile(LPPPath,std::ios::app);
     std::string line = currentVideoTitle+" ; "+QString::number(player->position()).toStdString()+'\n';
     possavefile<<line;
     possavefile.close();
@@ -1277,7 +1278,7 @@ void MainWindow::savevideoposition(){
 void MainWindow::getlastsavedposition(){
   if(currentVideoTitle == "") return;
   lastPlaybackPosition = 0;
-  std::string LPPPath = SYSTEMPATHS->cachePath + "/playbackState";
+  std::string LPPPath = (std::filesystem::path(SYSTEMPATHS->cachePath) / "playbackState").string();
   std::ifstream possavefile(LPPPath);
   if (possavefile){
     std::string line;

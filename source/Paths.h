@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <iostream>
 #include <QString>
 #include <filesystem>
@@ -19,7 +20,8 @@ class PATHS {
   public:
     std::string APPNAME = "VFW";
     std::string HOME;
-    std::string appRootPath;
+    std::string execPath;
+    bool isPortableMode;
 
     // root dirs
     std::string assetsPath; 
@@ -40,10 +42,23 @@ class PATHS {
       populateEssentialDirectories();
       createMissingSystemDirs();
     }
-   
+
+  private:
     void defineRootDirs() {
-      
+      this->execPath = getExecutablePath();
+
       #ifdef _WIN32
+        std::filesystem::path exeParentPath = std::filesystem::path(execPath).parent_path();
+        this->isPortableMode = std::filesystem::exists(exeParentPath / "portable") || std::getenv("portableMode") != nullptr;
+
+        if(isPortableMode) {
+          std::cout<< "[ LOG ] launching Into Portable Mode\n";
+          this->cachePath = (exeParentPath / "cache" / APPNAME).string();
+          this->configPath = (exeParentPath / "configs").string();
+          this->assetsPath = (exeParentPath / "assets").string();
+          return;
+        }
+
         HOME = std::getenv("USERPROFILE");
         const char* localAppDataEnv = std::getenv("LOCALAPPDATA");
         const char* appDataEnv = std::getenv("APPDATA");
@@ -55,6 +70,8 @@ class PATHS {
           this->configPath = (appData / APPNAME / "configs").string();
           this->assetsPath = (appData / APPNAME / "assets").string();
         }
+
+
       #elif __APPLE__
         HOME = std::getenv("HOME");
         if (!HOME.empty()) {
@@ -72,8 +89,6 @@ class PATHS {
           this->assetsPath = (home / ".local" / "share" / APPNAME).string();
         }
       #endif
-
-      this->appRootPath = getAppRootPath();
     }
 
     void defineBranchDirs() {
@@ -120,8 +135,7 @@ class PATHS {
       return theme;
     }
 
-  private:
-    std::string getAppRootPath() {
+    std::string getExecutablePath() {
       std::string executablePath;
       
       const char* appimage_root = std::getenv("VFW_ROOT");
@@ -149,18 +163,7 @@ class PATHS {
         }
       #endif
       
-      std::filesystem::path fullExecutablePath(executablePath);
-      return getRootDirectory(fullExecutablePath);
-    }
-    
-    std::string getRootDirectory(std::filesystem::path fullPath) {
-      while (!fullPath.empty() && fullPath.filename() != "bin") {
-        fullPath = fullPath.parent_path();
-      }
-      if (!fullPath.empty()) {
-        return fullPath.parent_path().string();
-      }
-      return "";
+      return executablePath;
     }
 };
 
