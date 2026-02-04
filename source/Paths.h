@@ -53,7 +53,7 @@ class PATHS {
 
         if(isPortableMode) {
           std::cout<< "[ LOG ] launching Into Portable Mode\n";
-          this->cachePath = (exeParentPath / "cache" / APPNAME).string();
+          this->cachePath = (exeParentPath / "cache").string();
           this->configPath = (exeParentPath / "configs").string();
           this->assetsPath = (exeParentPath / "assets").string();
           return;
