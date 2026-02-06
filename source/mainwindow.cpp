@@ -63,6 +63,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   floatingControlPannelWidget = new QWidget;
   floatingControlPannelContainerLayout = new QVBoxLayout(floatingControlPannelWidget);
   floatingControlPannelProxy = scene->addWidget(floatingControlPannelWidget);
+  floatingControlPannelWidget->hide();
   floatingControlPannelProxy->setZValue(10);
   floatingControlPannelWidget->update();
 
@@ -1191,6 +1192,8 @@ void MainWindow::FullScreen(){
     view->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
     createBottomLayout();//recreating bottom layout
     floatingControlPannelContainerLayout->addLayout(controlbuttonslayout);// adding the bottom layout into the floating pannel
+    if (floatingControlPannelWidget->isHidden())
+      floatingControlPannelWidget->show();
 
   }
 
