@@ -9,10 +9,15 @@
 #include <QString>
 #include <string>
 
+
 std::vector<std::string> supportedMediaFormats = {
-    ".mp4", ".mkv", ".avi", ".mov", ".webm", ".wmv", ".m4v",
-    ".mp3", ".wav", ".aac", ".m4a", ".wma", ".ogg"
+    ".mp4", ".mp3", ".mkv", ".avi", ".wav",
+    ".mov", ".flac", ".m4a", ".webm", ".aac",
+    ".wmv", ".ogg", ".m4v", ".mpg", ".mpeg",
+    ".3gp", ".flv", ".ts", ".vob", ".opus",
+    ".aiff", ".alac"
 };
+
 std::vector<std::string> supportedSubtitlesFormats = {
   ".srt",".vtt",".ass",".ssa"
 };
