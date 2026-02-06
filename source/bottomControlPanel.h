@@ -81,9 +81,9 @@ class BottomControlPanel: public QVBoxLayout {
     void createControlButtons(QHBoxLayout *parentLayout) {
       for (int j = 0; j < mcbuttons.size(); j++) {
         // adding space for the style
-        if (j == 1 || j == 4 || j == 7) {
+        if (j == BACK_BUTTON || j == FULLSCREEN_BUTTON || j == CONTINUE_FROM_LAST_POS_BUTTON) {
           parentLayout->addSpacing(20);
-        } else if (j == 8) {
+        } else if (j == TOGGLE_VOLUME_BUTTON) {
           // adding space for the style between buttons and volume parameters
           parentLayout->addStretch(1);
         }
@@ -95,8 +95,8 @@ class BottomControlPanel: public QVBoxLayout {
         std::filesystem::path iconFullPath(std::filesystem::path(ICONSDIRECTORY.toStdString()) / std::filesystem::path(iconName));
         QPixmap pix(QString::fromStdString(iconFullPath.string()));
         newButton->setIcon(pix);
-        if (mcbuttons[j] == "TOGGLE_VOLUME_BUTTON") {
-          newButton->setIconSize(QSize(24, 24));
+        if (mcbuttons[j] == "BVolumeControl") {
+          newButton->setIconSize(QSize(22, 22));
         } else {
           newButton->setIconSize(QSize(16, 16));
         }
