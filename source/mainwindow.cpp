@@ -661,7 +661,7 @@ void MainWindow::controlButtonsHandler(int buttonindex) {
     }
 
     case BottomControlPanel::FULLSCREEN_BUTTON: {
-      FullScreen();
+      toggleFullScreen();
       break;
     }
 
@@ -743,13 +743,13 @@ void MainWindow::setupShortcuts(){
     // --- Fullscreen ---
     auto toggleFS = new QShortcut(QKeySequence(Qt::Key_F), this);
     toggleFS->setContext(Qt::ApplicationShortcut);
-    connect(toggleFS, &QShortcut::activated, this, [this]{ FullScreen(); });
+    connect(toggleFS, &QShortcut::activated, this, [this]{ toggleFullScreen(); });
 
     auto escFS = new QShortcut(QKeySequence(Qt::Key_Escape), this);
     escFS->setContext(Qt::ApplicationShortcut);
     connect(escFS, &QShortcut::activated, this, [this]{
         fullScreenEnabled = true;
-        FullScreen();
+        toggleFullScreen();
     });
 
     // --- Subtitles controls ---
@@ -1174,19 +1174,17 @@ void MainWindow::resizeEvent(QResizeEvent *event) {
 }
 
 //function to toggle the fullscreen
-void MainWindow::FullScreen(){
+void MainWindow::toggleFullScreen(){
   float currentVolume = audio->volume();
 
   if (fullScreenEnabled){
     this->showMaximized();
-    topbarlayoutvisibility("show");// calling function to show topbar
     mainlayout->setContentsMargins(10, 10, 10, 10);
     createBottomLayout();//recreating bottom layout
     mainlayout->addLayout(controlbuttonslayout);// adding the bottom layout into the mainlayout
 
   } else {
     this->showFullScreen();
-    topbarlayoutvisibility("hide");// calling function to hide topbar
     mainlayout->setContentsMargins(0, 0, 0, 0);
     video->setSize(this->size());
     view->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
@@ -1197,6 +1195,7 @@ void MainWindow::FullScreen(){
 
   }
 
+  toggleTopbarLayoutVisibility();// calling function to show topbar
   fullScreenEnabled = !fullScreenEnabled;
 
   // resetting the volume slider
@@ -1235,16 +1234,16 @@ void MainWindow::showingthings(std::string texttoshow, int xposition, int yposit
 
 
 // toplayout visibility control function
-void MainWindow::topbarlayoutvisibility(std::string status){
+void MainWindow::toggleTopbarLayoutVisibility() {
   for (int i = 0; i < topbarlayout->count(); i++) {
     QWidget *searchtoolbutton = topbarlayout->itemAt(i)->widget();
-      if (searchtoolbutton) {
-        if (status=="show") {
-          searchtoolbutton->show();
-        }else if(status=="hide") {
-          searchtoolbutton->hide();
-        }
+    if (searchtoolbutton) {
+      if (searchtoolbutton->isHidden()) {
+        searchtoolbutton->show();
+      } else {
+        searchtoolbutton->hide();
       }
+    }
   }
 }
 
@@ -1332,7 +1331,7 @@ void MainWindow::mouseDoubleClickEvent(QMouseEvent * event){
 
   if(ClickIsInsideVideoLayout && ClickNotOnfloatingPannel){
     //if the user double clicked on the video layout a fullscreen function is gonna be called
-    FullScreen();
+    toggleFullScreen();
   }
 }
 
