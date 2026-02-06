@@ -31,6 +31,7 @@ class PlaylistManager:public QDialog{
 
     PlaylistManager(std::string StyleDirectory,std::string IconDirectory,std::vector<QUrl> playlist_vector,QString currenturl, QWidget *parent = nullptr):QDialog(parent){
 
+      this->setWindowTitle("Playlist");
       //load style file
       std::filesystem::path styleFullPath(std::filesystem::path(StyleDirectory) / "playlistmanager.css");
       std::ifstream stylefile(styleFullPath);

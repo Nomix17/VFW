@@ -62,6 +62,7 @@ public:
   }
 
   void gui(){
+    this->setWindowTitle("Subtitles configuration");
     this->setFixedSize(480,400);
     mainlayout = new QVBoxLayout(this);
     gridlayout = new QGridLayout();

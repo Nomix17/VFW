@@ -41,9 +41,11 @@
 void moveSomethingToPos(QGraphicsWidget *widget, QPointF targetPos, int animationTime);
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
+  this->setWindowTitle("VFW");
+  this->resize(750, 550);
   setFocusPolicy(Qt::StrongFocus);
   setupShortcuts();
-  this->resize(750, 550);
+
   // elements definition
   player = new QMediaPlayer(this);
   audio = new QAudioOutput(this);

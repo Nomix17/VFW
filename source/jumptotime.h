@@ -16,6 +16,7 @@ class JumpTime : public QDialog{
 
 public:
   JumpTime(std::string StyleDirectory, QWidget*parent=nullptr):QDialog(parent){
+    this->setWindowTitle("Jump to");
 
     //load style file
     std::filesystem::path styleFullPath(std::filesystem::path(StyleDirectory) / "jumpwindow.css");

@@ -18,6 +18,7 @@ class SRepeatWindow :public QDialog{
   
 public:
   SRepeatWindow(std::string StyleDirectory, QWidget *parent=nullptr):QDialog(parent){
+    this->setWindowTitle("Set Range");
     this->setFixedSize(590,200);
    
     //load style file

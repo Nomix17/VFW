@@ -20,6 +20,8 @@ class subWindow:public QDialog{
 
   public:
     subWindow(std::string StyleDirectory, std::string IconDirectory, std::vector <QString> subArray, QString currentLoadedSubPath,QWidget *parent = nullptr):QDialog(parent){
+
+      this->setWindowTitle("Load Subtitles");
       this->setFixedSize(400,500);
       std::filesystem::path styleFullPath(std::filesystem::path(StyleDirectory) / "playlistmanager.css");
       std::ifstream stylefile(styleFullPath.string());

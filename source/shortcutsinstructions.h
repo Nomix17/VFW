@@ -23,7 +23,8 @@ class ShortcutsInst:public QDialog{
 
   public:
     ShortcutsInst(QWidget *parent,std::string StyleDirectory,std::string ConfigDirectory):QDialog(parent){
-    
+      this->setWindowTitle("Shortcuts");
+   
       //load style file
       std::filesystem::path styleFullPath(std::filesystem::path(StyleDirectory) / "shortcutsinstructions.css");
       std::ifstream stylefile(styleFullPath);

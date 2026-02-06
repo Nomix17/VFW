@@ -26,6 +26,8 @@ public:
 
   ChangeThemeWindow(std::string ConfigDirectory, std::string ProjectDirectory, std::string StyleDirectory, QWidget *parent=nullptr)
       : QDialog(parent) {
+    
+    this->setWindowTitle("Pick your theme");
     this->setFixedSize(400,500);
     scrollarea->setWidgetResizable(true);
     scrollarea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
