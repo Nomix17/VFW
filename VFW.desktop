@@ -1,12 +1,11 @@
 [Desktop Entry]
-
-Version=1.0
+Version=1.1.7
 Type=Application
 Name=VFW
-GenericName=Video Player 
+GenericName=Video Player
 Exec=/usr/local/bin/VFW %F
-MimeType=video/x-matroska;video/x-msvideo;video/mp4;video/x-ms-wmv;video/x-flv;video/x-mpegurl;video/x-m4v;text/x-ssa;text/x-subrip;text/vtt;text/srt;
 Icon=vfw
+MimeType=video/mp4;audio/mpeg;video/x-matroska;video/x-msvideo;audio/wav;video/quicktime;audio/flac;audio/mp4;video/webm;audio/aac;video/x-ms-wmv;audio/ogg;video/x-m4v;video/mpeg;video/3gpp;video/x-flv;video/mp2t;audio/opus;audio/x-aiff;audio/x-alac;
 NoDisplay=false
 Categories=AudioVideo;Video;
 Terminal=false
