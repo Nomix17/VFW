@@ -50,11 +50,13 @@ class PlaylistManager:public QDialog{
       this->setFixedSize(400,500);
       scrollarea->setWidgetResizable(true);
       scrollarea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-  
+      scrollarea->setFocusPolicy(Qt::NoFocus);
+
       holderwidget->setLayout(medialayout);
       holderwidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
       holderwidget->setMinimumWidth(300);
-  
+      holderwidget->setFocusPolicy(Qt::NoFocus);
+
       scrollarea->setWidget(holderwidget);
       // Add scroll area directly to main layout
       mainlayout->addWidget(scrollarea);
