@@ -275,7 +275,7 @@ void MainWindow::setPlayerDefaultState() {
   player->setSource({});
   controlbuttonslayout->hideSkipButton();
   controlbuttonslayout->setDefaultState();
-  setVolumeSliderPosition(Settings["defaultVolume"]);
+  setVolumeSliderPosition(Settings["defaultVolume"] * 1000);
   updateButtonsIcon();
 }
 
@@ -321,7 +321,7 @@ void MainWindow::startVideoPlayer(QString path) {
   std::cout<<"Playing: "<<currentVideoUrl.toStdString()<<"\n";
 
   if(Settings.find("defaultVolume") != Settings.end()) {
-    setVolumeSliderPosition(Settings["defaultVolume"]);
+    setVolumeSliderPosition(Settings["defaultVolume"] * 1000);
   }
 
   videoIsPaused = false;
@@ -466,7 +466,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
     }
 
     case TopBar::FULL_VOLUME: {
-      setVolumeSliderPosition(1);
+      setVolumeSliderPosition(1000);
       break;
     }
 
@@ -693,13 +693,7 @@ void MainWindow::controlButtonsHandler(int buttonindex) {
     }
 
     case BottomControlPanel::TOGGLE_VOLUME_BUTTON: {
-      static float oldVolume = 0.5;
-      if (audio->volume() > 0.0f) {
-         oldVolume = audio->volume();
-        setVolumeSliderPosition(0);
-      } else {
-        setVolumeSliderPosition(oldVolume);
-      }
+      toggleVolume();
       break;
     }
 
@@ -733,13 +727,15 @@ void MainWindow::setupShortcuts(){
     auto volUp = new QShortcut(QKeySequence(Qt::Key_Up), this);
     volUp->setContext(Qt::ApplicationShortcut);
     connect(volUp, &QShortcut::activated, this, [this]{
-        setVolumeSliderPosition(audio->volume() + 0.1f);
+        int volumeSliderValue = controlbuttonslayout->getVolumeValue();
+        setVolumeSliderPosition(volumeSliderValue + 100);
     });
 
     auto volDown = new QShortcut(QKeySequence(Qt::Key_Down), this);
     volDown->setContext(Qt::ApplicationShortcut);
     connect(volDown, &QShortcut::activated, this, [this]{
-        setVolumeSliderPosition(audio->volume() - 0.1f);
+        int volumeSliderValue = controlbuttonslayout->getVolumeValue();
+        setVolumeSliderPosition(volumeSliderValue - 100);
     });
 
     // --- Fullscreen ---
@@ -972,12 +968,22 @@ void MainWindow::changingposition(int newpos) {
   }
 }
 
+void MainWindow::toggleVolume() {
+  static float oldVolumeSliderPos = 500;
+  int currentVolumeSliderPos = controlbuttonslayout->getVolumeValue();
+  if (currentVolumeSliderPos > 0.0f) {
+    oldVolumeSliderPos = currentVolumeSliderPos;
+    setVolumeSliderPosition(0);
+  } else {
+    setVolumeSliderPosition(oldVolumeSliderPos);
+  }
+}
 
 // managing the interactions with the volume slider
-void MainWindow::setVolumeSliderPosition(qreal position) {
+void MainWindow::setVolumeSliderPosition(qreal newPosition) {
+  controlbuttonslayout->setVolumeSliderPosition(newPosition);
   updateButtonsIcon("volume");
-  controlbuttonslayout->setVolumeSliderPosition(static_cast<int>(position * 1000));
-  Settings["defaultVolume"] = position;
+  Settings["defaultVolume"] = (float) newPosition / 1000;
 }
 
 void MainWindow::closeVideo(){
@@ -1177,7 +1183,7 @@ void MainWindow::resizeEvent(QResizeEvent *event) {
 
 //function to toggle the fullscreen
 void MainWindow::toggleFullScreen(){
-  float currentVolume = audio->volume();
+  int currentVolumeSliderPos = controlbuttonslayout->getVolumeValue();
 
   if (fullScreenEnabled){
     this->showMaximized();
@@ -1201,7 +1207,7 @@ void MainWindow::toggleFullScreen(){
   fullScreenEnabled = !fullScreenEnabled;
 
   // resetting the volume slider
-  setVolumeSliderPosition(currentVolume);
+  setVolumeSliderPosition(currentVolumeSliderPos);
   updateButtonsIcon();
   updateTimeLabels();
 }
@@ -1257,8 +1263,7 @@ void MainWindow::updateButtonsIcon(std::string button_name){
 
   //update volume button icons
   if(button_name == "volume" || button_name == "all"){
-    float currentVolume = audio->volume() * 1000;
-    controlbuttonslayout->updateVolumeButtonIcon(currentVolume);
+    controlbuttonslayout->updateVolumeButtonIcon();
   }
 
   //update repetition button icon

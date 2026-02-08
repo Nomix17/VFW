@@ -63,7 +63,10 @@ class BottomControlPanel: public QVBoxLayout {
       connect(videoslider, &QSlider::sliderMoved,[this](){
         videoSliderMoved(videoslider->sliderPosition());
       });
-      connect(volumeslider, &QSlider::valueChanged,this, &BottomControlPanel::volumeSliderMoved);
+      connect(volumeslider, &QSlider::valueChanged,[this](int value){
+        updateVolumeButtonIcon();
+        volumeSliderMoved(value);
+      });
 
       firsthalflayout->addWidget(playbackPositionTimer);
       firsthalflayout->addWidget(videoslider);
@@ -96,7 +99,7 @@ class BottomControlPanel: public QVBoxLayout {
         QPixmap pix(QString::fromStdString(iconFullPath.string()));
         newButton->setIcon(pix);
         if (mcbuttons[j] == "BVolumeControl") {
-          newButton->setIconSize(QSize(22, 22));
+          newButton->setIconSize(QSize(24, 24));
         } else {
           newButton->setIconSize(QSize(16, 16));
         }
@@ -171,7 +174,8 @@ class BottomControlPanel: public QVBoxLayout {
       else Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "/BPlay.png"));
     }
 
-    void updateVolumeButtonIcon(int volume) {
+    void updateVolumeButtonIcon() {
+      int volume = volumeslider->value();
       QPushButton *VolumeControlButton = ControlButtonsObjectsList[TOGGLE_VOLUME_BUTTON];
       std::string iconFileName;
       if (volume == 0) iconFileName = "BMute.png";

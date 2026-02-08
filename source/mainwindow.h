@@ -63,6 +63,7 @@ public:
   void startVideoPlayer(QString url);
   void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
   void setVolumeSliderPosition(qreal position);
+  void toggleVolume();
   void closeVideo();
   void toggleSubtitles();
   void toggleChaptersIndicators();
