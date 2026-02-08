@@ -48,34 +48,59 @@ public:
 
   MainWindow(QWidget *parent=nullptr);
   ~MainWindow();
-  void setupShortcuts();
+
+  // top bottom layouts
   void createTopLayout();
   void createBottomLayout();
   void topBarButtonsHandler(int buttonindex);
   void controlButtonsHandler(int buttonindex);
+
   void setVideoSliderRange(qint64 playbackPosition);
-  void syncSubtitles(qint64 playbackPosition);
   void playbackPositionUpdated(qint64 playbackPosition);
-  void determineNextVideo();
   void updateTimeLabels();
   void setPlayerDefaultState();
-  void playNextVideoInPlaylist();
-  void startVideoPlayer(QString url);
   void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
+
+  void startVideoPlayer(QString url);
+  void determineNextVideo();
+  void playNextVideoInPlaylist();
+  void changePlayBackPosition(int newpos);
+  void closeVideo();
+
   void setVolumeSliderPosition(qreal position);
   void toggleVolume();
-  void closeVideo();
+
+  // subtiles logic
   void toggleSubtitles();
-  void toggleChaptersIndicators();
-  void moveToNextChapter();
-  void moveToPrevChapter();
+  void increaseSubtitlesDelay();
+  void decreaseSubtitlesDelay();
   void SubFileParsing(std::string subpath);
   void parsingSrtLikeSubsFile(std::string subpath);
   void parsingAssSubsFile(std::string subpath);
+  void LoadingInDirectorySubtitles(QString currenturl);
+  void ExtractingBuiltInSubs(QString currenturl);
+  void syncSubtitles(qint64 playbackPosition);
 
-  void changingposition(int newpos);
-  void resizelements(std::string elementtorezise="all",int animationTime = 0);
+  // chapters logic
+  void toggleChaptersIndicators();
+  void moveToNextChapter();
+  void moveToPrevChapter();
+  void ExtranctingChapterData(QString currenturl);
 
+  // resize stuff
+  void resizeMainUiElement();
+  void resizeVideoContainers();
+  void repositionFloatingControllPannel(int animationTime=0);
+  void repositionSubtitles();
+
+  // update icons
+  void updateButtonsIcon();
+  void updatePlayPauseButtonIcon();
+  void updateVolumeButtonIcon();
+  void updateRepeatButtonIcon();
+
+  // global functions
+  void setupShortcuts();
   void resizeEvent(QResizeEvent * event) override;
   void mouseDoubleClickEvent(QMouseEvent * event)override;
   bool eventFilter(QObject *obj, QEvent *event) override;
@@ -85,12 +110,10 @@ public:
 
   void showingthings(std::string texttoshow, int xposition, int yposition,int animationduration);
   void toggleTopbarLayoutVisibility();
-  void updateButtonsIcon(std::string button_name = "all");
+ 
+  // caching and stuff
   void savevideoposition();
   void getlastsavedposition();
-  void ExtranctingChapterData(QString currenturl);
-  void LoadingInDirectorySubtitles(QString currenturl);
-  void ExtractingBuiltInSubs(QString currenturl);
   void parseSettingsFile();
   void savingNewSettings();
 
@@ -137,7 +160,6 @@ private:
   QWidget* floatingControlPannelWidget;
   QVBoxLayout * floatingControlPannelContainerLayout;
   QGraphicsProxyWidget * floatingControlPannelProxy;
-
 
   // running video variables
   std::string currentVideoParentDirectory;

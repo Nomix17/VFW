@@ -130,10 +130,9 @@ void MainWindow::createBottomLayout() {
   controlbuttonslayout=nullptr;
 
   controlbuttonslayout = new BottomControlPanel(SYSTEMPATHS->currentIconsDir);//creating new layout
-  // controlButtonsObjects = controlbuttonslayout->getControlButtonsObjects();
 
   connect(controlbuttonslayout, &BottomControlPanel::controlButtonsHandler, this, &MainWindow::controlButtonsHandler);
-  connect(controlbuttonslayout, &BottomControlPanel::videoSliderMoved, this, &MainWindow::changingposition);
+  connect(controlbuttonslayout, &BottomControlPanel::videoSliderMoved, this, &MainWindow::changePlayBackPosition);
   connect(controlbuttonslayout, &BottomControlPanel::volumeSliderMoved,[this](int value) {
     audio->setVolume((float)value / 1000);
   });
@@ -329,7 +328,7 @@ void MainWindow::startVideoPlayer(QString path) {
   player->play();
 
   //resize ui elements based on the media opened
-  resizelements();
+  resizeMainUiElement();
 
   // displaying the title for a brief of time
   int xposition = view->size().width() / 2;
@@ -415,12 +414,12 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
     }
 
     case TopBar::JUMP_BACKWARD: {
-      changingposition(player->position() - 5000);
+      changePlayBackPosition(player->position() - 5000);
       break;
     }
 
     case TopBar::JUMP_FORWARD: {
-      changingposition(player->position() + 5000);
+      changePlayBackPosition(player->position() + 5000);
       break;
     }
 
@@ -428,7 +427,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       JumpTime x(SYSTEMPATHS->currentThemeDir);
       x.exec();
       if (x.targettime >= 0) {
-        changingposition(x.targettime * 1000);
+        changePlayBackPosition(x.targettime * 1000);
       }
       break;
     }
@@ -453,7 +452,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
             segmentLoopEnabled = true;
             segmentLoopStart = win.startingpoint;
             segmentLoopEnd = win.finishingpoint;
-            changingposition(segmentLoopStart * 1000);
+            changePlayBackPosition(segmentLoopStart * 1000);
             toggleLoopAction->setText("Exit The Loop");
 
           }
@@ -560,32 +559,12 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
     }
 
     case TopBar::ADDDELAY: {
-      if (currentLoadedSubList.size()) {
-        currentSubDelay += 100;
-        if (-100 < currentSubDelay && currentSubDelay < 100)
-          currentSubDelay = 0;
-
-        // add animation so the user can see that the delay has been changed
-        std::string text = "Subtitles Delay: " + std::to_string((int)(currentSubDelay)) + " ms";
-        int xposition = view->size().width();
-        int yposition = view->size().height();
-        showingthings(text, xposition / 2, yposition / 2, 1000);
-      }
+      increaseSubtitlesDelay();
       break;
     }
 
     case TopBar::REDUCEDELAY: {
-      if (currentLoadedSubList.size()) {
-        currentSubDelay -= 100;
-        if (-100 < currentSubDelay && currentSubDelay < 100)
-          currentSubDelay = 0;
-
-        // add animation so the user can see that the delay has been changed
-        std::string text = "Subtitles Delay: " + std::to_string((int)(currentSubDelay)) + " ms";
-        int xposition = view->size().width();
-        int yposition = view->size().height();
-        showingthings(text, xposition / 2, yposition / 2, 1000);
-      }
+      decreaseSubtitlesDelay();
       break;
     }
 
@@ -681,13 +660,13 @@ void MainWindow::controlButtonsHandler(int buttonindex) {
       if (rep == BottomControlPanel::PlaylistRepeat) rep = BottomControlPanel::VideoRepeat;
       else if (rep == BottomControlPanel::VideoRepeat) rep = BottomControlPanel::Shuffle;
       else if (rep == BottomControlPanel::Shuffle) rep = BottomControlPanel::PlaylistRepeat;
-      updateButtonsIcon("repetition");
+      updateRepeatButtonIcon();
 
       break;
     }
 
     case BottomControlPanel::CONTINUE_FROM_LAST_POS_BUTTON:{
-      changingposition(lastPlaybackPosition);
+      changePlayBackPosition(lastPlaybackPosition);
       controlbuttonslayout->hideSkipButton();
       break;
     }
@@ -714,13 +693,13 @@ void MainWindow::setupShortcuts(){
     auto seekFwd = new QShortcut(QKeySequence(Qt::Key_Right), this);
     seekFwd->setContext(Qt::ApplicationShortcut);
     connect(seekFwd, &QShortcut::activated, this, [this]{
-        changingposition(player->position() + 5000);
+        changePlayBackPosition(player->position() + 5000);
     });
 
     auto seekBack = new QShortcut(QKeySequence(Qt::Key_Left), this);
     seekBack->setContext(Qt::ApplicationShortcut);
     connect(seekBack, &QShortcut::activated, this, [this]{
-        changingposition(std::max(0,static_cast<int>(player->position() - 5000)));
+        changePlayBackPosition(std::max(0,static_cast<int>(player->position() - 5000)));
     });
 
     // --- Volume controls ---
@@ -796,6 +775,33 @@ void MainWindow::setupShortcuts(){
     });
 }
 
+void MainWindow::increaseSubtitlesDelay() {
+  if (currentLoadedSubList.size()) {
+    currentSubDelay += 100;
+    if (-100 < currentSubDelay && currentSubDelay < 100)
+      currentSubDelay = 0;
+
+    // add animation so the user can see that the delay has been changed
+    std::string text = "Subtitles Delay: " + std::to_string((int)(currentSubDelay)) + " ms";
+    int xposition = view->size().width();
+    int yposition = view->size().height();
+    showingthings(text, xposition / 2, yposition / 2, 1000);
+  }
+}
+void MainWindow::decreaseSubtitlesDelay(){
+  if (currentLoadedSubList.size()) {
+    currentSubDelay -= 100;
+    if (-100 < currentSubDelay && currentSubDelay < 100)
+      currentSubDelay = 0;
+
+    // add animation so the user can see that the delay has been changed
+    std::string text = "Subtitles Delay: " + std::to_string((int)(currentSubDelay)) + " ms";
+    int xposition = view->size().width();
+    int yposition = view->size().height();
+    showingthings(text, xposition / 2, yposition / 2, 1000);
+  }
+}
+
 void MainWindow::toggleSubtitles(){
   ShowSubs =! ShowSubs;
   if(!ShowSubs) sublabel->setHtml("");
@@ -829,7 +835,7 @@ void MainWindow::moveToNextChapter(){
       ChapterObject newChapter;
       if(i == ChaptersVectors.size()-1) newChapter = ChaptersVectors[i];
       else newChapter = ChaptersVectors[i+1];
-      changingposition(newChapter.startTime*1000+1);
+      changePlayBackPosition(newChapter.startTime*1000+1);
       QString titleToShow = htmlstyle + newChapter.title + "</div>";
       int video_start_x = view->pos().rx();
       int video_start_y = view->pos().ry();
@@ -843,7 +849,7 @@ void MainWindow::moveToPrevChapter(){
   for(size_t i=1;i<ChaptersVectors.size();i++){
     if(player->position() >= ChaptersVectors[i].startTime*1000 && player->position() <= ChaptersVectors[i].endTime*1000){
       ChapterObject newChapter = ChaptersVectors[i-1];
-      changingposition(newChapter.startTime*1000+1);
+      changePlayBackPosition(newChapter.startTime*1000+1);
       QString titleToShow = htmlstyle + newChapter.title + "</div>";
       int video_start_x = view->pos().rx();
       int video_start_y = view->pos().ry();
@@ -876,7 +882,7 @@ void MainWindow::syncSubtitles(qint64 playbackPosition) {
       // merge the html style with the subtitle and pass it as html script
       sublabel->setHtml(htmlstyle + QString::fromStdString(currentLoadedSubList[i]->textContent) + "</td></tr></table>");
 
-      resizelements("sub");
+      repositionSubtitles();
       break;
 
     }else if (i == currentLoadedSubList.size() - 2) {
@@ -899,13 +905,11 @@ void MainWindow::playbackPositionUpdated(qint64 playbackPosition) {
   }
 
   if (segmentLoopEnabled && playbackPosition >= segmentLoopEnd * 1000) {
-    changingposition(segmentLoopStart * 1000);
+    changePlayBackPosition(segmentLoopStart * 1000);
   }
 
   // syncing subtitles to the player position
   syncSubtitles(playbackPosition);
-
-  // updateButtonsIcon();
 }
 
 void MainWindow::determineNextVideo() {
@@ -920,7 +924,7 @@ void MainWindow::determineNextVideo() {
     }
 
   } else if(rep == BottomControlPanel::VideoRepeat) {
-     changingposition(0);
+     changePlayBackPosition(0);
 
   } else if (rep == BottomControlPanel::Shuffle) {
     currentVideoIndex = rand() % playlist.size();
@@ -945,7 +949,7 @@ void MainWindow::updateTimeLabels(){
   every time we change position.
 */
 
-void MainWindow::changingposition(int newpos) {
+void MainWindow::changePlayBackPosition(int newpos) {
   QMediaMetaData meta = player->metaData();
   QVariant audioCodec = meta.value(QMediaMetaData::AudioCodec);
 
@@ -982,7 +986,7 @@ void MainWindow::toggleVolume() {
 // managing the interactions with the volume slider
 void MainWindow::setVolumeSliderPosition(qreal newPosition) {
   controlbuttonslayout->setVolumeSliderPosition(newPosition);
-  updateButtonsIcon("volume");
+  updateVolumeButtonIcon();
   Settings["defaultVolume"] = (float) newPosition / 1000;
 }
 
@@ -1149,36 +1153,42 @@ void MainWindow::SubFileParsing(std::string subpath) {
 }
 
 //function to resize ui elements
-void MainWindow::resizelements(std::string elementtorezise, int animationTime ){
+void MainWindow::resizeMainUiElement(){
+  resizeVideoContainers();
+  repositionFloatingControllPannel();
+  repositionSubtitles();
+  // showingthings("",0,0,0);
+}
+
+void MainWindow::resizeVideoContainers() {
+  int VIEWWIDTH = view->size().width();
+  int VIEWHEIGHT = view->size().height();
+  video->setSize(QSize(VIEWWIDTH + 2, VIEWHEIGHT + 2));
+  scene->setSceneRect(0, 0, VIEWWIDTH - 1, VIEWHEIGHT - 1);
+  view->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
+}
+
+void MainWindow::repositionFloatingControllPannel(int animationTime) {
+  int VIEWWIDTH = view->size().width();
+  int VIEWHEIGHT = view->size().height();
+  int floatingPannel_width = floatingControlPannelProxy->boundingRect().width();
+  int floatingPannel_height = floatingControlPannelProxy->boundingRect().height();
+  QPoint hiding_position = QPoint((VIEWWIDTH - floatingPannel_width) / 2, (VIEWHEIGHT + floatingPannel_height));
+  moveSomethingToPos(floatingControlPannelProxy,  hiding_position, animationTime);
+}
+
+void MainWindow::repositionSubtitles() {
   int VIEWWIDTH = view->size().width();
   int VIEWHEIGHT = view->size().height();
   int SUBWIDTH = sublabel->boundingRect().width();
   int SUBHEIGHT = sublabel->boundingRect().height();
-
-  //if the element being resized is the video layout
-  if(elementtorezise=="video" || elementtorezise=="all"){
-    video->setSize(QSize(VIEWWIDTH + 2, VIEWHEIGHT + 2));
-    scene->setSceneRect(0, 0, VIEWWIDTH - 1, VIEWHEIGHT - 1);
-    view->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
-  }
-  //if the element being resized is the floating pannel
-  if(elementtorezise=="floatingPannel" || elementtorezise=="all"){
-    int floatingPannel_width = floatingControlPannelProxy->boundingRect().width();
-    int floatingPannel_height = floatingControlPannelProxy->boundingRect().height();
-    QPoint hiding_position = QPoint((VIEWWIDTH - floatingPannel_width) / 2, (VIEWHEIGHT + floatingPannel_height));
-    moveSomethingToPos(floatingControlPannelProxy,  hiding_position, animationTime);
-  }
-  //if the element being resized is the sub Label
-  if(elementtorezise=="sub" || elementtorezise=="all"){
-    sublabel->setPos((VIEWWIDTH - SUBWIDTH) / 2, (VIEWHEIGHT - SUBHEIGHT / 2) - currentSubBottomSpace);
-  }
-  showingthings("",0,0,0);
+  sublabel->setPos((VIEWWIDTH - SUBWIDTH) / 2, (VIEWHEIGHT - SUBHEIGHT / 2) - currentSubBottomSpace);
 }
 
 //resizing window logic
 void MainWindow::resizeEvent(QResizeEvent *event) {
   QMainWindow::resizeEvent(event);
-  resizelements();
+  resizeMainUiElement();
 }
 
 //function to toggle the fullscreen
@@ -1255,21 +1265,23 @@ void MainWindow::toggleTopbarLayoutVisibility() {
   }
 }
 
-void MainWindow::updateButtonsIcon(std::string button_name){
-  if(button_name == "play/pause" || button_name == "all"){
-    bool Paused = (!videoIsPaused || currentVideoUrl == "");
-    controlbuttonslayout->updatePausePlayButtonIcon(Paused);
-  }
+void MainWindow::updateButtonsIcon(){
+  updatePlayPauseButtonIcon();
+  updateVolumeButtonIcon();
+  updateRepeatButtonIcon();
+}
 
-  //update volume button icons
-  if(button_name == "volume" || button_name == "all"){
-    controlbuttonslayout->updateVolumeButtonIcon();
-  }
+void MainWindow::updatePlayPauseButtonIcon() {
+  bool Paused = (!videoIsPaused || currentVideoUrl == "");
+  controlbuttonslayout->updatePausePlayButtonIcon(Paused);
+}
 
-  //update repetition button icon
-  if(button_name == "repetition" || button_name == "all"){
-    controlbuttonslayout->updateRepetitionButtonIcon(rep);
-  }
+void MainWindow::updateVolumeButtonIcon() {
+  controlbuttonslayout->updateVolumeButtonIcon();
+}
+
+void MainWindow::updateRepeatButtonIcon() {
+  controlbuttonslayout->updateRepetitionButtonIcon(rep);
 }
 
 //function to save the position of a video after closing it
@@ -1395,14 +1407,14 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event){
 
       // keeping the same subtitles margin
       currentSubBottomSpace = subBottomMargin + floatingPannel_height;
-      resizelements("sub");
+      repositionSubtitles();
       floatingPannelDisplayed = true; //the floating pannel is displayed
 
       QTimer::singleShot(800,[this](){
         if(!MouseIsInsideFloatingPanel && floatingPannelDisplayed){
-          resizelements("floatingPannel",200);// restoring the floating pannel to default (means it will be hidden)
+          repositionFloatingControllPannel(200);
           currentSubBottomSpace = subBottomMargin;
-          resizelements("sub");
+          repositionSubtitles();
         }
         floatingPannelDisplayed = false;// the floating pannel is not displayed
       });
