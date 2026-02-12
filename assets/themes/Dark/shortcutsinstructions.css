@@ -6,6 +6,8 @@ QLabel{
 QPushButton{
   min-width: 50px;
   border-radius:4px;
+  min-width:100px;
+  max-width:100px;
 }
 #tablehead{
   background-color:#4b4b4b;
