@@ -60,15 +60,16 @@ class PlaylistManager:public QDialog{
       scrollarea->setWidget(holderwidget);
       // Add scroll area directly to main layout
       mainlayout->addWidget(scrollarea);
-  
+
       // Done button setup
       doneButton->setObjectName("donebutton");
+      doneButton->setFocusPolicy(Qt::NoFocus);
       doneButtonHolder->addStretch();
       doneButtonHolder->addWidget(doneButton);
       doneButtonHolder->addStretch();
-  
+
       mainlayout->addLayout(doneButtonHolder);
-  
+
       setLayout(mainlayout);
     }
 
@@ -96,6 +97,8 @@ class PlaylistManager:public QDialog{
         //creating a button that represent video
         QPushButton *Video_Button= new QPushButton(QString::fromStdString("  "+video_title));
         Video_Button->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+        Video_Button->setFocusPolicy(Qt::NoFocus);
+
         std::string iconName;
         if(media_url == currenturl){
           iconName = "BPause.png";

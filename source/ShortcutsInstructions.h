@@ -95,6 +95,7 @@ class ShortcutsInst:public QDialog{
         tablelayout->addWidget(keyslabel,i,1);
       }
       
+      donebutton->setFocusPolicy(Qt::NoFocus);
       connect(donebutton,&QPushButton::clicked,[this](){
         QDialog::accept();
       });

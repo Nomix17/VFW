@@ -93,6 +93,7 @@ class BottomControlPanel: public QVBoxLayout {
 
         QPushButton *newButton = new QPushButton();
         newButton->setObjectName(mcbuttons[j]);
+        newButton->setFocusPolicy(Qt::NoFocus);
 
         std::string iconName = mcbuttons[j].toStdString() + ".png";
         std::filesystem::path iconFullPath(std::filesystem::path(ICONSDIRECTORY.toStdString()) / std::filesystem::path(iconName));

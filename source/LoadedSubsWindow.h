@@ -76,6 +76,8 @@ class subWindow:public QDialog{
         //creating a button that represent video
         QPushButton *Sub_Button= new QPushButton(QString::fromStdString("  "+sub_title));
         Sub_Button->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+        Sub_Button->setFocusPolicy(Qt::NoFocus);
+
         std::filesystem::path iconFullPath(std::filesystem::path(IconDirectory) / "sub.png");
         Sub_Button->setIcon(QPixmap(QString::fromStdString(iconFullPath.string())));
         if(sub_path == currentLoadedSubPath){

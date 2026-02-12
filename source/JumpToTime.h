@@ -46,6 +46,8 @@ public:
     
     QPushButton *done = new QPushButton("OK");
     QPushButton *cancel= new QPushButton("Cancel");
+    done->setFocusPolicy(Qt::NoFocus);
+    cancel->setFocusPolicy(Qt::NoFocus);
 
     connect(done,&QPushButton::clicked,[this,hour,min,sec](){
       targettime = hour->value()*60*60+min->value()*60+sec->value();

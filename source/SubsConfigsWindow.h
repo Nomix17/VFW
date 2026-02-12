@@ -74,6 +74,8 @@ public:
       if(i==2||i==6){
         QPushButton *colorpicker = new QPushButton();
         colorpicker->setObjectName(labels[i].replace(":","").replace(" ",""));
+        colorpicker->setFocusPolicy(Qt::NoFocus);
+
         connect(colorpicker,&QPushButton::clicked,[this,colorpicker](){
           QColor color = QColorDialog::getColor(Qt::white,this,"Pick your color");
           if(color.isValid()){
@@ -112,9 +114,13 @@ public:
     }
 
       QPushButton *done = new QPushButton(this);
+      done->setFocusPolicy(Qt::NoFocus);
       done->setText("done");
+
       QPushButton *cancel = new QPushButton(this);
+      cancel->setFocusPolicy(Qt::NoFocus);
       cancel->setText("cancel");
+
       connect(done,&QPushButton::clicked,[this](){
         saveconfig();
         QDialog::accept();

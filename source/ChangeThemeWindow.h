@@ -44,6 +44,8 @@ public:
 
     // Done button setup
     doneButton->setObjectName("donebutton");
+    doneButton->setFocusPolicy(Qt::NoFocus);
+
     doneButtonHolder->addStretch();
     doneButtonHolder->addWidget(doneButton);
     doneButtonHolder->addStretch();
@@ -78,7 +80,9 @@ public:
 
       QPushButton *Theme_Button = new QPushButton(QString::fromStdString(themename));
       Theme_Button->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+      Theme_Button->setFocusPolicy(Qt::NoFocus);
       medialayout->addWidget(Theme_Button, counter, 0);
+
       connect(Theme_Button,&QPushButton::clicked, [this, themename, ConfigDirectory](){
         changetotheme = themename;
         if (changetotheme != "") {

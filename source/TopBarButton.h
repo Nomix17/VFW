@@ -25,7 +25,8 @@ class TopBarToolButton : public QWidget {
       Button->setPopupMode(QToolButton::InstantPopup);
       Button->setText(buttonName);
       Button->setObjectName(buttonName);
-      
+      Button->setFocusPolicy(Qt::NoFocus);
+
       // Add layout so Button fills the widget
       QHBoxLayout* layout = new QHBoxLayout(this);
       layout->setContentsMargins(0, 0, 0, 0);

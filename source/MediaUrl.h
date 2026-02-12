@@ -39,9 +39,14 @@ public:
     secondlayout = new QHBoxLayout;
     urllabel = new QLabel("URL: ");
     urlentry = new QTextEdit;
+
     donebutton = new QPushButton("OK");
+    donebutton->setFocusPolicy(Qt::NoFocus);
     donebutton->setObjectName("okbutton");
+
     cancelbutton=new QPushButton("Cancel");
+    cancelbutton->setFocusPolicy(Qt::NoFocus);
+
     connect(donebutton,&QPushButton::clicked,[this](){
       url = urlentry->toPlainText();
       QDialog::accept();
