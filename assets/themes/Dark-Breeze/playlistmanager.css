@@ -16,3 +16,7 @@ QPushButton {
 #currentlyplayingbutton{
   background-color:#1c1b22;
 }
+
+QScrollArea {
+  border:none;
+}
