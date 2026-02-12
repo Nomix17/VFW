@@ -288,7 +288,6 @@ void MainWindow::playNextVideoInPlaylist() {
 }
 
 void MainWindow::startVideoPlayer(QString path) {
-
   currentVideoUrl = path;
   video->setSize(view->size());
   QAction * ToggleSubs = TopBarButtonsObjectList[TopBar::TOGGLE_SUB];
@@ -720,40 +719,29 @@ void MainWindow::setupShortcuts(){
     // --- Fullscreen ---
     auto toggleFS = new QShortcut(QKeySequence(Qt::Key_F), this);
     toggleFS->setContext(Qt::ApplicationShortcut);
-    connect(toggleFS, &QShortcut::activated, this, [this]{ toggleFullScreen(); });
+    connect(toggleFS, &QShortcut::activated, this, &MainWindow::toggleFullScreen);
 
     auto escFS = new QShortcut(QKeySequence(Qt::Key_Escape), this);
     escFS->setContext(Qt::ApplicationShortcut);
-    connect(escFS, &QShortcut::activated, this, [this]{
-        fullScreenEnabled = true;
-        toggleFullScreen();
-    });
+    connect(escFS, &QShortcut::activated, this, &MainWindow::exitFullScreen);
 
     // --- Subtitles controls ---
     auto toggleSubs = new QShortcut(QKeySequence(Qt::Key_V),this);
     toggleSubs->setContext(Qt::ApplicationShortcut);
-    connect(toggleSubs, &QShortcut::activated, this, [this]{
-      toggleSubtitles();
-    });
+    connect(toggleSubs, &QShortcut::activated, this, &MainWindow::toggleSubtitles);
     
     // --- Chapters controls ---
     auto toggleChaptersIndHandler = new QShortcut(QKeySequence(Qt::Key_C),this);
     toggleChaptersIndHandler->setContext(Qt::ApplicationShortcut);
-    connect(toggleChaptersIndHandler,&QShortcut::activated,this, [this]{
-      toggleChaptersIndicators();
-    });
+    connect(toggleChaptersIndHandler,&QShortcut::activated,this, &MainWindow::toggleChaptersIndicators);
 
     auto goToNextChapter = new QShortcut(QKeySequence(Qt::Key_N),this);
     goToNextChapter->setContext(Qt::ApplicationShortcut);
-    connect(goToNextChapter, &QShortcut::activated, this, [this]{
-      moveToNextChapter();
-    });
+    connect(goToNextChapter, &QShortcut::activated, this, &MainWindow::moveToNextChapter);
 
     auto goToPrevChapter = new QShortcut(QKeySequence(Qt::Key_B),this);
     goToPrevChapter->setContext(Qt::ApplicationShortcut);
-    connect(goToPrevChapter, &QShortcut::activated, this, [this]{
-      moveToPrevChapter();
-    });
+    connect(goToPrevChapter, &QShortcut::activated, this, &MainWindow::moveToPrevChapter);
 
     // --- Other controls ---
     auto volPanel = new QShortcut(QKeySequence(Qt::Key_M), this);
@@ -1191,35 +1179,47 @@ void MainWindow::resizeEvent(QResizeEvent *event) {
   resizeMainUiElement();
 }
 
-//function to toggle the fullscreen
-void MainWindow::toggleFullScreen(){
+void MainWindow::enterFullScreen() {
+  setTopbarLayoutVisible(false);
   int currentVolumeSliderPos = controlbuttonslayout->getVolumeValue();
 
-  if (fullScreenEnabled){
-    this->showMaximized();
-    mainlayout->setContentsMargins(10, 10, 10, 10);
-    createBottomLayout();//recreating bottom layout
-    mainlayout->addLayout(controlbuttonslayout);// adding the bottom layout into the mainlayout
+  createBottomLayout();//recreating bottom layout
+  floatingControlPannelContainerLayout->addLayout(controlbuttonslayout);
 
-  } else {
-    this->showFullScreen();
-    mainlayout->setContentsMargins(0, 0, 0, 0);
-    video->setSize(this->size());
-    view->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
-    createBottomLayout();//recreating bottom layout
-    floatingControlPannelContainerLayout->addLayout(controlbuttonslayout);// adding the bottom layout into the floating pannel
-    if (floatingControlPannelWidget->isHidden())
-      floatingControlPannelWidget->show();
+  this->showFullScreen();
+  mainlayout->setContentsMargins(0, 0, 0, 0);
+  video->setSize(this->size());
 
-  }
+  if (floatingControlPannelWidget->isHidden())
+    floatingControlPannelWidget->show();
 
-  toggleTopbarLayoutVisibility();// calling function to show topbar
-  fullScreenEnabled = !fullScreenEnabled;
-
-  // resetting the volume slider
   setVolumeSliderPosition(currentVolumeSliderPos);
   updateButtonsIcon();
   updateTimeLabels();
+
+  fullScreenEnabled = true;
+}
+
+void MainWindow::exitFullScreen() {
+  setTopbarLayoutVisible(true);
+  int currentVolumeSliderPos = controlbuttonslayout->getVolumeValue();
+
+  createBottomLayout();//recreating bottom layout
+  mainlayout->addLayout(controlbuttonslayout);
+
+  this->showMaximized();
+  mainlayout->setContentsMargins(10, 10, 10, 10);
+
+  setVolumeSliderPosition(currentVolumeSliderPos);
+  updateButtonsIcon();
+  updateTimeLabels();
+
+  fullScreenEnabled = false;
+}
+
+//function to toggle the fullscreen
+void MainWindow::toggleFullScreen() {
+  fullScreenEnabled ? exitFullScreen() : enterFullScreen();
 }
 
 //function that display text on the top of the video with fading animation
@@ -1252,15 +1252,11 @@ void MainWindow::showingthings(std::string texttoshow, int xposition, int yposit
 
 
 // toplayout visibility control function
-void MainWindow::toggleTopbarLayoutVisibility() {
+void MainWindow::setTopbarLayoutVisible(bool visible) {
   for (int i = 0; i < topbarlayout->count(); i++) {
     QWidget *searchtoolbutton = topbarlayout->itemAt(i)->widget();
     if (searchtoolbutton) {
-      if (searchtoolbutton->isHidden()) {
-        searchtoolbutton->show();
-      } else {
-        searchtoolbutton->hide();
-      }
+      searchtoolbutton->setVisible(visible);
     }
   }
 }

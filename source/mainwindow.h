@@ -105,12 +105,14 @@ public:
   void mouseDoubleClickEvent(QMouseEvent * event)override;
   bool eventFilter(QObject *obj, QEvent *event) override;
 
+  void enterFullScreen();
+  void exitFullScreen();
   void toggleFullScreen();
   bool mouseInsideFloatingPanel(QEvent* event);
 
   void showingthings(std::string texttoshow, int xposition, int yposition,int animationduration);
-  void toggleTopbarLayoutVisibility();
- 
+  void setTopbarLayoutVisible(bool visible);
+
   // caching and stuff
   void savevideoposition();
   void getlastsavedposition();
