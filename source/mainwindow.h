@@ -18,16 +18,16 @@
 #include <map>
 
 #include "SRepeatWindow.h"
-#include "jumptotime.h"
-#include "playlistmanager.h"
-#include "shortcutsinstructions.h"
+#include "JumpToTime.h"
+#include "PlaylistManager.h"
+#include "ShortcutsInstructions.h"
 #include "ChangeThemeWindow.h"
-#include "mediaurl.h"
-#include "subWindow.h"
-#include "subconfig.h"
+#include "MediaUrl.h"
+#include "LoadedSubsWindow.h"
+#include "SubsConfigsWindow.h"
 #include "CustomObjects.h"
-#include "topBar.h"
-#include "bottomControlPanel.h"
+#include "TopBar.h"
+#include "BottomControlPanel.h"
 #include "Paths.h"
 
 struct SubObject{

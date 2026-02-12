@@ -55,7 +55,7 @@ class ShortcutsInst:public QDialog{
         std::ofstream defaultshortcutsfile(fullShortcutFilename.string());
 
         //put the default configs into the vector
-        elements={
+        elements = {
             "Functionality:Shortcut",
             "FullScreen/Unfullscreen:F",
             "Unfullscreen:Escape",
@@ -75,7 +75,7 @@ class ShortcutsInst:public QDialog{
       }
 
       //looping the elements of the vectore to create widgets based on them
-      for(size_t i=0;i<elements.size();i++){
+      for(size_t i=0;i<elements.size();i++) {
         std::stringstream line(elements[i]);
         std::string shortcutFunctionality;
         std::string shortcutKeys;

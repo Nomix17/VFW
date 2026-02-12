@@ -5,7 +5,7 @@
 #include <QToolButton>
 #include <QMenu>
 #include <QHBoxLayout>
-#include "topBarButton.h"
+#include "TopBarButton.h"
 
 class TopBar : public QHBoxLayout {
   public:
