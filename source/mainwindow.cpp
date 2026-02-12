@@ -190,7 +190,6 @@ void MainWindow::LoadingInDirectorySubtitles(QString currenturl){
       }
     }
   }
-  std::cout<<"\n";
 }
 
 void MainWindow::ExtranctingChapterData(QString currenturl){
@@ -283,6 +282,7 @@ void MainWindow::playNextVideoInPlaylist() {
     setPlayerDefaultState();
     return;
   }
+
   QString nextToPlayPath = playlist[currentVideoIndex].toLocalFile();
   startVideoPlayer(nextToPlayPath);
 }
@@ -381,12 +381,14 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       if (!url.isEmpty()) {
         playlist.clear();
         // saving all the urls in a list
+        std::cout<<"\n"; 
         for (auto i : std::filesystem::directory_iterator(url.toStdString())) {
           if(std::find(supportedMediaFormats.begin(), supportedMediaFormats.end(),i.path().extension().string()) != supportedMediaFormats.end()){
-            playlist.push_back(QUrl(QString::fromStdString(i.path().generic_string())));
+            playlist.push_back(QUrl::fromLocalFile(QString::fromStdString(i.path().generic_string())));
             std::cout<<"Loading Video: "<<i.path().generic_string()<<"\n";
           }
         }
+
         if (playlist.size()) {
           currentPlayerMode = PlayerMode::Playlist;
           playNextVideoInPlaylist();
