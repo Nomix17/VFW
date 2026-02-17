@@ -10,6 +10,7 @@ HEADERS += mainwindow.h \
            SRepeatWindow.h \
            CustomObjects.h \
            ShortcutsInstructions.h \
+           AudioTracksManager.h\
            PlaylistManager.h \
            ChangeThemeWindow.h \
            SubsConfigsWindow.h \

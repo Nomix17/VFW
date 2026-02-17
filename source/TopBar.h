@@ -20,6 +20,7 @@ class TopBar : public QHBoxLayout {
       JUMP_TO_NEXT_CHAP,
       JUMP_TO_PREV_CHAP,
       TOGGLE_LOOPSEGMENT,
+      AUDIO_TRACKS,
       FULL_VOLUME,
       MUTE,
       TOGGLE_ASPRadio,
@@ -50,7 +51,7 @@ class TopBar : public QHBoxLayout {
       QList<QList <QString>> actionslist = {
         {"Open File","Open Folder","Open Media","Quit"},
         {"Jump Backward","Jump Forward","Jump to Time","Move To Next Chapter","Move To Previous Chapter","Start Segment Loop"},
-        {"Full Volume","Mute"},
+        {"Audio Tracks","Full Volume","Mute"},
         {"Stretch to Fit"},
         {"Add Subtitle File","Load Subtitle","Hide Subtitles","Add Delay","Reduce Delay","Subtitle Settings"},
         {"Video Title","Display Chapters Indicators","Change Theme"},

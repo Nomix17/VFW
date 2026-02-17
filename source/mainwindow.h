@@ -19,6 +19,7 @@
 
 #include "SRepeatWindow.h"
 #include "JumpToTime.h"
+#include "AudioTracksManager.h"
 #include "PlaylistManager.h"
 #include "ShortcutsInstructions.h"
 #include "ChangeThemeWindow.h"
@@ -30,12 +31,13 @@
 #include "BottomControlPanel.h"
 #include "Paths.h"
 
+struct MetaDataTrack;
+
 struct SubObject{
   float startTime;
   std::string textContent;
   float endTime;
 };
-
 // main window class
 class MainWindow: public QMainWindow{
   Q_OBJECT
@@ -69,6 +71,10 @@ public:
 
   void setVolumeSliderPosition(qreal position);
   void toggleVolume();
+
+  // Meta Data logic
+  void getSubtitleTracksFromMetaData();
+  void getAudioTracksFromMetaData();
 
   // subtiles logic
   void toggleSubtitles();
@@ -126,6 +132,15 @@ public:
   }
 
 private:
+  // media player variables
+  QMediaPlayer *player;
+  QGraphicsVideoItem *video;
+  QAudioOutput *audio;
+
+  // Meta Data variables
+  std::vector<MetaDataTrack*> subTracksMetaDataVector;
+  std::vector<MetaDataTrack*> audioTracksMetaDataVector;
+
   // playback status variables
   bool videoIsPaused=false;
   bool fullScreenEnabled = false;
@@ -152,9 +167,6 @@ private:
   QGridLayout *videolayout;
   BottomControlPanel *controlbuttonslayout=nullptr;
   QGraphicsTextItem *sublabel;
-  QMediaPlayer *player;
-  QGraphicsVideoItem *video;
-  QAudioOutput *audio;
   QGraphicsView *view;
   QGraphicsScene *scene;
 

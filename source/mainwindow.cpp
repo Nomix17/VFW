@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "qmediametadata.h"
 
 #include <QApplication>
 #include <QMediaPlayer>
@@ -39,6 +40,8 @@
 #include <algorithm>
 
 void moveSomethingToPos(QGraphicsWidget *widget, QPointF targetPos, int animationTime);
+template<typename T>
+void clearVector(std::vector<T*>&);
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   this->setWindowTitle("VFW");
@@ -271,6 +274,8 @@ void MainWindow::setPlayerDefaultState() {
   currentVideoUrl = "";
   videoIsPaused = true;
   player->setSource({});
+  clearVector(audioTracksMetaDataVector);
+  clearVector(subTracksMetaDataVector);
   controlbuttonslayout->hideSkipButton();
   controlbuttonslayout->setDefaultState();
   setVolumeSliderPosition(Settings["defaultVolume"] * 1000);
@@ -285,6 +290,64 @@ void MainWindow::playNextVideoInPlaylist() {
 
   QString nextToPlayPath = playlist[currentVideoIndex].toLocalFile();
   startVideoPlayer(nextToPlayPath);
+}
+
+template<typename T>
+void clearVector(std::vector<T*>& toClearVector) {
+  for(auto& element : toClearVector) {
+    delete element;
+  }
+  toClearVector.clear();
+}
+
+void MainWindow::getSubtitleTracksFromMetaData() {
+  clearVector(subTracksMetaDataVector);
+  std::cout << "SUBTITLES TRACKS:\n";
+  for (int i=0 ; i < player->subtitleTracks().size() ; i++) {
+
+    QMediaMetaData subTrack = player->subtitleTracks()[i];
+    std::string title = subTrack.stringValue(QMediaMetaData::Title).toStdString();
+    std::string language = subTrack.stringValue(QMediaMetaData::Language).toStdString();
+
+    if (!title.empty()) std::cout << "  Title: " <<title<< "\n";
+    if (!language.empty()) std::cout << "  Language: " <<language<< "\n";
+
+    if (!title.empty() || !language.empty()) {
+      MetaDataTrack *subTrackMetaData = new MetaDataTrack;
+      subTrackMetaData->title = title;
+      subTrackMetaData->language = language;
+      subTrackMetaData->index = i;
+      subTracksMetaDataVector.push_back(subTrackMetaData);
+
+    } else {
+      std::cout << "  (No metadata available)\n";
+    }
+
+  }
+}
+
+void MainWindow::getAudioTracksFromMetaData() {
+  clearVector(audioTracksMetaDataVector);
+  std::cout << "AUDIO TRACKS:\n";
+  for (int i=0 ; i < player->audioTracks().size() ; i++) {
+    QMediaMetaData audioTrack = player->audioTracks()[i];
+    std::string title = audioTrack.stringValue(QMediaMetaData::Title).toStdString();
+    std::string language = audioTrack.stringValue(QMediaMetaData::Language).toStdString();
+   
+    if (!title.empty()) std::cout << "  Title: " << title<< "\n";
+    if (!language.empty()) std::cout << "  Language: " <<language<< "\n";
+
+    if (!title.empty() || !language.empty()) {
+      MetaDataTrack *audioTrackMetaData = new MetaDataTrack;
+      audioTrackMetaData->title = title;
+      audioTrackMetaData->language = language;
+      audioTrackMetaData->index = i;
+      audioTracksMetaDataVector.push_back(audioTrackMetaData);
+
+    } else {
+      std::cout << "  (No metadata available)\n";
+    }
+  }
 }
 
 void MainWindow::startVideoPlayer(QString path) {
@@ -310,6 +373,14 @@ void MainWindow::startVideoPlayer(QString path) {
   std::cout<<"\n";
   LoadingInDirectorySubtitles(currentVideoUrl);
   std::cout<<"\n";
+
+  connect(player, &QMediaPlayer::metaDataChanged, this, [this]() {
+    std::cout<<"\n";
+    getSubtitleTracksFromMetaData();
+    getAudioTracksFromMetaData();
+    std::cout<<"\n";
+  });
+
 
   // startVideoPlayer setup (sound and video widget)
   player->setSource(QUrl::fromLocalFile(currentVideoUrl));
@@ -461,6 +532,17 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
           segmentLoopEnabled = false;
           toggleLoopAction->setText("Start Segment Loop");
         }
+      }
+      break;
+    }
+
+    case TopBar::AUDIO_TRACKS: {
+      static int audioTrackIndex = 0;
+      AudioTracksManager audioTracksManagerWindow(SYSTEMPATHS->currentThemeDir, SYSTEMPATHS->currentIconsDir, audioTracksMetaDataVector, audioTrackIndex);
+      audioTracksManagerWindow.exec();
+      if(audioTracksManagerWindow.newAudioTrackIndex >= 0) {
+        audioTrackIndex = audioTracksManagerWindow.newAudioTrackIndex;
+        player->setActiveAudioTrack(audioTrackIndex);
       }
       break;
     }
