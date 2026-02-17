@@ -399,6 +399,7 @@ void MainWindow::startVideoPlayer(QString path) {
 
   //resize ui elements based on the media opened
   resizeMainUiElement();
+  updateButtonsIcon();
 
   // displaying the title for a brief of time
   int xposition = view->size().width() / 2;
