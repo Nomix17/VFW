@@ -658,6 +658,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       htmlstyle = win.makehtml();
       subBottomMargin = win.marginbottom;
       currentSubBottomSpace = win.marginbottom;
+      syncSubtitles(player->position());
       break;
     }
 
