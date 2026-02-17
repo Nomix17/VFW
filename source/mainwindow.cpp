@@ -1006,35 +1006,27 @@ void MainWindow::updateTimeLabels(){
   controlbuttonslayout->updateDurationTimer(player->duration());
 }
 
-
-
-/*
-  this function is to work around a bug that break the audio when changing position,
-  by deleting the audio output widget and create a new one
-  every time we change position.
-*/
-
 void MainWindow::changePlayBackPosition(int newpos) {
-  QMediaMetaData meta = player->metaData();
-  QVariant audioCodec = meta.value(QMediaMetaData::AudioCodec);
+  // QMediaMetaData meta = player->metaData();
+  // QVariant audioCodec = meta.value(QMediaMetaData::AudioCodec);
 
-  if(audioCodec.isValid()){
-    float oldvol = audio->volume();
-    player->pause();
-    player->setAudioOutput(nullptr);
-    delete audio;
-    audio = new QAudioOutput();
-    player->setPosition(newpos);
-    player->setAudioOutput(audio);
-    audio->setVolume(oldvol);
-    if (!videoIsPaused){
-      player->play();
-      videoIsPaused = false;
-    }
+  // if(audioCodec.isValid()){
+  //   float oldvol = audio->volume();
+  //   player->pause();
+  //   player->setAudioOutput(nullptr);
+  //   delete audio;
+  //   audio = new QAudioOutput();
+  //   player->setPosition(newpos);
+  //   player->setAudioOutput(audio);
+  //   audio->setVolume(oldvol);
+  //   if (!videoIsPaused){
+  //     player->play();
+  //     videoIsPaused = false;
+  //   }
 
-  }else{
+  // }else{
     player->setPosition(newpos);
-  }
+  // }
 }
 
 void MainWindow::toggleVolume() {
