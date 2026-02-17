@@ -940,28 +940,20 @@ void MainWindow::setVideoSliderRange(qint64 playbackPosition) {
 }
 
 void MainWindow::syncSubtitles(qint64 playbackPosition) {
-  for(size_t i=0;i<currentLoadedSubList.size();i++){
-    int subDisplayingDelay = 200; // adding delay to the subtitles displaying, until the sub is fully rendered
+  for(const SubObject* subObj : currentLoadedSubList){
+    bool hasPlaybackPassedSubStart = (playbackPosition >= (subObj->startTime + currentSubDelay));
+    bool isPlaybackBeforeSubEnd = (playbackPosition <= (subObj->endTime + currentSubDelay));
 
-    bool hasPlaybackPassedNextSubStart = (playbackPosition >= (currentLoadedSubList[i]->startTime + currentSubDelay - subDisplayingDelay));
-    bool isPlaybackBeforeNextSubEnd = (playbackPosition <= (currentLoadedSubList[i]->endTime + currentSubDelay));
-
-    if (ShowSubs && hasPlaybackPassedNextSubStart && isPlaybackBeforeNextSubEnd) {
-      sublabel->setOpacity(1);
-      if (playbackPosition <= currentLoadedSubList[i]->startTime + subDisplayingDelay ) {
-        sublabel->setOpacity(0);
-      }
-
+    if (ShowSubs && hasPlaybackPassedSubStart && isPlaybackBeforeSubEnd) {
       // merge the html style with the subtitle and pass it as html script
-      sublabel->setHtml(htmlstyle + QString::fromStdString(currentLoadedSubList[i]->textContent) + "</td></tr></table>");
-
+      sublabel->setHtml(htmlstyle + QString::fromStdString(subObj->textContent) + "</td></tr></table>");
+      sublabel->setOpacity(1);
       repositionSubtitles();
-      break;
-
-    }else if (i == currentLoadedSubList.size() - 2) {
-      sublabel->setHtml("");
+      return; 
     }
   }
+
+  sublabel->setHtml("");
 }
 
 // setting the app elements in there relation with the player
