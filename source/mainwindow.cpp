@@ -108,7 +108,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   SubConfig win(SYSTEMPATHS->configPath,SYSTEMPATHS->fontsDir,SYSTEMPATHS->currentThemeDir);
   win.loadFonts();
   htmlstyle = win.makehtml();
-  subpadding = win.padding;
   subBottomMargin = win.marginbottom;
   currentSubBottomSpace = win.marginbottom;
 }
@@ -657,7 +656,6 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       win.gui();
       win.exec();
       htmlstyle = win.makehtml();
-      subpadding = win.padding;
       subBottomMargin = win.marginbottom;
       currentSubBottomSpace = win.marginbottom;
       break;

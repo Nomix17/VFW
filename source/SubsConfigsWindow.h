@@ -31,14 +31,13 @@ class SubConfig:public QDialog{
 public:
 
   QString selected_font;
-  int padding;
   int marginbottom;
 
 private:
 
   std::vector <QString>labels={"Margin Bottom:","Padding:",
                       "Bg Color:","Bg Opacity:",
-                      "Font Size:","Font Familly:",
+                      "Font Size:","Font Family:",
                       "Font Color:","Font Opacity:",
                       "Font Weight:"
   };
@@ -90,20 +89,20 @@ public:
         button->setText("Font");
         button->setObjectName(labels[i]);
         loadFonts();
-        QMenu *font_familly = new QMenu();
+        QMenu *font_family = new QMenu();
         for(int i=0;i<fontPaths.size();i++){
           int id = QFontDatabase::addApplicationFont(fontPaths[i]);
           QString fontName = QFontDatabase::applicationFontFamilies(id).at(0);
 
           QAction * actions = new QAction;
           actions->setText(fontName);
-          font_familly->addAction(actions);
+          font_family->addAction(actions);
           connect(actions,&QAction::triggered,[this,i,fontName,button](){
             selected_font = fontName;
             button->setText(fontName);
           });
         }
-        button->setMenu(font_familly);
+        button->setMenu(font_family);
         gridlayout->addWidget(button,i/2,(i%2)*2+1);
       }else{
         QLineEdit* number_picker = new QLineEdit();
@@ -163,7 +162,7 @@ public:
     settings["bg-opacity"]=std::stoi(this->findChild<QLineEdit*>("Bg Opacity:")->text().toStdString());
 
     settings["font-size"]=std::stoi(this->findChild<QLineEdit*>("Font Size:")->text().toStdString());
-    settings["font-familly"]=selected_font.toStdString();
+    settings["font-family"]=selected_font.toStdString();
 
     settings["font-color"]=this->findChild<QPushButton*>("FontColor")->palette().color(QPalette::Button).name().toStdString();
     settings["font-weight"]=std::stoi(this->findChild<QLineEdit*>("Font Weight:")->text().toStdString());
@@ -189,13 +188,13 @@ public:
       this->findChild<QLineEdit*>("Bg Opacity:")->setText(QString::number(configfile["bg-opacity"].get<int>()));
      
       this->findChild<QLineEdit*>("Font Size:")->setText(QString::number(configfile["font-size"].get<int>()));
-      this->findChild<QToolButton*>("Font Familly:")->setText(QString::fromStdString(configfile["font-familly"]));
+      this->findChild<QToolButton*>("Font Family:")->setText(QString::fromStdString(configfile["font-family"]));
      
       this->findChild<QPushButton*>("FontColor")->setStyleSheet("background-color:"+QString::fromStdString(configfile["font-color"])+";");
       this->findChild<QLineEdit*>("Font Opacity:")->setText(QString::number(configfile["font-opacity"].get<int>()));
       this->findChild<QLineEdit*>("Font Weight:")->setText(QString::number(configfile["font-weight"].get<int>()));
 
-      selected_font = QString::fromStdString(configfile["font-familly"]);
+      selected_font = QString::fromStdString(configfile["font-family"]);
 
       file.close();
     }else{
@@ -215,29 +214,36 @@ public:
 
       QColor bgcolor(QString::fromStdString(settings["bg-color"]));
       QColor fontcolor(QString::fromStdString(settings["font-color"]));
-
       QString backgroundColorRGB = QString::number(bgcolor.red()) + ", " + QString::number(bgcolor.green()) + ", " + QString::number(bgcolor.blue());
       QString backgroundColorAlpha = QString::number(static_cast<double>(settings["bg-opacity"]) / 100, 'f', 2);
       QString fontColorRGB = QString::number(fontcolor.red()) + ", " + QString::number(fontcolor.green()) + ", " + QString::number(fontcolor.blue());
       QString fontColorAlpha = QString::number(static_cast<double>(settings["font-opacity"]) / 100, 'f', 2);
-      QString fontWeight = QString::number(static_cast<double>(settings["font-weight"]), 'f', 2);
-      QString paddingValue = QString::number(static_cast<double>(settings["padding"]), 'f', 2);
+      QString fontSize = QString::number(static_cast<int>(settings["font-size"]));
+      QString fontWeight = QString::number(static_cast<int>(settings["font-weight"]));
+      QString fontFamily = QString::fromStdString(settings["font-family"]);
+      QString paddingValue = QString::number(static_cast<int>(settings["padding"]));
 
-      QString HtmlScript = 
-        "<table cellpadding='" + paddingValue + "' "
-          "style='"
-            "background-color: rgba(" + backgroundColorRGB + ", " + backgroundColorAlpha + "); "
-            "color: rgba(" + fontColorRGB + ", " + fontColorAlpha + "); "
-            "font-family: \"" + QString::fromStdString(settings["font-familly"]) + "\"; "
-            "font-size: " + QString::number(static_cast<int>(settings["font-size"])) + "px;"
-            "font-weight: " + fontWeight + "'>"
-            "<tr><td>";
+      QString HTMLScript = QString(
+        "<table cellpadding='%1' style='"
+          "background-color: rgba(%2, %3); "
+          "color: rgba(%4, %5); "
+          "font-family: \"%6\"; "
+          "font-size: %7px; "
+          "font-weight: %8'>"
+          "<tr><td>"
+      )
+      .arg(paddingValue)
+      .arg(backgroundColorRGB, backgroundColorAlpha)
+      .arg(fontColorRGB, fontColorAlpha)
+      .arg(fontFamily)
+      .arg(fontSize)
+      .arg(fontWeight);
 
-      padding = settings["padding"];
       marginbottom = settings["margin-bottom"];
 
       file.close();
-      return HtmlScript;
+      return HTMLScript;
+
     }else{
       std::cerr << "[ WARNING ] Failed to open subtitles config File: "<<fullSubConfigPath<<"\n";
       return "";
@@ -257,14 +263,14 @@ public:
     json defaultsettings;
 
     defaultsettings["bg-color"] = "#000000";
-    defaultsettings["bg-opacity"]= 20;
+    defaultsettings["bg-opacity"]= 0;
     defaultsettings["font-color"]= "#ffffff";
-    defaultsettings["font-familly"]="Noto Sans Arabic";
+    defaultsettings["font-family"]="Montserrat";
     defaultsettings["font-opacity"]= 100;
-    defaultsettings["font-weight"]= 300;
-    defaultsettings["font-size"]= 24;
-    defaultsettings["margin-bottom"]= 61;
-    defaultsettings["padding"]= 26;
+    defaultsettings["font-weight"]= 450;
+    defaultsettings["font-size"]= 30;
+    defaultsettings["margin-bottom"]= 70;
+    defaultsettings["padding"]= 10;
    
     std::ofstream file(fullSubConfigPath);
     if(file){
