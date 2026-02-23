@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include <iostream>
 #include <filesystem>
+#include <cstdlib>
 #include <fstream>
 #include <sstream>
 
@@ -8,7 +9,6 @@
 #include <QUrl>
 #include <QString>
 #include <string>
-
 
 std::vector<std::string> supportedMediaFormats = {
     ".mp4", ".mp3", ".mkv", ".avi", ".wav",
@@ -22,9 +22,11 @@ std::vector<std::string> supportedSubtitlesFormats = {
   ".srt",".vtt",".ass",".ssa"
 };
 
+void setAudioBackend();
 void loadAndApplyTheme(QApplication&,std::string);
 
 int main(int argc,char* argv[]){
+  setAudioBackend();
   QApplication app(argc, argv);
 
   MainWindow mainWindow;
@@ -75,4 +77,10 @@ void loadAndApplyTheme(QApplication& app, std::string themeDirPath) {
     script = ssrt.str();
     app.setStyleSheet(QString::fromStdString(script));
   }
+}
+
+void setAudioBackend() {
+#ifndef _WIN32
+    setenv("QT_AUDIO_BACKEND", "pulseaudio", 1);
+#endif
 }
