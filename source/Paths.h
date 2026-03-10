@@ -66,7 +66,7 @@ class PATHS {
           std::filesystem::path localAppData(localAppDataEnv);
           std::filesystem::path appData(appDataEnv);
           
-          this->cachePath = (localAppData / "Cache" / APPNAME).string();
+          this->cachePath = (localAppData / APPNAME / "cache").string();
           this->configPath = (appData / APPNAME / "configs").string();
           this->assetsPath = (appData / APPNAME / "assets").string();
         }
@@ -76,7 +76,7 @@ class PATHS {
         HOME = std::getenv("HOME");
         if (!HOME.empty()) {
           std::filesystem::path home(HOME);
-          this->cachePath = (home / "Library" / "Caches" / APPNAME).string();
+          this->cachePath = (home / "Library" / APPNAME / "cache").string();
           this->configPath = (home / "Library" / "Application Support" / APPNAME / "configs").string();
           this->assetsPath = (home / "Library" / "Application Support" / APPNAME / "assets").string();
         }
