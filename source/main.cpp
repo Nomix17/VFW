@@ -84,6 +84,7 @@ void loadAndApplyTheme(QApplication& app, std::string themeDirPath) {
 
 void setAudioBackend() {
 #ifndef _WIN32
-    setenv("QT_AUDIO_BACKEND", "pulseaudio", 1);
+  if(!std::getenv("QT_AUDIO_BACKEND"))
+    setenv("QT_AUDIO_BACKEND","pulseaudio",1);
 #endif
 }
