@@ -1,0 +1,103 @@
+Windows Registry Editor Version 5.00
+
+; --- Register the application (system-wide) ---
+[HKEY_CLASSES_ROOT\Applications\VFW.exe]
+@="VFW Player"
+"FriendlyAppName"="VFW Player"
+
+; --- File handler for video/audio files ---
+[HKEY_CLASSES_ROOT\VFWFile]
+@="Video & Audio file"
+
+[HKEY_CLASSES_ROOT\VFWFile\DefaultIcon]
+@="\"{app}\\VFW.exe\",0"
+
+[HKEY_CLASSES_ROOT\VFWFile\shell\open\command]
+@="\"{app}\\VFW.exe\" \"%1\""
+
+; --- Video formats ---
+[HKEY_CLASSES_ROOT\.mp4]
+@="VFWFile"
+
+[HKEY_CLASSES_ROOT\.avi]
+@="VFWFile"
+
+[HKEY_CLASSES_ROOT\.mkv]
+@="VFWFile"
+
+[HKEY_CLASSES_ROOT\.mov]
+@="VFWFile"
+
+[HKEY_CLASSES_ROOT\.wmv]
+@="VFWFile"
+
+[HKEY_CLASSES_ROOT\.flv]
+@="VFWFile"
+
+[HKEY_CLASSES_ROOT\.webm]
+@="VFWFile"
+
+; --- Audio formats ---
+[HKEY_CLASSES_ROOT\.mp3]
+@="VFWFile"
+
+[HKEY_CLASSES_ROOT\.wav]
+@="VFWFile"
+
+[HKEY_CLASSES_ROOT\.flac]
+@="VFWFile"
+
+[HKEY_CLASSES_ROOT\.aac]
+@="VFWFile"
+
+[HKEY_CLASSES_ROOT\.ogg]
+@="VFWFile"
+
+[HKEY_CLASSES_ROOT\.wma]
+@="VFWFile"
+
+[HKEY_CLASSES_ROOT\.m4a]
+@="VFWFile"
+
+; --- MIME types ---
+[HKEY_CLASSES_ROOT\.mp4\Content Type]
+@="video/mp4"
+
+[HKEY_CLASSES_ROOT\.mkv\Content Type]
+@="video/x-matroska"
+
+[HKEY_CLASSES_ROOT\.avi\Content Type]
+@="video/x-msvideo"
+
+[HKEY_CLASSES_ROOT\.mov\Content Type]
+@="video/quicktime"
+
+[HKEY_CLASSES_ROOT\.wmv\Content Type]
+@="video/x-ms-wmv"
+
+[HKEY_CLASSES_ROOT\.flv\Content Type]
+@="video/x-flv"
+
+[HKEY_CLASSES_ROOT\.webm\Content Type]
+@="video/webm"
+
+[HKEY_CLASSES_ROOT\.mp3\Content Type]
+@="audio/mpeg"
+
+[HKEY_CLASSES_ROOT\.wav\Content Type]
+@="audio/wav"
+
+[HKEY_CLASSES_ROOT\.flac\Content Type]
+@="audio/flac"
+
+[HKEY_CLASSES_ROOT\.aac\Content Type]
+@="audio/aac"
+
+[HKEY_CLASSES_ROOT\.ogg\Content Type]
+@="audio/ogg"
+
+[HKEY_CLASSES_ROOT\.wma\Content Type]
+@="audio/x-ms-wma"
+
+[HKEY_CLASSES_ROOT\.m4a\Content Type]
+@="audio/mp4"
