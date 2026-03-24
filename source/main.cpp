@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include <QApplication>
+#include <QFileInfo>
 #include <QUrl>
 #include <QString>
 #include <string>
@@ -25,7 +26,7 @@ std::vector<std::string> supportedSubtitlesFormats = {
 void setAudioBackend();
 void loadAndApplyTheme(QApplication&,std::string);
 
-int main(int argc,char* argv[]){
+int main(int argc, char* argv[]) {
   setAudioBackend();
   QApplication app(argc, argv);
 
@@ -34,34 +35,36 @@ int main(int argc,char* argv[]){
   loadAndApplyTheme(app, mainWindow.SYSTEMPATHS->currentThemeDir);
   mainWindow.show();
 
-  //if the user pass video paths as arguments
-  if(argc>1){
+  // Process command-line arguments
+  QStringList args = QCoreApplication::arguments();
+  for (int i = 1; i < args.size(); ++i) {
+    QString arg = args[i];
+    QString fileExtension = QFileInfo(arg).suffix();
 
-    for(int i=1;i<argc;i++){
-      std::filesystem::path path = std::filesystem::absolute(argv[i]);
-      std::string fileExtention = path.extension().string();
+    std::string extWithDot = "." + fileExtension.toStdString();
 
-      if (std::find(supportedMediaFormats.begin(), supportedMediaFormats.end(), fileExtention) != supportedMediaFormats.end()) {
-        QUrl videoPath = QUrl::fromLocalFile(QString::fromStdString(path.string()));
-        mainWindow.playlist.push_back(videoPath);
-        std::cout << "Loading Video: " << path.string() << "\n";
+    if (std::find(supportedMediaFormats.begin(), supportedMediaFormats.end(), extWithDot)
+      != supportedMediaFormats.end()) {
+      QUrl videoPath = QUrl::fromLocalFile(arg);
+      mainWindow.playlist.push_back(videoPath);
+      std::cout << "Loading Video: " << arg.toUtf8().constData() << "\n";
 
-      } else if (std::find(supportedSubtitlesFormats.begin(), supportedSubtitlesFormats.end(), fileExtention) != supportedSubtitlesFormats.end()) {
-        QString subPath = QString::fromStdString(path.string());
-        mainWindow.currentVideoSubtitlePaths.push_back(subPath);
-        std::cout << "Loading Subtitle: " << path.string() << "\n";
-      }
+    } else if (std::find(supportedSubtitlesFormats.begin(), supportedSubtitlesFormats.end(), extWithDot)
+      != supportedSubtitlesFormats.end()) {
+      mainWindow.currentVideoSubtitlePaths.push_back(arg);
+      std::cout << "Loading Subtitle: " << arg.toUtf8().constData() << "\n";
     }
-
-    //run the Playlist when the app open
-    if(mainWindow.playlist.size()){
-      mainWindow.playNextVideoInPlaylist();
-    }else{
-      mainWindow.setPlayerDefaultState();
-    }
-    mainWindow.resize(750,551);
-    mainWindow.currentPlayerMode = MainWindow::PlayerMode::Playlist;
   }
+
+  // Run playlist or set default state
+  if (!mainWindow.playlist.empty()) {
+    mainWindow.playNextVideoInPlaylist();
+  } else {
+    mainWindow.setPlayerDefaultState();
+  }
+
+  mainWindow.resize(750, 551);
+  mainWindow.currentPlayerMode = MainWindow::PlayerMode::Playlist;
 
   app.installEventFilter(&mainWindow);
   return app.exec();
