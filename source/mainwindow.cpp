@@ -194,35 +194,39 @@ void MainWindow::LoadingInDirectorySubtitles(QString currenturl){
   }
 }
 
-void MainWindow::ExtranctingChapterData(QString currenturl){
+void MainWindow::ExtranctingChapterData(QString currenturl) {
   ChaptersVectors.clear();
-  QProcess ChaptersProcess;
-  ChaptersProcess.start("/usr/bin/ffprobe",{
-    "-i",currenturl,
-    "-show_chapters"
-  });
-  ChaptersProcess.waitForFinished(-1);
-  QStringList Chapters = QString(ChaptersProcess.readAllStandardOutput()) 
-    .split("[CHAPTER]",Qt::SkipEmptyParts);
+  QProcess *ChaptersProcess = new QProcess(this);
+  QString ffprobePath = "/usr/bin/ffprobe";
+  QStringList processArgs = { "-i",currenturl,"-v", "quiet", "-show_chapters" };
 
-  std::cout<<"[ INFO ] Number Of Chapters Detected: "<<Chapters.size()<<"\n";
+  connect(ChaptersProcess, &QProcess::finished, this, [this, ChaptersProcess]() {
+    QStringList Chapters = QString(ChaptersProcess->readAllStandardOutput()) 
+      .split("[CHAPTER]",Qt::SkipEmptyParts);
 
-  for(int i=0;i<Chapters.size();i++){
-    QStringList chapterStreams = QString(Chapters[i]).split("\n");
-    ChapterObject newChapter; 
-    newChapter.title = "Unknown";
-    for(int j=0;j<chapterStreams.size();j++){
-      if(chapterStreams[j] != "[/CHAPTER]"){
-        QStringList SplitedLine = QString(chapterStreams[j]).split("=");
-        if(SplitedLine[0] == "id") newChapter.id = SplitedLine[1];
-        else if(SplitedLine[0] == "TAG:title") newChapter.title = SplitedLine[1];
-        else if(SplitedLine[0] == "start_time") newChapter.startTime = SplitedLine[1].toFloat();
-        else if(SplitedLine[0] == "end_time") newChapter.endTime = SplitedLine[1].toFloat();
+    std::cout<<"[ INFO ] Number Of Chapters Detected: "<<Chapters.size()<<"\n";
+
+    for(int i=0;i<Chapters.size();i++){
+      QStringList chapterStreams = QString(Chapters[i]).split("\n");
+      ChapterObject newChapter; 
+      newChapter.title = "Unknown";
+      for(int j=0;j<chapterStreams.size();j++){
+        if(chapterStreams[j] != "[/CHAPTER]"){
+          QStringList SplitedLine = QString(chapterStreams[j]).split("=");
+          if (SplitedLine.size() < 2) continue;
+          if(SplitedLine[0] == "id") newChapter.id = SplitedLine[1];
+          else if(SplitedLine[0] == "TAG:title") newChapter.title = SplitedLine[1];
+          else if(SplitedLine[0] == "start_time") newChapter.startTime = SplitedLine[1].toFloat();
+          else if(SplitedLine[0] == "end_time") newChapter.endTime = SplitedLine[1].toFloat();
+        }
       }
+      ChaptersVectors.push_back(newChapter);
     }
-    ChaptersVectors.push_back(newChapter);
-  }
-  controlbuttonslayout->setChaptersMarks(ChaptersVectors, showChaptersIndicators);
+    controlbuttonslayout->setChaptersMarks(ChaptersVectors, showChaptersIndicators);
+    ChaptersProcess->deleteLater();
+  });
+
+  ChaptersProcess->start(ffprobePath, processArgs);
 }
 
 void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
