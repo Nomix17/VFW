@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "qcontainerfwd.h"
 #include "qmediametadata.h"
 
 #include <QApplication>
@@ -197,7 +198,7 @@ void MainWindow::LoadingInDirectorySubtitles(QString currenturl){
 void MainWindow::ExtranctingChapterData(QString currenturl) {
   ChaptersVectors.clear();
   QProcess *ChaptersProcess = new QProcess(this);
-  QString ffprobePath = "/usr/bin/ffprobe";
+  QString ffprobePath = QString::fromStdString(SYSTEMPATHS->ffprobeBinPath);
   QStringList processArgs = { "-i",currenturl,"-v", "quiet", "-show_chapters" };
 
   connect(ChaptersProcess, &QProcess::finished, this, [this, ChaptersProcess]() {
@@ -231,13 +232,16 @@ void MainWindow::ExtranctingChapterData(QString currenturl) {
 
 void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
   QProcess lookForSubs;
-  lookForSubs.start("/usr/bin/ffprobe", {
+  QString ffprobePath = QString::fromStdString(SYSTEMPATHS->ffprobeBinPath);
+  QStringList processArgs = {
     "-v", "error",
     "-select_streams", "s",
     "-show_entries", "stream=index",
     "-of", "csv=p=0",
     currenturl
-  });
+  };
+
+  lookForSubs.start(ffprobePath, processArgs);
   lookForSubs.waitForFinished(-1);
 
   QStringList subStreams = QString(lookForSubs.readAllStandardOutput())
@@ -254,7 +258,12 @@ void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
 
     QProcess* ffmpegProcess = new QProcess(this);
     connect(ffmpegProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), ffmpegProcess, &QProcess::deleteLater); // delete the process when finished
-    ffmpegProcess->start("/usr/bin/ffmpeg", {"-y","-i", currenturl, "-map", subId, fileSubPath});
+    QString ffmpegPath = QString::fromStdString(SYSTEMPATHS->ffmpegBinPath);
+    ffmpegProcess->start(ffmpegPath, {
+      "-y",
+      "-i", currenturl,
+      "-map", subId, fileSubPath
+    });
 
     currentVideoSubtitlePaths.push_back(fileSubPath);
 

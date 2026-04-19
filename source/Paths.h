@@ -34,11 +34,15 @@ class PATHS {
     std::string currentThemeDir;
     std::string currentIconsDir;
 
+    std::string ffprobeBinPath;
+    std::string ffmpegBinPath;
+
     std::array<std::string, 7> essentialDirectories;
 
     PATHS() {
       defineRootDirs();
       defineBranchDirs();
+      defineFFmpegBinPaths();
       populateEssentialDirectories();
       createMissingSystemDirs();
     }
@@ -101,6 +105,16 @@ class PATHS {
       std::filesystem::path currentTheme(themesDir);
       currentThemeDir = (currentTheme / currentThemeName).string();
       currentIconsDir = (assets / "icons" / currentThemeName).string();
+    }
+
+    void defineFFmpegBinPaths() {
+      #ifdef _WIN32
+        ffprobeBinPath = "C:\\Program Files\\ffmpeg\\bin\\ffprobe.exe";
+        ffmpegBinPath  = "C:\\Program Files\\ffmpeg\\bin\\ffmpeg.exe";
+      #else
+        ffprobeBinPath = "/usr/bin/ffprobe";
+        ffmpegBinPath  = "/usr/bin/ffmpeg";
+      #endif
     }
 
     void populateEssentialDirectories() {
