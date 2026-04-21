@@ -29,6 +29,7 @@
 #include "../DialogWindows/SubsConfigsWindow.h"
 #include "../UiComponents/TopBar.h"
 #include "../UiComponents/BottomControlPanel.h"
+#include "../UiComponents/FloatingControlPannel.h"
 
 struct MetaDataTrack;
 
@@ -170,9 +171,7 @@ private:
   QGraphicsScene *scene;
 
   // floating control pannel ui variables 
-  QWidget* floatingControlPannelWidget;
-  QVBoxLayout * floatingControlPannelContainerLayout;
-  QGraphicsProxyWidget * floatingControlPannelProxy;
+  FloatingControlPannel* floatingControlPannel;
 
   // running video variables
   std::string currentVideoParentDirectory;
@@ -181,7 +180,6 @@ private:
 
   // buttons Objects
   std::vector <QAction*> TopBarButtonsObjectList= {};
-  std::vector <QPushButton*> controlButtonsObjects = {}; // no longer used, might use it later, Idk I'll just leave it here
 
   // subtiles ui variables
   int subpadding;

@@ -1,5 +1,3 @@
-#include "mainwindow.h"
-#include "qcontainerfwd.h"
 #include "./headers/main/mainwindow.h"
 #include "qmediametadata.h"
 
@@ -67,12 +65,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   createBottomLayout();
 
   //creating a floating layout to use it when fullscreening
-  floatingControlPannelWidget = new QWidget;
-  floatingControlPannelContainerLayout = new QVBoxLayout(floatingControlPannelWidget);
-  floatingControlPannelProxy = scene->addWidget(floatingControlPannelWidget);
-  floatingControlPannelWidget->hide();
-  floatingControlPannelProxy->setZValue(10);
-  floatingControlPannelWidget->update();
+  floatingControlPannel = new FloatingControlPannel(scene);
 
   //setting up the subtites
   QFont font;
@@ -1241,10 +1234,11 @@ void MainWindow::resizeVideoContainers() {
 void MainWindow::repositionFloatingControllPannel(int animationTime) {
   int VIEWWIDTH = view->size().width();
   int VIEWHEIGHT = view->size().height();
-  int floatingPannel_width = floatingControlPannelProxy->boundingRect().width();
-  int floatingPannel_height = floatingControlPannelProxy->boundingRect().height();
-  QPoint hiding_position = QPoint((VIEWWIDTH - floatingPannel_width) / 2, (VIEWHEIGHT + floatingPannel_height));
-  moveSomethingToPos(floatingControlPannelProxy,  hiding_position, animationTime);
+  QPoint hiding_position = QPoint(
+    (VIEWWIDTH - floatingControlPannel->getWidth()) / 2,
+    (VIEWHEIGHT + floatingControlPannel->getHeight())
+  );
+  moveSomethingToPos(floatingControlPannel->getPannelProxyObj(),  hiding_position, animationTime);
 }
 
 void MainWindow::repositionSubtitles() {
@@ -1266,14 +1260,14 @@ void MainWindow::enterFullScreen() {
   int currentVolumeSliderPos = controlbuttonslayout->getVolumeValue();
 
   createBottomLayout();//recreating bottom layout
-  floatingControlPannelContainerLayout->addLayout(controlbuttonslayout);
+  floatingControlPannel->addButtonsLayout(controlbuttonslayout); 
 
   this->showFullScreen();
   mainlayout->setContentsMargins(0, 0, 0, 0);
   video->setSize(this->size());
 
-  if (floatingControlPannelWidget->isHidden())
-    floatingControlPannelWidget->show();
+  if (floatingControlPannel->isHidden())
+    floatingControlPannel->show();
 
   setVolumeSliderPosition(currentVolumeSliderPos);
   updateButtonsIcon();
@@ -1409,22 +1403,15 @@ void MainWindow::mouseDoubleClickEvent(QMouseEvent * event){
   int video_end_y = view->size().height()+video_start_y;
 
   //making sure the position of the mouse when double clicking is inside the video layout
-  bool ClickIsInsideVideoLayout = (mousePosition_x > video_start_x &&
-                                mousePosition_y > video_start_y  &&
-                                mousePosition_x < video_end_x &&
-                                mousePosition_y < video_end_y);
-
-  // getting the floating pannel position
-  int floatingPannel_start_x = floatingControlPannelWidget->pos().rx();
-  int floatingPannel_start_y = floatingControlPannelWidget->pos().ry();
-  int floatingPannel_end_x = floatingControlPannelWidget->size().width() + floatingPannel_start_x;
-  int floatingPannel_end_y = floatingControlPannelWidget->size().height() + floatingPannel_start_y;
+  bool ClickIsInsideVideoLayout = (
+    mousePosition_x > video_start_x &&
+    mousePosition_y > video_start_y  &&
+    mousePosition_x < video_end_x &&
+    mousePosition_y < video_end_y
+  );
 
   //making sure the position of the mouse when double clicking is ouside the floating pannel
-  bool ClickNotOnfloatingPannel = ((mousePosition_x < floatingPannel_start_x ||
-                                  mousePosition_y < floatingPannel_start_y ||
-                                  mousePosition_x > floatingPannel_end_x ||
-                                  mousePosition_y > floatingPannel_end_y));
+  bool ClickNotOnfloatingPannel = !floatingControlPannel->isHovered(event->pos());
 
   if(ClickIsInsideVideoLayout && ClickNotOnfloatingPannel){
     //if the user double clicked on the video layout a fullscreen function is gonna be called
@@ -1446,21 +1433,9 @@ bool MainWindow::mouseInsideFloatingPanel(QEvent* event){
   QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
   
   QPoint mousePos = mouseEvent->pos();// getting the position of the mouse
-  //getting the dimentions of the floating pannel
-  int floatingPannel_height = floatingControlPannelProxy->boundingRect().height();
-  int floatingPannel_width = floatingControlPannelProxy->boundingRect().width();
-
-  // getting the position of each side of the floating pannel
-  int floatingPannel_Top = floatingControlPannelProxy->pos().ry();
-  int floatingPannel_Left = floatingControlPannelProxy->pos().rx();
-  int floatingPannel_Bottom = floatingPannel_Top + floatingPannel_height;
-  int floatingPannel_Right = floatingPannel_Left + floatingPannel_width;
 
   // checking if the mouse is inside the pannel X wise, and Y wise
-  bool mouseInsideX = (mousePos.rx() >= floatingPannel_Left) && (mousePos.rx() <= floatingPannel_Right);
-  bool mouseInsideY = (mousePos.ry() >= floatingPannel_Top) && (mousePos.ry() <= floatingPannel_Bottom);
-
-  return (mouseInsideX && mouseInsideY);
+  return (floatingControlPannel->isHovered(mousePos));
 }
 
 //function to detect mouse movement
@@ -1476,15 +1451,16 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event){
     if(fullScreenEnabled){
       //getting the position of the floating pannel
       int viewheight = view->size().height();
-      int floatingPannel_Xpos = floatingControlPannelProxy->pos().rx();
-      int floatingPannel_height = floatingControlPannelProxy->boundingRect().height();
 
       // calculate the targetPosition that we want to move the pannel into, and then calling moveSomethingToPos function
-      QPointF targetPos = QPointF(floatingPannel_Xpos,viewheight-floatingPannel_height);
-      moveSomethingToPos(floatingControlPannelProxy,targetPos,200);
+      QPointF targetPos = QPointF(
+        floatingControlPannel->getXPos(),
+        viewheight - floatingControlPannel->getHeight()
+      );
+      moveSomethingToPos(floatingControlPannel->getPannelProxyObj(),targetPos,200);
 
       // keeping the same subtitles margin
-      currentSubBottomSpace = subBottomMargin + floatingPannel_height;
+      currentSubBottomSpace = subBottomMargin + floatingControlPannel->getHeight();
       repositionSubtitles();
       floatingPannelDisplayed = true; //the floating pannel is displayed
 
