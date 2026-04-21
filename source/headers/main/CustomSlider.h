@@ -1,5 +1,5 @@
-#ifndef CUSTOMOBJ
-#define CUSTOMOBJ
+#ifndef CUSTOMSLIDER 
+#define CUSTOMSLIDER 
 
 #include <iostream>
 #include <QSlider>
@@ -13,7 +13,7 @@ struct ChapterObject{
   float endTime;
 };
 
-class CustomSlider:public QSlider{
+class CustomSlider:public QSlider {
   Q_OBJECT
 public:
   //constructor to redirect the object defined by this class to QSlider

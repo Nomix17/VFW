@@ -1,7 +1,7 @@
 #ifndef SUBCONFIG
 #define SUBCONFIG
 
-#include "json.hpp"
+#include "../json/json.hpp"
 
 #include <filesystem>
 #include <iostream>

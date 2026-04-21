@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "qcontainerfwd.h"
+#include "./headers/main/mainwindow.h"
 #include "qmediametadata.h"
 
 #include <QApplication>

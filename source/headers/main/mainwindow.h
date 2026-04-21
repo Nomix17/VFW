@@ -17,19 +17,18 @@
 #include <string>
 #include <map>
 
-#include "SRepeatWindow.h"
-#include "JumpToTime.h"
-#include "AudioTracksManager.h"
-#include "PlaylistManager.h"
-#include "ShortcutsInstructions.h"
-#include "ChangeThemeWindow.h"
-#include "MediaUrl.h"
-#include "LoadedSubsWindow.h"
-#include "SubsConfigsWindow.h"
-#include "CustomObjects.h"
-#include "TopBar.h"
-#include "BottomControlPanel.h"
 #include "Paths.h"
+#include "../DialogWindows/SRepeatWindow.h"
+#include "../DialogWindows/JumpToTime.h"
+#include "../DialogWindows/AudioTracksManager.h"
+#include "../DialogWindows/PlaylistManager.h"
+#include "../DialogWindows/ShortcutsInstructions.h"
+#include "../DialogWindows/ChangeThemeWindow.h"
+#include "../DialogWindows/MediaUrl.h"
+#include "../DialogWindows/LoadedSubsWindow.h"
+#include "../DialogWindows/SubsConfigsWindow.h"
+#include "../UiComponents/TopBar.h"
+#include "../UiComponents/BottomControlPanel.h"
 
 struct MetaDataTrack;
 

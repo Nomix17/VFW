@@ -7,7 +7,7 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QLabel>
-#include "CustomObjects.h"
+#include "../main/CustomSlider.h"
 #include "TextTimer.h"
 
 class BottomControlPanel: public QVBoxLayout {
