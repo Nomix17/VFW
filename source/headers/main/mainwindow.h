@@ -30,6 +30,7 @@
 #include "../UiComponents/TopBar.h"
 #include "../UiComponents/BottomControlPanel.h"
 #include "../UiComponents/FloatingControlPannel.h"
+#include "../UiComponents/SubtitlesItem.h"
 
 struct MetaDataTrack;
 
@@ -116,7 +117,7 @@ public:
   void toggleFullScreen();
   bool mouseInsideFloatingPanel(QEvent* event);
 
-  void showingthings(std::string texttoshow, int xposition, int yposition,int animationduration);
+  void renderOverlayText(std::string textToRender, TextPosition position, int animationduration);
   void setTopbarLayoutVisible(bool visible);
 
   // caching and stuff
@@ -166,7 +167,7 @@ private:
   TopBar *topbarlayout=nullptr;
   QGridLayout *videolayout;
   BottomControlPanel *controlbuttonslayout=nullptr;
-  QGraphicsTextItem *sublabel;
+  SubtitlesItem *subtitlesItem;
   QGraphicsView *view;
   QGraphicsScene *scene;
 
@@ -184,9 +185,8 @@ private:
   // subtiles ui variables
   int subpadding;
   int subBottomMargin;
-  int currentSubBottomSpace;
   QString htmlstyle;
-  QGraphicsTextItem *toshowtext = nullptr;
+  TextItem *overlayTextItem = nullptr;
 
   // subtiles logic variables
   int currentSubDelay=0;

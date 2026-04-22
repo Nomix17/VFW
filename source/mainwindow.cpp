@@ -1,5 +1,6 @@
 #include "./headers/main/mainwindow.h"
 #include "qmediametadata.h"
+#include "qobject.h"
 
 #include <QApplication>
 #include <QMediaPlayer>
@@ -68,11 +69,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   floatingControlPannel = new FloatingControlPannel(scene);
 
   //setting up the subtites
-  QFont font;
-  sublabel = new QGraphicsTextItem();
-  sublabel->setFont(font);
-  sublabel->setObjectName("sublabel");
-  sublabel->setZValue(12);
+  subtitlesItem = new SubtitlesItem();
 
   video->setSize(view->size());
   view->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
@@ -80,7 +77,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   scene->addItem(video);
-  scene->addItem(sublabel);
+  scene->addItem(subtitlesItem);
 
   // adding margin for style
   mainlayout->setContentsMargins(10, 10, 10, 10);
@@ -102,9 +99,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   // load the sub style
   SubConfig win(SYSTEMPATHS->configPath,SYSTEMPATHS->fontsDir,SYSTEMPATHS->currentThemeDir);
   win.loadFonts();
-  htmlstyle = win.makehtml();
-  subBottomMargin = win.marginbottom;
-  currentSubBottomSpace = win.marginbottom;
+  TextItem::setHtmlTemplate(win.makehtml());
+  TextItem::setBottomMargin(win.marginbottom);
 }
 
 //function to create the top layout
@@ -408,9 +404,7 @@ void MainWindow::startVideoPlayer(QString path) {
   updateButtonsIcon();
 
   // displaying the title for a brief of time
-  int xposition = view->size().width() / 2;
-  int yposition = view->size().height() - currentSubBottomSpace;
-  showingthings(currentVideoTitle, xposition, yposition, 2000);
+  renderOverlayText(currentVideoTitle, TextPosition::BOTTOM, 2000);
 
   //load the last saved position if it's availble
   getlastsavedposition();
@@ -603,7 +597,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
         for (SubObject* ptr:currentLoadedSubList){
           delete ptr;
         }
-        sublabel->setOpacity(0);
+        subtitlesItem->setOpacity(0);
         currentLoadedSubList.clear();
         currentLoadedSubPath = "";
         ToggleSubs->setText("Add Subtitles");
@@ -616,7 +610,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       subWin.exec();
       if(!subWin.clickedSubPath.isEmpty()){
         currentLoadedSubPath = subWin.clickedSubPath;
-        sublabel->setOpacity(0);
+        subtitlesItem->setOpacity(0);
         currentLoadedSubList.clear();
         SubFileParsing(currentLoadedSubPath.toStdString());
         std::cout<<"[ INFO ] Subtitles were Loaded: "<<currentLoadedSubPath.toStdString()<<"\n";
@@ -659,38 +653,46 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
     }
 
     case TopBar::SUBSETTINGS: {
-      SubConfig win(SYSTEMPATHS->configPath,SYSTEMPATHS->fontsDir,SYSTEMPATHS->currentThemeDir);
+      SubConfig win(
+        SYSTEMPATHS->configPath,
+        SYSTEMPATHS->fontsDir,
+        SYSTEMPATHS->currentThemeDir
+      );
       win.gui();
       win.exec();
-      htmlstyle = win.makehtml();
-      subBottomMargin = win.marginbottom;
-      currentSubBottomSpace = win.marginbottom;
+      TextItem::setHtmlTemplate(win.makehtml());
+      TextItem::setBottomMargin(win.marginbottom);
       syncSubtitles(player->position());
       break;
     }
 
     case TopBar::TITLE: {
       if (currentVideoTitle.size()) {
-        int xposition = view->size().width() / 2;
-        int yposition = view->size().height() - subBottomMargin;
-        showingthings(currentVideoTitle, xposition, yposition, 3000);
+        renderOverlayText(currentVideoTitle, TextPosition::BOTTOM, 3000);
       }
       break;
     }
 
     case TopBar::THEME:{
-      ChangeThemeWindow win(SYSTEMPATHS->configPath,SYSTEMPATHS->themesDir,SYSTEMPATHS->currentThemeDir);
+      ChangeThemeWindow win(
+        SYSTEMPATHS->configPath,
+        SYSTEMPATHS->themesDir,
+        SYSTEMPATHS->currentThemeDir
+      );
       win.exec();
-      int xposition = view->size().width() / 2;
-      int yposition = view->size().height()/2 ;
-      if(win.changetotheme!=""){
-        showingthings("You Need to reset the Application to apply the new Theme",xposition,yposition,4000);
+      if(win.changetotheme!="") {
+        std::string text = "You Need to reset the Application to apply the new Theme";
+        renderOverlayText(text, TextPosition::CENTER, 4000);
       }
       break;
     }
 
     case TopBar::SHORTCUTS: {
-      ShortcutsInst win(nullptr,SYSTEMPATHS->currentThemeDir,SYSTEMPATHS->configPath);
+      ShortcutsInst win(
+        nullptr,
+        SYSTEMPATHS->currentThemeDir,
+        SYSTEMPATHS->configPath
+      );
       win.exec();
       break;
     }
@@ -737,7 +739,12 @@ void MainWindow::controlButtonsHandler(int buttonindex) {
     }
 
     case BottomControlPanel::PLAYLIST_BUTTON: {
-      PlaylistManager win(SYSTEMPATHS->currentThemeDir, SYSTEMPATHS->currentIconsDir, playlist, currentVideoUrl);
+      PlaylistManager win(
+        SYSTEMPATHS->currentThemeDir,
+        SYSTEMPATHS->currentIconsDir,
+        playlist,
+        currentVideoUrl
+      );
       win.exec();
       if (win.new_video_index != (int)currentVideoIndex && win.new_video_index != -1) {
         currentVideoIndex = win.new_video_index;
@@ -859,12 +866,8 @@ void MainWindow::increaseSubtitlesDelay() {
     currentSubDelay += 100;
     if (-100 < currentSubDelay && currentSubDelay < 100)
       currentSubDelay = 0;
-
-    // add animation so the user can see that the delay has been changed
     std::string text = "Subtitles Delay: " + std::to_string((int)(currentSubDelay)) + " ms";
-    int xposition = view->size().width();
-    int yposition = view->size().height();
-    showingthings(text, xposition / 2, yposition / 2, 1000);
+    renderOverlayText(text, TextPosition::CENTER, 1000);
   }
 }
 void MainWindow::decreaseSubtitlesDelay(){
@@ -872,53 +875,37 @@ void MainWindow::decreaseSubtitlesDelay(){
     currentSubDelay -= 100;
     if (-100 < currentSubDelay && currentSubDelay < 100)
       currentSubDelay = 0;
-
-    // add animation so the user can see that the delay has been changed
     std::string text = "Subtitles Delay: " + std::to_string((int)(currentSubDelay)) + " ms";
-    int xposition = view->size().width();
-    int yposition = view->size().height();
-    showingthings(text, xposition / 2, yposition / 2, 1000);
+    renderOverlayText(text, TextPosition::CENTER, 1000);
   }
 }
 
 void MainWindow::toggleSubtitles(){
   ShowSubs =! ShowSubs;
-  if(!ShowSubs) sublabel->setHtml("");
-  int xposition = view->size().width() / 2;
-  int yposition = view->size().height() /2;
+  if(!ShowSubs) subtitlesItem->clearContent();
   std::string displayMessage = ShowSubs ? "Subtitles On" : "Subtitles Off";
-  showingthings(displayMessage, xposition, yposition, 2000);
+  renderOverlayText(displayMessage, TextPosition::CENTER, 2000);
 }
 
 void MainWindow::toggleChaptersIndicators(){
   showChaptersIndicators =!showChaptersIndicators;
-  int xposition = view->size().width() / 2;
-  int yposition = view->size().height() /2;
   std::string displayMessage = showChaptersIndicators ? "Chapters Indicators On" : "Chapters Indicators Off";
-  showingthings(displayMessage, xposition, yposition, 2000);
+  renderOverlayText(displayMessage, TextPosition::CENTER, 2000);
   controlbuttonslayout->setChaptersMarks(ChaptersVectors, showChaptersIndicators);
-}
-
-std::vector<int> calculatingTextDimentions(QString text){
-  QGraphicsTextItem *dummyText = new QGraphicsTextItem;
-  dummyText->setHtml(text);
-
-  int textwidth = dummyText->boundingRect().width();
-  int textheight = dummyText->boundingRect().height();
-  return {textwidth, textheight};
 }
 
 void MainWindow::moveToNextChapter(){
   for(size_t i=0;i<ChaptersVectors.size();i++){
-    if(player->position() >= ChaptersVectors[i].startTime*1000 && player->position() <= ChaptersVectors[i].endTime*1000){
+    if(
+      player->position() >= ChaptersVectors[i].startTime*1000 &&
+      player->position() <= ChaptersVectors[i].endTime*1000
+    ) {
       ChapterObject newChapter;
       if(i == ChaptersVectors.size()-1) newChapter = ChaptersVectors[i];
       else newChapter = ChaptersVectors[i+1];
+
       changePlayBackPosition(newChapter.startTime*1000+1);
-      QString titleToShow = htmlstyle + newChapter.title + "</div>";
-      int video_start_x = view->pos().rx();
-      int video_start_y = view->pos().ry();
-      showingthings(titleToShow.toStdString(),video_start_x+calculatingTextDimentions(titleToShow)[0]/2+10,video_start_y+calculatingTextDimentions(newChapter.title)[1]+15, 2000); 
+      renderOverlayText(newChapter.title.toStdString(), TextPosition::TOP_LEFT, 2000); 
       break;
     }
   }
@@ -926,14 +913,15 @@ void MainWindow::moveToNextChapter(){
 
 void MainWindow::moveToPrevChapter(){
   for(size_t i=1;i<ChaptersVectors.size();i++){
-    if(player->position() >= ChaptersVectors[i].startTime*1000 && player->position() <= ChaptersVectors[i].endTime*1000){
+    if(
+      player->position() >= ChaptersVectors[i].startTime*1000 &&
+      player->position() <= ChaptersVectors[i].endTime*1000
+    ) {
       ChapterObject newChapter = ChaptersVectors[i-1];
+
       changePlayBackPosition(newChapter.startTime*1000+1);
-      QString titleToShow = htmlstyle + newChapter.title + "</div>";
-      int video_start_x = view->pos().rx();
-      int video_start_y = view->pos().ry();
-      showingthings(titleToShow.toStdString(),video_start_x+calculatingTextDimentions(titleToShow)[0]/2+10,video_start_y+calculatingTextDimentions(newChapter.title)[1]+15, 2000); 
- 
+      renderOverlayText(newChapter.title.toStdString(), TextPosition::TOP_LEFT, 2000); 
+
       break;
     }
   }
@@ -951,15 +939,14 @@ void MainWindow::syncSubtitles(qint64 playbackPosition) {
     bool isPlaybackBeforeSubEnd = (playbackPosition <= (subObj->endTime + currentSubDelay));
 
     if (ShowSubs && hasPlaybackPassedSubStart && isPlaybackBeforeSubEnd) {
-      // merge the html style with the subtitle and pass it as html script
-      sublabel->setHtml(htmlstyle + QString::fromStdString(subObj->textContent) + "</td></tr></table>");
-      sublabel->setOpacity(1);
-      repositionSubtitles();
+      subtitlesItem->setContent(QString::fromStdString(subObj->textContent));
+      subtitlesItem->setOpacity(1);
+      subtitlesItem->repositionText(view->size());
       return; 
     }
   }
 
-  sublabel->setHtml("");
+  subtitlesItem->clearContent();
 }
 
 // setting the app elements in there relation with the player
@@ -1219,8 +1206,7 @@ void MainWindow::SubFileParsing(std::string subpath) {
 void MainWindow::resizeMainUiElement(){
   resizeVideoContainers();
   repositionFloatingControllPannel();
-  repositionSubtitles();
-  // showingthings("",0,0,0);
+  subtitlesItem->repositionText(view->size());
 }
 
 void MainWindow::resizeVideoContainers() {
@@ -1239,14 +1225,6 @@ void MainWindow::repositionFloatingControllPannel(int animationTime) {
     (VIEWHEIGHT + floatingControlPannel->getHeight())
   );
   moveSomethingToPos(floatingControlPannel->getPannelProxyObj(),  hiding_position, animationTime);
-}
-
-void MainWindow::repositionSubtitles() {
-  int VIEWWIDTH = view->size().width();
-  int VIEWHEIGHT = view->size().height();
-  int SUBWIDTH = sublabel->boundingRect().width();
-  int SUBHEIGHT = sublabel->boundingRect().height();
-  sublabel->setPos((VIEWWIDTH - SUBWIDTH) / 2, (VIEWHEIGHT - SUBHEIGHT / 2) - currentSubBottomSpace);
 }
 
 //resizing window logic
@@ -1299,25 +1277,28 @@ void MainWindow::toggleFullScreen() {
 }
 
 //function that display text on the top of the video with fading animation
-void MainWindow::showingthings(std::string texttoshow, int xposition, int yposition, int animationduration) {
-  if(toshowtext != nullptr && toshowtext->scene() == scene ){
-    scene->removeItem(toshowtext);
+void MainWindow::renderOverlayText(
+  std::string textToRender,
+  TextPosition position,
+  int animationduration
+) {
+  if(
+    overlayTextItem != nullptr &&
+    overlayTextItem->scene() == scene 
+    ){
+    scene->removeItem(overlayTextItem);
   }
   if(animationduration == 0) return;
 
-  toshowtext = new QGraphicsTextItem;
-  // show the state of the delay using the same font config of the subtitles
-  toshowtext->setHtml(htmlstyle + QString::fromStdString(texttoshow) + "</div>");
-
-  // calculating the position that the text should go to
-  int textwidth = toshowtext->boundingRect().width();
-  int textheight = toshowtext->boundingRect().height();
-  toshowtext->setPos(xposition - textwidth / 2, yposition - textheight / 2);
-  scene->addItem(toshowtext);
+  overlayTextItem = new TextItem;
+  overlayTextItem->setContent(QString::fromStdString(textToRender));
+  overlayTextItem->repositionText(view->size(), position);
+  scene->addItem(overlayTextItem);
 
   // making an effect for the apearence and deapearence of the text
-  QGraphicsOpacityEffect *opacityEffect = new QGraphicsOpacityEffect(toshowtext);
-  toshowtext->setGraphicsEffect(opacityEffect);
+  QGraphicsOpacityEffect *opacityEffect = new QGraphicsOpacityEffect(overlayTextItem);
+  overlayTextItem->setGraphicsEffect(opacityEffect);
+
   // configuring the animation of the text
   QPropertyAnimation *animation = new QPropertyAnimation(opacityEffect, "opacity");
   animation->setDuration(animationduration);
@@ -1460,15 +1441,15 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event){
       moveSomethingToPos(floatingControlPannel->getPannelProxyObj(),targetPos,200);
 
       // keeping the same subtitles margin
-      currentSubBottomSpace = subBottomMargin + floatingControlPannel->getHeight();
-      repositionSubtitles();
+      subtitlesItem->setSubOffset(floatingControlPannel->getHeight());
+      subtitlesItem->repositionText(view->size());
       floatingPannelDisplayed = true; //the floating pannel is displayed
 
       QTimer::singleShot(800,[this](){
         if(!MouseIsInsideFloatingPanel && floatingPannelDisplayed){
           repositionFloatingControllPannel(200);
-          currentSubBottomSpace = subBottomMargin;
-          repositionSubtitles();
+          subtitlesItem->setSubOffset(0);
+          subtitlesItem->repositionText(view->size());
         }
         floatingPannelDisplayed = false;// the floating pannel is not displayed
       });

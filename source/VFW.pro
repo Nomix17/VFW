@@ -4,7 +4,6 @@ SOURCES += main.cpp \
            mainwindow.cpp
 
 HEADERS += ./headers/main/mainwindow.h \
-           ./headers/main/CustomSlider.h \
            ./headers/main/Paths.h \
            ./headers/DialogWindows/MediaUrl.h \
            ./headers/DialogWindows/JumpToTime.h \
@@ -15,6 +14,7 @@ HEADERS += ./headers/main/mainwindow.h \
            ./headers/DialogWindows/PlaylistManager.h \
            ./headers/DialogWindows/ChangeThemeWindow.h \
            ./headers/DialogWindows/SubsConfigsWindow.h \
+           ./headers/UiComponents/CustomSlider.h \
            ./headers/UiComponents/TopBar.h \
            ./headers/UiComponents/TopBarButton.h \
            ./headers/UiComponents/BottomControlPanel.h \
