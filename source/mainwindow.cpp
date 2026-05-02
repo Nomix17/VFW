@@ -69,7 +69,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   floatingControlPannel = new FloatingControlPannel(scene);
 
   //setting up the subtites
-  subtitlesItem = new SubtitlesItem();
+  subtitlesItem = new SubtitlesItem(view);
 
   video->setSize(view->size());
   view->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
@@ -941,7 +941,7 @@ void MainWindow::syncSubtitles(qint64 playbackPosition) {
     if (ShowSubs && hasPlaybackPassedSubStart && isPlaybackBeforeSubEnd) {
       subtitlesItem->setContent(QString::fromStdString(subObj->textContent));
       subtitlesItem->setOpacity(1);
-      subtitlesItem->repositionText(view->size());
+      subtitlesItem->repositionText();
       return; 
     }
   }
@@ -1206,7 +1206,10 @@ void MainWindow::SubFileParsing(std::string subpath) {
 void MainWindow::resizeMainUiElement(){
   resizeVideoContainers();
   repositionFloatingControllPannel();
-  subtitlesItem->repositionText(view->size());
+  subtitlesItem->repositionText();
+  if(overlayTextItem != nullptr) {
+    overlayTextItem->repositionText();
+  }
 }
 
 void MainWindow::resizeVideoContainers() {
@@ -1285,14 +1288,15 @@ void MainWindow::renderOverlayText(
   if(
     overlayTextItem != nullptr &&
     overlayTextItem->scene() == scene 
-    ){
+  ) {
     scene->removeItem(overlayTextItem);
+    delete overlayTextItem;
   }
   if(animationduration == 0) return;
 
-  overlayTextItem = new TextItem;
+  overlayTextItem = new TextItem(position, view);
   overlayTextItem->setContent(QString::fromStdString(textToRender));
-  overlayTextItem->repositionText(view->size(), position);
+  overlayTextItem->repositionText();
   scene->addItem(overlayTextItem);
 
   // making an effect for the apearence and deapearence of the text
@@ -1442,14 +1446,14 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event){
 
       // keeping the same subtitles margin
       subtitlesItem->setSubOffset(floatingControlPannel->getHeight());
-      subtitlesItem->repositionText(view->size());
+      subtitlesItem->repositionText();
       floatingPannelDisplayed = true; //the floating pannel is displayed
 
       QTimer::singleShot(800,[this](){
         if(!MouseIsInsideFloatingPanel && floatingPannelDisplayed){
           repositionFloatingControllPannel(200);
           subtitlesItem->setSubOffset(0);
-          subtitlesItem->repositionText(view->size());
+          subtitlesItem->repositionText();
         }
         floatingPannelDisplayed = false;// the floating pannel is not displayed
       });
