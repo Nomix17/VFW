@@ -181,7 +181,7 @@ private:
   std::string currentVideoTitle="";
 
   // buttons Objects
-  std::vector <QAction*> TopBarButtonsObjectList= {};
+  std::vector <QAction*> toolMenuActionsObjectsList= {};
 
   // subtiles ui variables
   int subpadding;

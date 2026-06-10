@@ -8,17 +8,18 @@
 #include <QHBoxLayout>
 
 
-class TopBarToolButton : public QWidget {
+class MenuButton : public QWidget {
   Q_OBJECT
   signals:
     void buttonClicked(int actionNumber);
 
-  public:
+  private:
     QToolButton* Button;
     QString buttonName;
-    inline static std::vector <QAction*> buttonsActionsList;
+    std::vector <QAction*> buttonActionsList;
 
-    TopBarToolButton(QString buttonName, QWidget* parent = nullptr) 
+  public:
+    MenuButton(QString buttonName, QWidget* parent = nullptr) 
         : QWidget(parent) {
       Button = new QToolButton(this);
       this->buttonName = buttonName;
@@ -34,27 +35,29 @@ class TopBarToolButton : public QWidget {
       this->setLayout(layout);
     }
 
-    void createMenuElements(QList<QString> actionslist) {
+    void buildMenuActions(QList<QString> actionslist, int actionIndexOffset) {
       QMenu *menu = new QMenu(this);
       for (qsizetype i = 0; i < actionslist.size(); i++) {
         QAction *action = new QAction(this);
         action->setObjectName(actionslist[i]);
         action->setText(actionslist[i]);
-        int actionNumber = buttonsActionsList.size();
+        int actionNumber = buttonActionsList.size() + actionIndexOffset;
         connect(action, &QAction::triggered, [this,actionNumber]() {
           emit buttonClicked(actionNumber); 
         });
-        buttonsActionsList.push_back(action);
+        buttonActionsList.push_back(action);
         menu->addAction(action);
       }
 
       Button->setMenu(menu);
     }
 
-    static std::vector <QAction*> getActionsList(){
-      return buttonsActionsList;
+    QString getButtonName() {
+      return buttonName;
     }
-    
+    std::vector <QAction*> getButtonActionsList() {
+      return buttonActionsList;
+    }
     void setText(QString text){
       Button->setText(text);
     }

@@ -108,7 +108,7 @@ void MainWindow::createTopLayout(){
   if(topbarlayout != nullptr) delete topbarlayout; // gets triggered when toggling fullscreen
 
   topbarlayout = new TopBar();
-  TopBarButtonsObjectList = TopBar::getTopBarActionsList();
+  toolMenuActionsObjectsList = topbarlayout->getActionsObjects();
   connect(topbarlayout, &TopBar::handleButtonsClick,[this](int actionNumber) {
      topBarButtonsHandler(actionNumber);
   });
@@ -176,7 +176,7 @@ void MainWindow::LoadingInDirectorySubtitles(QString currenturl){
             std::cout<<"[ INFO ] Subtitles were Loaded: "<<fileEntry.path().generic_string()<<"\n";
             currentLoadedSubPath = QString::fromStdString(fileEntry.path().generic_string());
             SubFileParsing(currentLoadedSubPath.toStdString());
-            QAction * ToggleSubs = TopBarButtonsObjectList[TopBar::TOGGLE_SUB];
+            QAction * ToggleSubs = toolMenuActionsObjectsList[ToolMenu::TOGGLE_SUB];
             ToggleSubs->setText("Remove Subtitles");
           }
         }
@@ -263,7 +263,7 @@ void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
       connect(ffmpegProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), ffmpegProcess,[this](){
         SubFileParsing(currentLoadedSubPath.toStdString());
         // change the text of the QAction 
-        QAction * ToggleSubs = TopBarButtonsObjectList[TopBar::TOGGLE_SUB];
+        QAction * ToggleSubs = toolMenuActionsObjectsList[ToolMenu::TOGGLE_SUB];
         ToggleSubs->setText("Remove Subtitles");
       });
     }
@@ -355,7 +355,7 @@ void MainWindow::getAudioTracksFromMetaData() {
 void MainWindow::startVideoPlayer(QString path) {
   currentVideoUrl = path;
   video->setSize(view->size());
-  QAction * ToggleSubs = TopBarButtonsObjectList[TopBar::TOGGLE_SUB];
+  QAction * ToggleSubs = toolMenuActionsObjectsList[ToolMenu::TOGGLE_SUB];
   ToggleSubs->setText("Add Subtitles");
   currentVideoSubtitlePaths.clear();
   currentLoadedSubPath = "";
@@ -418,7 +418,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
 
   QString url;
   switch (actionNumber) {
-    case TopBar::Open_file: {
+    case ToolMenu::Open_file: {
       QString displaydir;
       if (currentVideoParentDirectory.size())
         displaydir = QString::fromStdString(currentVideoParentDirectory);
@@ -441,7 +441,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       break;
     }
 
-    case TopBar::Open_folder: {
+    case ToolMenu::Open_folder: {
       QString displaydir;
       if (currentVideoParentDirectory.size())
         displaydir = QString::fromStdString(currentVideoParentDirectory);
@@ -469,7 +469,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       break;
     }
 
-    case TopBar::Open_media: {
+    case ToolMenu::Open_media: {
       UrlWindow x(SYSTEMPATHS->currentThemeDir);
       x.exec();
       url = x.url;
@@ -481,22 +481,22 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       break;
     }
 
-    case TopBar::Quit: {
+    case ToolMenu::Quit: {
       QApplication::quit();
       break;
     }
 
-    case TopBar::JUMP_BACKWARD: {
+    case ToolMenu::JUMP_BACKWARD: {
       changePlayBackPosition(player->position() - 5000);
       break;
     }
 
-    case TopBar::JUMP_FORWARD: {
+    case ToolMenu::JUMP_FORWARD: {
       changePlayBackPosition(player->position() + 5000);
       break;
     }
 
-    case TopBar::JUMP_TO_TIME: {
+    case ToolMenu::JUMP_TO_TIME: {
       JumpTime x(SYSTEMPATHS->currentThemeDir);
       x.exec();
       if (x.targettime >= 0) {
@@ -505,18 +505,18 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       break;
     }
 
-    case TopBar::JUMP_TO_NEXT_CHAP:{
+    case ToolMenu::JUMP_TO_NEXT_CHAP:{
       moveToNextChapter();
       break;
     }
 
-    case TopBar::JUMP_TO_PREV_CHAP:{
+    case ToolMenu::JUMP_TO_PREV_CHAP:{
       moveToPrevChapter();
       break;
     }
 
-    case TopBar::TOGGLE_LOOPSEGMENT: {
-      QAction * toggleLoopAction = TopBarButtonsObjectList[TopBar::TOGGLE_LOOPSEGMENT];
+    case ToolMenu::TOGGLE_LOOPSEGMENT: {
+      QAction * toggleLoopAction = toolMenuActionsObjectsList[ToolMenu::TOGGLE_LOOPSEGMENT];
       if(!currentVideoUrl.isEmpty()){
         if(!segmentLoopEnabled){
           SRepeatWindow win(SYSTEMPATHS->currentThemeDir);
@@ -537,7 +537,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       break;
     }
 
-    case TopBar::AUDIO_TRACKS: {
+    case ToolMenu::AUDIO_TRACKS: {
       static int audioTrackIndex = 0;
       AudioTracksManager audioTracksManagerWindow(SYSTEMPATHS->currentThemeDir, SYSTEMPATHS->currentIconsDir, audioTracksMetaDataVector, audioTrackIndex);
       audioTracksManagerWindow.exec();
@@ -548,18 +548,18 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       break;
     }
 
-    case TopBar::FULL_VOLUME: {
+    case ToolMenu::FULL_VOLUME: {
       setVolumeSliderPosition(1000);
       break;
     }
 
-    case TopBar::MUTE: {
+    case ToolMenu::MUTE: {
       setVolumeSliderPosition(0);
       break;
     }
 
-    case TopBar::TOGGLE_ASPRadio: {
-      QAction * toggleFillAction = TopBarButtonsObjectList[TopBar::TOGGLE_ASPRadio];
+    case ToolMenu::TOGGLE_ASPRadio: {
+      QAction * toggleFillAction = toolMenuActionsObjectsList[ToolMenu::TOGGLE_ASPRadio];
       if(CurrentAspectMode == Qt::KeepAspectRatio){
         CurrentAspectMode = Qt::IgnoreAspectRatio; 
         toggleFillAction->setText("Lock Aspect Ratio");
@@ -571,8 +571,8 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       break;
     }
 
-    case TopBar::TOGGLE_SUB: {
-      QAction * ToggleSubs = TopBarButtonsObjectList[TopBar::TOGGLE_SUB];
+    case ToolMenu::TOGGLE_SUB: {
+      QAction * ToggleSubs = toolMenuActionsObjectsList[ToolMenu::TOGGLE_SUB];
       QString displaydir;
       if(currentLoadedSubList.size() == 0){
         if (currentVideoParentDirectory.size())
@@ -605,7 +605,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       break;
     } 
 
-    case TopBar::LOADSUBTITLES:{
+    case ToolMenu::LOADSUBTITLES:{
       subWindow subWin(SYSTEMPATHS->currentThemeDir,SYSTEMPATHS->currentIconsDir,currentVideoSubtitlePaths,currentLoadedSubPath);
       subWin.exec();
       if(!subWin.clickedSubPath.isEmpty()){
@@ -614,14 +614,14 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
         currentLoadedSubList.clear();
         SubFileParsing(currentLoadedSubPath.toStdString());
         std::cout<<"[ INFO ] Subtitles were Loaded: "<<currentLoadedSubPath.toStdString()<<"\n";
-        QAction * ToggleSubs = TopBarButtonsObjectList[TopBar::TOGGLE_SUB];
+        QAction * ToggleSubs = toolMenuActionsObjectsList[ToolMenu::TOGGLE_SUB];
         ToggleSubs->setText("Remove Subtitles");
       }
       break;
     }
 
-    case TopBar::TOGGLE_SUBDISPLAY: {
-      QAction * ToggleSubsDisplay = TopBarButtonsObjectList[TopBar::TOGGLE_SUBDISPLAY];
+    case ToolMenu::TOGGLE_SUBDISPLAY: {
+      QAction * ToggleSubsDisplay = toolMenuActionsObjectsList[ToolMenu::TOGGLE_SUBDISPLAY];
       toggleSubtitles();
       if(ShowSubs){
         ToggleSubsDisplay->setText("Hide Subtitles");
@@ -631,8 +631,8 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       break;
     }
 
-    case TopBar::TOGGLE_CHAPTERSINDICATORS: {
-      QAction * toggleChapters = TopBarButtonsObjectList[TopBar::TOGGLE_CHAPTERSINDICATORS];
+    case ToolMenu::TOGGLE_CHAPTERSINDICATORS: {
+      QAction * toggleChapters = toolMenuActionsObjectsList[ToolMenu::TOGGLE_CHAPTERSINDICATORS];
       toggleChaptersIndicators();
       if(showChaptersIndicators){
         toggleChapters->setText("Hide Chapters Indicators");
@@ -642,17 +642,17 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       break;
     }
 
-    case TopBar::ADDDELAY: {
+    case ToolMenu::ADDDELAY: {
       increaseSubtitlesDelay();
       break;
     }
 
-    case TopBar::REDUCEDELAY: {
+    case ToolMenu::REDUCEDELAY: {
       decreaseSubtitlesDelay();
       break;
     }
 
-    case TopBar::SUBSETTINGS: {
+    case ToolMenu::SUBSETTINGS: {
       SubConfig win(
         SYSTEMPATHS->configPath,
         SYSTEMPATHS->fontsDir,
@@ -666,14 +666,14 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       break;
     }
 
-    case TopBar::TITLE: {
+    case ToolMenu::TITLE: {
       if (currentVideoTitle.size()) {
         renderOverlayText(currentVideoTitle, TextPosition::BOTTOM, 3000);
       }
       break;
     }
 
-    case TopBar::THEME:{
+    case ToolMenu::THEME:{
       ChangeThemeWindow win(
         SYSTEMPATHS->configPath,
         SYSTEMPATHS->themesDir,
@@ -687,7 +687,7 @@ void MainWindow::topBarButtonsHandler(int actionNumber) {
       break;
     }
 
-    case TopBar::SHORTCUTS: {
+    case ToolMenu::SHORTCUTS: {
       ShortcutsInst win(
         nullptr,
         SYSTEMPATHS->currentThemeDir,
