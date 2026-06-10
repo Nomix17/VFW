@@ -110,7 +110,7 @@ void MainWindow::createTopLayout(){
   topbarlayout = new TopBar();
   toolMenuActionsObjectsList = topbarlayout->getActionsObjects();
   connect(topbarlayout, &TopBar::handleButtonsClick,[this](int actionNumber) {
-     topBarButtonsHandler(actionNumber);
+     onToolMenuAction(actionNumber);
   });
 }
 
@@ -414,7 +414,7 @@ void MainWindow::startVideoPlayer(QString path) {
 }
 
 // topbarlayout buttons logic
-void MainWindow::topBarButtonsHandler(int actionNumber) {
+void MainWindow::onToolMenuAction(int actionNumber) {
 
   QString url;
   switch (actionNumber) {
@@ -851,13 +851,13 @@ void MainWindow::setupShortcuts(){
     auto reduceDelay = new QShortcut(QKeySequence(Qt::Key_G), this);
     reduceDelay->setContext(Qt::ApplicationShortcut);
     connect(reduceDelay, &QShortcut::activated, this, [this]{
-      topBarButtonsHandler(TopBar::REDUCEDELAY);
+      onToolMenuAction(ToolMenu::REDUCEDELAY);
     });
 
     auto addDelay = new QShortcut(QKeySequence(Qt::Key_H), this);
     addDelay->setContext(Qt::ApplicationShortcut);
     connect(addDelay, &QShortcut::activated, this, [this]{
-      topBarButtonsHandler(TopBar::ADDDELAY);
+      onToolMenuAction(ToolMenu::ADDDELAY);
     });
 }
 

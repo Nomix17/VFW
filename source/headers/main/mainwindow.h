@@ -55,7 +55,7 @@ public:
   // top bottom layouts
   void createTopLayout();
   void createBottomLayout();
-  void topBarButtonsHandler(int buttonindex);
+  void onToolMenuAction(int buttonindex);
   void controlButtonsHandler(int buttonindex);
 
   void setVideoSliderRange(qint64 playbackPosition);
