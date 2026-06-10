@@ -1375,8 +1375,12 @@ void MainWindow::getlastsavedposition(){
 }
 
 //double click detection
-void MainWindow::mouseDoubleClickEvent(QMouseEvent * event){
+void MainWindow::mouseDoubleClickEvent(QMouseEvent * event) {
+  if(event->button() == Qt::LeftButton)
+    handleDoubleLeftClick(event);
+}
 
+void MainWindow::handleDoubleLeftClick(QMouseEvent *event) {
   //getting the mouse position
   int mousePosition_x = event->pos().rx();
   int mousePosition_y = event->pos().ry();

@@ -109,9 +109,10 @@ public:
   // global functions
   void setupShortcuts();
   void resizeEvent(QResizeEvent * event) override;
-  void mouseDoubleClickEvent(QMouseEvent * event)override;
+  void mouseDoubleClickEvent(QMouseEvent * event) override;
   bool eventFilter(QObject *obj, QEvent *event) override;
 
+  void handleDoubleLeftClick(QMouseEvent * event);
   void enterFullScreen();
   void exitFullScreen();
   void toggleFullScreen();
