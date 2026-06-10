@@ -28,6 +28,7 @@
 #include "../DialogWindows/LoadedSubsWindow.h"
 #include "../DialogWindows/SubsConfigsWindow.h"
 #include "../UiComponents/TopBar.h"
+#include "../UiComponents/ContextMenu.h"
 #include "../UiComponents/BottomControlPanel.h"
 #include "../UiComponents/FloatingControlPannel.h"
 #include "../UiComponents/SubtitlesItem.h"
@@ -110,6 +111,7 @@ public:
   void setupShortcuts();
   void resizeEvent(QResizeEvent * event) override;
   void mouseDoubleClickEvent(QMouseEvent * event) override;
+  void mousePressEvent(QMouseEvent * event) override;
   bool eventFilter(QObject *obj, QEvent *event) override;
 
   void handleDoubleLeftClick(QMouseEvent * event);

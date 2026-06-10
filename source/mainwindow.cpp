@@ -1374,6 +1374,15 @@ void MainWindow::getlastsavedposition(){
   }
 }
 
+void MainWindow::mousePressEvent(QMouseEvent* event) {
+  if (event->button() == Qt::RightButton) {
+    ContextMenu* menu = new ContextMenu(this);
+    connect(menu, &ContextMenu::handleButtonsClick, this, &MainWindow::onToolMenuAction);
+    menu->exec(event->globalPosition().toPoint());
+    delete menu;
+  }
+}
+
 //double click detection
 void MainWindow::mouseDoubleClickEvent(QMouseEvent * event) {
   if(event->button() == Qt::LeftButton)
