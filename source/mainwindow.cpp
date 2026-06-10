@@ -420,6 +420,7 @@ void MainWindow::onToolMenuAction(int actionNumber) {
   switch (actionNumber) {
     case ToolMenu::Open_file: {
       QString displaydir;
+      exitFullScreen();
       if (currentVideoParentDirectory.size())
         displaydir = QString::fromStdString(currentVideoParentDirectory);
       else{
@@ -443,6 +444,7 @@ void MainWindow::onToolMenuAction(int actionNumber) {
 
     case ToolMenu::Open_folder: {
       QString displaydir;
+      exitFullScreen();
       if (currentVideoParentDirectory.size())
         displaydir = QString::fromStdString(currentVideoParentDirectory);
       else{
@@ -471,6 +473,7 @@ void MainWindow::onToolMenuAction(int actionNumber) {
 
     case ToolMenu::Open_media: {
       UrlWindow x(SYSTEMPATHS->currentThemeDir);
+      exitFullScreen();
       x.exec();
       url = x.url;
       if (!url.isEmpty()) {
@@ -498,6 +501,7 @@ void MainWindow::onToolMenuAction(int actionNumber) {
 
     case ToolMenu::JUMP_TO_TIME: {
       JumpTime x(SYSTEMPATHS->currentThemeDir);
+      exitFullScreen();
       x.exec();
       if (x.targettime >= 0) {
         changePlayBackPosition(x.targettime * 1000);
@@ -520,6 +524,7 @@ void MainWindow::onToolMenuAction(int actionNumber) {
       if(!currentVideoUrl.isEmpty()){
         if(!segmentLoopEnabled){
           SRepeatWindow win(SYSTEMPATHS->currentThemeDir);
+          exitFullScreen();
           win.exec();
           if (win.startingpoint >= 0 && win.finishingpoint >= 0 && win.finishingpoint != win.startingpoint) {
             segmentLoopEnabled = true;
@@ -540,6 +545,7 @@ void MainWindow::onToolMenuAction(int actionNumber) {
     case ToolMenu::AUDIO_TRACKS: {
       static int audioTrackIndex = 0;
       AudioTracksManager audioTracksManagerWindow(SYSTEMPATHS->currentThemeDir, SYSTEMPATHS->currentIconsDir, audioTracksMetaDataVector, audioTrackIndex);
+      exitFullScreen();
       audioTracksManagerWindow.exec();
       if(audioTracksManagerWindow.newAudioTrackIndex >= 0) {
         audioTrackIndex = audioTracksManagerWindow.newAudioTrackIndex;
@@ -607,6 +613,7 @@ void MainWindow::onToolMenuAction(int actionNumber) {
 
     case ToolMenu::LOADSUBTITLES:{
       subWindow subWin(SYSTEMPATHS->currentThemeDir,SYSTEMPATHS->currentIconsDir,currentVideoSubtitlePaths,currentLoadedSubPath);
+      exitFullScreen();
       subWin.exec();
       if(!subWin.clickedSubPath.isEmpty()){
         currentLoadedSubPath = subWin.clickedSubPath;
@@ -658,6 +665,7 @@ void MainWindow::onToolMenuAction(int actionNumber) {
         SYSTEMPATHS->fontsDir,
         SYSTEMPATHS->currentThemeDir
       );
+      exitFullScreen();
       win.gui();
       win.exec();
       TextItem::setHtmlTemplate(win.makehtml());
@@ -679,6 +687,7 @@ void MainWindow::onToolMenuAction(int actionNumber) {
         SYSTEMPATHS->themesDir,
         SYSTEMPATHS->currentThemeDir
       );
+      exitFullScreen();
       win.exec();
       if(win.changetotheme!="") {
         std::string text = "You Need to reset the Application to apply the new Theme";
@@ -693,6 +702,7 @@ void MainWindow::onToolMenuAction(int actionNumber) {
         SYSTEMPATHS->currentThemeDir,
         SYSTEMPATHS->configPath
       );
+      exitFullScreen();
       win.exec();
       break;
     }
@@ -745,6 +755,7 @@ void MainWindow::controlButtonsHandler(int buttonindex) {
         playlist,
         currentVideoUrl
       );
+      exitFullScreen();
       win.exec();
       if (win.new_video_index != (int)currentVideoIndex && win.new_video_index != -1) {
         currentVideoIndex = win.new_video_index;
