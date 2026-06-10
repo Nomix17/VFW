@@ -161,6 +161,7 @@ private:
   bool ShowSubs = true;
   bool showChaptersIndicators = false;
   bool MouseIsInsideFloatingPanel = false;
+  bool contextMenuOpened = false;
 
   // ui variables
   QLabel* image;

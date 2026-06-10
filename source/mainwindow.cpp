@@ -1389,6 +1389,8 @@ void MainWindow::mousePressEvent(QMouseEvent* event) {
   if (event->button() == Qt::RightButton) {
     ContextMenu* menu = new ContextMenu(this);
     connect(menu, &ContextMenu::handleButtonsClick, this, &MainWindow::onToolMenuAction);
+    connect(menu, &QMenu::aboutToHide, [this]() { contextMenuOpened = false; });
+    contextMenuOpened = true;
     menu->exec(event->globalPosition().toPoint());
     delete menu;
   }
@@ -1456,7 +1458,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event){
     MouseIsInsideFloatingPanel = mouseInsideFloatingPanel(event); // check if mouse inside the floating panel 
   
   
-  if (event->type() == QEvent::MouseMove && !floatingPannelDisplayed) {
+  if (event->type() == QEvent::MouseMove && !floatingPannelDisplayed && !contextMenuOpened) {
     if(fullScreenEnabled){
       //getting the position of the floating pannel
       int viewheight = view->size().height();
