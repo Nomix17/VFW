@@ -18,9 +18,9 @@ DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
 PrivilegesRequired=admin
 PrivilegesRequiredOverridesAllowed=dialog
-OutputDir=..\..\installer-out
-OutputBaseFilename=VFW-{#MyAppVersion}-setup
-SetupIconFile=..\..\assets\icons\VFW-Squircle-Dark.ico
+OutputDir=..\installer-out
+OutputBaseFilename=VFW-v{#MyAppVersion}-windows-Installer
+SetupIconFile=..\assets\icons\VFW-Squircle-Dark.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 SolidCompression=yes
 WizardStyle=modern dynamic
@@ -34,11 +34,11 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 ; Main executable + Qt DLLs + FFmpeg DLLs (all gathered in deploy/ by the workflow)
-Source: "..\..\deploy\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\deploy\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 ; User-writable configs & assets
-Source: "..\..\configs\*"; DestDir: "{userappdata}\VFW\configs"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\..\assets\*";  DestDir: "{userappdata}\VFW\assets";  Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\configs\*"; DestDir: "{userappdata}\VFW\configs"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\assets\*";  DestDir: "{userappdata}\VFW\assets";  Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Registry]
 Root: HKCR; Subkey: "Applications\VFW.exe"; ValueType: string; ValueName: ""; ValueData: "VFW Player"; Flags: uninsdeletevalue

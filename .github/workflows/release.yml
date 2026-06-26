@@ -268,7 +268,7 @@ jobs:
         with:
           name: VFW-windows-${{ env.APP_VERSION }}
           path: |
-            installer-out\VFW-v${{ env.APP_VERSION }}-windows-Installer.exe
+            installer-out\*.exe
             VFW-v${{ env.APP_VERSION }}-windows-Portable.zip
 
   release:
