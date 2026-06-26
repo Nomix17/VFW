@@ -257,8 +257,7 @@ jobs:
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "$env:GITHUB_WORKSPACE\deployment\VFW.iss"
           Write-Host "ISCC exit code: $LASTEXITCODE"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          Get-ChildItem installer-out\*.exe | Rename-Item -NewName "VFW-v${{ env.APP_VERSION }}-windows-Installer.exe"
-
+          Get-ChildItem installer-out\*.exe | Move-Item -Destination "VFW-v${{ env.APP_VERSION }}-windows-Installer.exe"
 
       - name: Build portable .zip
         shell: pwsh
@@ -272,7 +271,7 @@ jobs:
         with:
           name: VFW-windows-${{ env.APP_VERSION }}
           path: |
-            installer-out/VFW-v${{ env.APP_VERSION }}-windows-Installer.exe
+            VFW-v${{ env.APP_VERSION }}-windows-Installer.exe
             VFW-v${{ env.APP_VERSION }}-windows-Portable.zip
 
   release:
