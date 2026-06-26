@@ -1,0 +1,299 @@
+name: Build VFW
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, master ]
+  release:
+    types: [ created ]
+
+env:
+  APP_NAME: VFW
+  APP_VERSION: 1.1.8
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo add-apt-repository -y universe
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake g++ \
+            qt6-base-dev qt6-multimedia-dev qt6-tools-dev \
+            ffmpeg \
+            libgl1-mesa-dev libxcb-xinerama0 libxcb-cursor0 \
+            patchelf fuse libfuse2 \
+            rpm dpkg-dev
+
+      - name: Configure & build
+        run: |
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel $(nproc)
+
+      - name: Download linuxdeploy + Qt plugin
+        run: |
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage linuxdeploy-plugin-qt-x86_64.AppImage
+
+      - name: Prepare AppDir
+        run: |
+          mkdir -p AppDir/usr/bin
+          mkdir -p AppDir/usr/share/applications
+          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+          mkdir -p AppDir/usr/share/VFW
+
+          cp build/VFW AppDir/usr/bin/VFW
+          cp assets/icons/VFW-Squircle-Dark.png \
+             AppDir/usr/share/icons/hicolor/256x256/apps/vfw.png
+
+          cat > AppDir/usr/share/applications/vfw.desktop << 'DESKTOP'
+          [Desktop Entry]
+          Name=VFW
+          Exec=VFW %f
+          Icon=vfw
+          Type=Application
+          Categories=Video;AudioVideo;
+          MimeType=video/mp4;video/x-matroska;video/x-msvideo;video/quicktime;video/x-ms-wmv;video/x-flv;video/webm;audio/mpeg;audio/wav;audio/flac;audio/aac;audio/ogg;audio/x-ms-wma;audio/mp4;
+          DESKTOP
+
+          cp -r assets/. AppDir/usr/share/VFW/assets/
+          cp -r configs/. AppDir/usr/share/VFW/configs/
+
+      - name: Build AppImage
+        env:
+          QMAKE: /usr/lib/qt6/bin/qmake6
+          OUTPUT: VFW-${{ env.APP_VERSION }}-x86_64.AppImage
+        run: |
+          ./linuxdeploy-x86_64.AppImage \
+            --appdir AppDir \
+            --plugin qt \
+            --output appimage
+
+      - name: Build .deb package
+        run: |
+          DEB_ROOT=deb-pkg
+
+          mkdir -p $DEB_ROOT/usr/bin
+          mkdir -p $DEB_ROOT/usr/share/applications
+          mkdir -p $DEB_ROOT/usr/share/icons/hicolor/256x256/apps
+          mkdir -p $DEB_ROOT/usr/share/VFW
+          mkdir -p $DEB_ROOT/DEBIAN
+
+          cp build/VFW $DEB_ROOT/usr/bin/VFW
+          cp AppDir/usr/share/applications/vfw.desktop \
+             $DEB_ROOT/usr/share/applications/
+          cp assets/icons/VFW-Squircle-Dark.png \
+             $DEB_ROOT/usr/share/icons/hicolor/256x256/apps/vfw.png
+          cp -r assets/.  $DEB_ROOT/usr/share/VFW/assets/
+          cp -r configs/. $DEB_ROOT/usr/share/VFW/configs/
+
+          cat > $DEB_ROOT/DEBIAN/control << EOF
+          Package: vfw
+          Version: ${{ env.APP_VERSION }}
+          Section: video
+          Priority: optional
+          Architecture: amd64
+          Depends: libqt6widgets6, libqt6multimedia6, libqt6multimediawidgets6, ffmpeg
+          Maintainer: Nomix17 <https://github.com/Nomix17/VFW>
+          Homepage: https://github.com/Nomix17/VFW
+          Description: VFW - Video & audio player built with Qt6
+          EOF
+
+          dpkg-deb --build $DEB_ROOT VFW-${{ env.APP_VERSION }}-amd64.deb
+
+      - name: Build .rpm package
+        run: |
+          mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+
+          mkdir -p /tmp/vfw-rpm/usr/bin
+          mkdir -p /tmp/vfw-rpm/usr/share/applications
+          mkdir -p /tmp/vfw-rpm/usr/share/icons/hicolor/256x256/apps
+          mkdir -p /tmp/vfw-rpm/usr/share/VFW
+
+          cp build/VFW /tmp/vfw-rpm/usr/bin/VFW
+          cp AppDir/usr/share/applications/vfw.desktop \
+             /tmp/vfw-rpm/usr/share/applications/
+          cp assets/icons/VFW-Squircle-Dark.png \
+             /tmp/vfw-rpm/usr/share/icons/hicolor/256x256/apps/vfw.png
+          cp -r assets/.  /tmp/vfw-rpm/usr/share/VFW/assets/
+          cp -r configs/. /tmp/vfw-rpm/usr/share/VFW/configs/
+
+          tar -czf ~/rpmbuild/SOURCES/vfw-${{ env.APP_VERSION }}.tar.gz \
+            -C /tmp vfw-rpm
+
+          cat > ~/rpmbuild/SPECS/vfw.spec << SPEC
+          Name:           vfw
+          Version:        ${{ env.APP_VERSION }}
+          Release:        1%{?dist}
+          Summary:        VFW - Video & audio player built with Qt6
+          License:        See LICENSE
+          URL:            https://github.com/Nomix17/VFW
+          Source0:        vfw-${{ env.APP_VERSION }}.tar.gz
+          Requires:       qt6-qtmultimedia ffmpeg
+
+          %description
+          VFW is a Qt6-based video and audio player.
+
+          %prep
+          %setup -q -n vfw-rpm
+
+          %install
+          cp -r . %{buildroot}/
+
+          %files
+          /usr/bin/VFW
+          /usr/share/applications/vfw.desktop
+          /usr/share/icons/hicolor/256x256/apps/vfw.png
+          /usr/share/VFW/
+
+          %changelog
+          * $(date '+%a %b %d %Y') CI Build <ci@github> - ${{ env.APP_VERSION }}-1
+          - Automated build
+          SPEC
+
+          rpmbuild -bb \
+            --define "_topdir $HOME/rpmbuild" \
+            ~/rpmbuild/SPECS/vfw.spec
+
+          cp ~/rpmbuild/RPMS/x86_64/vfw-*.rpm VFW-${{ env.APP_VERSION }}-x86_64.rpm
+
+      - name: Build portable tar.gz
+        run: |
+          PORTABLE_DIR=VFW-${{ env.APP_VERSION }}-linux-portable
+
+          mkdir -p $PORTABLE_DIR/lib
+
+          cp build/VFW    $PORTABLE_DIR/VFW
+          cp -r assets/.  $PORTABLE_DIR/assets/
+          cp -r configs/. $PORTABLE_DIR/configs/
+          touch $PORTABLE_DIR/portable
+          cp -r AppDir/usr/lib/. $PORTABLE_DIR/lib/ 2>/dev/null || true
+
+          cat > $PORTABLE_DIR/run.sh << 'RUNSH'
+          #!/bin/bash
+          DIR="$(cd "$(dirname "$0")" && pwd)"
+          export LD_LIBRARY_PATH="$DIR/lib:$LD_LIBRARY_PATH"
+          export VFW_ROOT="$DIR"
+          exec "$DIR/VFW" "$@"
+          RUNSH
+          chmod +x $PORTABLE_DIR/run.sh
+
+          tar -czf VFW-${{ env.APP_VERSION }}-linux-portable.tar.gz $PORTABLE_DIR
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: VFW-linux-${{ env.APP_VERSION }}
+          path: |
+            VFW-${{ env.APP_VERSION }}-x86_64.AppImage
+            VFW-${{ env.APP_VERSION }}-amd64.deb
+            VFW-${{ env.APP_VERSION }}-x86_64.rpm
+            VFW-${{ env.APP_VERSION }}-linux-portable.tar.gz
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Qt6
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.11.0'
+          host: windows
+          target: desktop
+          arch: win64_msvc2022_64
+          modules: 'qtmultimedia'
+          cache: true
+
+      - name: Set up MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Install FFmpeg
+        shell: pwsh
+        run: choco install ffmpeg --yes --no-progress
+
+      - name: Configure & build
+        run: |
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -G "NMake Makefiles"
+          cmake --build build --config Release
+
+      - name: Deploy Qt runtime
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path deploy
+          Copy-Item build\VFW.exe deploy\
+          windeployqt --release --no-translations --multimedia deploy\VFW.exe
+
+      - name: Bundle FFmpeg DLLs
+        shell: pwsh
+        run: |
+          $ffmpegBin = "C:\ProgramData\chocolatey\lib\ffmpeg\tools\ffmpeg\bin"
+          $dlls = @("avcodec-*.dll","avformat-*.dll","avutil-*.dll",
+                    "swscale-*.dll","swresample-*.dll","avdevice-*.dll","avfilter-*.dll")
+          foreach ($pattern in $dlls) {
+            Get-ChildItem "$ffmpegBin\$pattern" -ErrorAction SilentlyContinue |
+              Copy-Item -Destination deploy\
+          }
+
+      - name: Copy assets & configs
+        shell: pwsh
+        run: |
+          Copy-Item -Recurse assets  deploy\assets
+          Copy-Item -Recurse configs deploy\configs
+
+      - name: Build installer (.exe)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path installer-out | Out-Null
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" deployment\packaging\VFW.iss
+
+      - name: Build portable .zip
+        shell: pwsh
+        run: |
+          New-Item -ItemType File -Path deploy\portable -Force | Out-Null
+          Compress-Archive -Path deploy\* `
+            -DestinationPath "VFW-${{ env.APP_VERSION }}-windows-portable.zip"
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: VFW-windows-${{ env.APP_VERSION }}
+          path: |
+            installer-out\VFW-${{ env.APP_VERSION }}-setup.exe
+            VFW-${{ env.APP_VERSION }}-windows-portable.zip
+
+  release:
+    if: github.event_name == 'release'
+    needs: [ build-linux, build-windows ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: VFW-linux-${{ env.APP_VERSION }}
+          path: dist/
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: VFW-windows-${{ env.APP_VERSION }}
+          path: dist/
+
+      - name: Attach artifacts to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
