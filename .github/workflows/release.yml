@@ -2,12 +2,8 @@ name: Build VFW
 
 on:
   push:
-    branches: [ main, master ]
-    tags: [ 'v*' ]
-  pull_request:
-    branches: [ main, master ]
-  release:
-    types: [ created ]
+    tags:
+      - 'v*'
 
 env:
   APP_NAME: VFW
@@ -276,7 +272,6 @@ jobs:
             VFW-${{ env.APP_VERSION }}-windows-portable.zip
 
   release:
-    if: github.event_name == 'release'
     needs: [ build-linux, build-windows ]
     runs-on: ubuntu-latest
 
