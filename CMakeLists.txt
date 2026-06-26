@@ -37,3 +37,10 @@ target_link_libraries(VFW
     Qt6::Multimedia
     Qt6::MultimediaWidgets
 )
+
+if(WIN32)
+    target_link_options(VFW PRIVATE
+        $<$<CONFIG:Release>:/SUBSYSTEM:WINDOWS>
+        $<$<CONFIG:Release>:/ENTRY:mainCRTStartup>
+    )
+endif()
