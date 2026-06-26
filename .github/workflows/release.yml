@@ -255,6 +255,9 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path installer-out | Out-Null
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "$env:GITHUB_WORKSPACE\deployment\VFW.iss"
+          Write-Host "ISCC exit code: $LASTEXITCODE"
+          Get-ChildItem -Recurse installer-out | Write-Host
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Build portable .zip
         shell: pwsh
