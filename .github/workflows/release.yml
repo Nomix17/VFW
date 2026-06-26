@@ -67,7 +67,7 @@ jobs:
       - name: Build AppImage
         env:
           QMAKE: /usr/lib/qt6/bin/qmake6
-          OUTPUT: VFW-${{ env.APP_VERSION }}-x86_64.AppImage
+          OUTPUT: VFW-v${{ env.APP_VERSION }}-linux-x86_64.AppImage
         run: |
           ./linuxdeploy-x86_64.AppImage \
             --appdir AppDir \
@@ -104,7 +104,7 @@ jobs:
           Description: VFW - Video & audio player built with Qt6
           EOF
 
-          dpkg-deb --build $DEB_ROOT VFW-${{ env.APP_VERSION }}-amd64.deb
+          dpkg-deb --build $DEB_ROOT VFW-v${{ env.APP_VERSION }}-linux-amd64.deb
 
       - name: Build .rpm package
         run: |
@@ -160,7 +160,7 @@ jobs:
             --define "_topdir $HOME/rpmbuild" \
             ~/rpmbuild/SPECS/vfw.spec
 
-          cp ~/rpmbuild/RPMS/x86_64/vfw-*.rpm VFW-${{ env.APP_VERSION }}-x86_64.rpm
+          cp ~/rpmbuild/RPMS/x86_64/vfw-*.rpm VFW-v${{ env.APP_VERSION }}-linux-x86_64.rpm
 
       - name: Build portable tar.gz
         run: |
@@ -183,17 +183,17 @@ jobs:
           RUNSH
           chmod +x $PORTABLE_DIR/run.sh
 
-          tar -czf VFW-${{ env.APP_VERSION }}-linux-portable.tar.gz $PORTABLE_DIR
+          tar -czf VFW-v${{ env.APP_VERSION }}-linux-x64.tar.gz $PORTABLE_DIR
 
       - name: Upload Linux artifacts
         uses: actions/upload-artifact@v4
         with:
           name: VFW-linux-${{ env.APP_VERSION }}
           path: |
-            VFW-${{ env.APP_VERSION }}-x86_64.AppImage
-            VFW-${{ env.APP_VERSION }}-amd64.deb
-            VFW-${{ env.APP_VERSION }}-x86_64.rpm
-            VFW-${{ env.APP_VERSION }}-linux-portable.tar.gz
+            VFW-v${{ env.APP_VERSION }}-linux-x86_64.AppImage
+            VFW-v${{ env.APP_VERSION }}-linux-amd64.deb
+            VFW-v${{ env.APP_VERSION }}-linux-x86_64.rpm
+            VFW-v${{ env.APP_VERSION }}-linux-x64.tar.gz
 
   build-windows:
     runs-on: windows-latest
@@ -261,15 +261,15 @@ jobs:
         run: |
           New-Item -ItemType File -Path deploy\portable -Force | Out-Null
           Compress-Archive -Path deploy\* `
-            -DestinationPath "VFW-${{ env.APP_VERSION }}-windows-portable.zip"
+            -DestinationPath "VFW-v${{ env.APP_VERSION }}-windows-Portable.zip"
 
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
         with:
           name: VFW-windows-${{ env.APP_VERSION }}
           path: |
-            installer-out\VFW-${{ env.APP_VERSION }}-setup.exe
-            VFW-${{ env.APP_VERSION }}-windows-portable.zip
+            installer-out\VFW-v${{ env.APP_VERSION }}-windows-Installer.exe
+            VFW-v${{ env.APP_VERSION }}-windows-Portable.zip
 
   release:
     needs: [ build-linux, build-windows ]
