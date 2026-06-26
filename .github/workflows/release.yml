@@ -254,7 +254,7 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path installer-out | Out-Null
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" deployment\packaging\VFW.iss
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "$env:GITHUB_WORKSPACE\deployment\VFW.iss"
 
       - name: Build portable .zip
         shell: pwsh
