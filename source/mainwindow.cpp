@@ -1248,6 +1248,7 @@ void MainWindow::resizeEvent(QResizeEvent *event) {
 }
 
 void MainWindow::enterFullScreen() {
+  if(fullScreenEnabled) return;
   setTopbarLayoutVisible(false);
   int currentVolumeSliderPos = controlbuttonslayout->getVolumeValue();
 
@@ -1269,6 +1270,7 @@ void MainWindow::enterFullScreen() {
 }
 
 void MainWindow::exitFullScreen() {
+  if(!fullScreenEnabled) return;
   setTopbarLayoutVisible(true);
   int currentVolumeSliderPos = controlbuttonslayout->getVolumeValue();
 
