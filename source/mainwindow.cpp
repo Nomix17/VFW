@@ -71,6 +71,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   //setting up the subtites
   subtitlesItem = new SubtitlesItem(view);
 
+  connect(player, &QMediaPlayer::metaDataChanged, this, [this]() {
+    std::cout<<"\n";
+    getSubtitleTracksFromMetaData();
+    getAudioTracksFromMetaData();
+    std::cout<<"\n";
+  });
+
   video->setSize(view->size());
   view->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
   view->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -375,14 +382,6 @@ void MainWindow::startVideoPlayer(QString path) {
   std::cout<<"\n";
   LoadingInDirectorySubtitles(currentVideoUrl);
   std::cout<<"\n";
-
-  connect(player, &QMediaPlayer::metaDataChanged, this, [this]() {
-    std::cout<<"\n";
-    getSubtitleTracksFromMetaData();
-    getAudioTracksFromMetaData();
-    std::cout<<"\n";
-  });
-
 
   // startVideoPlayer setup (sound and video widget)
   player->setSource(QUrl::fromLocalFile(currentVideoUrl));
