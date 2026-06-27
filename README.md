@@ -66,6 +66,7 @@ sudo dnf install nvidia-vaapi-driver
 #### - Arch Linux :
 ```bash
 sudo pacman -S cmake gcc qt6-base qt6-multimedia qt6-tools ffmpeg
+```
 
 **Hardware acceleration (optional but recommended for 4K/H.265):**
 ```bash
