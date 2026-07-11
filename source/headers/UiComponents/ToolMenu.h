@@ -18,7 +18,7 @@ class ToolMenu {
       {"Audio Tracks","Full Volume","Mute"},
       {"Stretch to Fit"},
       {"Add Subtitle File","Load Subtitle","Hide Subtitles","Add Delay","Reduce Delay","Subtitle Settings"},
-      {"Video Title","Display Chapters Indicators","Change Theme"},
+      {"Video Title","Hide Chapters Indicators","Change Theme"},
       {"Shortcuts Instructions"}
     };
 

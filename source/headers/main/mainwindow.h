@@ -159,7 +159,7 @@ private:
 
   // ui Status variables
   bool ShowSubs = true;
-  bool showChaptersIndicators = false;
+  bool showChaptersIndicators = true;
   bool MouseIsInsideFloatingPanel = false;
   bool contextMenuOpened = false;
 
