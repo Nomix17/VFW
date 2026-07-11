@@ -144,6 +144,7 @@ void MainWindow::createBottomLayout() {
 
   setVideoSliderRange(player->duration());
   controlbuttonslayout->setVideoSliderValue(player->position());
+  controlbuttonslayout->setChaptersMarks(ChaptersVectors, showChaptersIndicators);
   updateButtonsIcon();
 }
 
