@@ -60,18 +60,23 @@ protected:
   void paintEvent(QPaintEvent* event) override{
     QSlider::paintEvent(event);
     if (Chapters.empty() || !displayChapters) return;
+
     QPainter painter(this);
-    painter.setPen(QColor("#00c3ff"));
+    QColor lineColor = palette().color(QPalette::Window);
+    QPen pen(lineColor);
+    pen.setWidth(3);
+    painter.setPen(pen);
 
     int slider_width = width();
+    int slider_height = height();
     int slider_range = maximum() - minimum();
 
     for (size_t i = 0; i < Chapters.size(); i++) {
       float start = Chapters[i].startTime*1000;
       int position = static_cast<int>((start * slider_width) / slider_range);
-      if (position < 0) position = 0;
-      if (position > slider_width) position = slider_width;
-      painter.drawLine(position, 0, position, height()/4);
+      if (position <= 0) continue;
+      if (position >= slider_width) continue;
+      painter.drawLine(position, slider_height, position, height()/4);
     }
   }
 
