@@ -250,7 +250,7 @@ void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
   for(int i=0; i < subStreams.size(); i++) {
     std::filesystem::path currentVideoPath(currenturl.toStdString());
     std::string subPathWithoutExtension = (SYSTEMPATHS->tmpPath / std::filesystem::path(currentVideoPath.stem())).string();
-    if (std::filesystem::exists(SYSTEMPATHS->tmpPath) && std::filesystem::is_directory(SYSTEMPATHS->tmpPath)) {
+    if (!std::filesystem::exists(SYSTEMPATHS->tmpPath) || !std::filesystem::is_directory(SYSTEMPATHS->tmpPath)) {
       if(!std::filesystem::create_directories(SYSTEMPATHS->tmpPath)) return;
     }
 
