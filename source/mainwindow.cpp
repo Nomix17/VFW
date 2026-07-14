@@ -104,7 +104,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   setPlayerDefaultState();
 
   // load the sub style
-  SubConfig win(SYSTEMPATHS->configPath,SYSTEMPATHS->fontsDir,SYSTEMPATHS->currentThemeDir);
+  SubConfig win(SYSTEMPATHS->configPath, SYSTEMPATHS->fontsDir, SYSTEMPATHS->currentThemeDir);
   win.loadFonts();
   TextItem::setHtmlTemplate(win.makehtml());
   TextItem::setBottomMargin(win.marginbottom);
@@ -1366,7 +1366,7 @@ void MainWindow::updateRepeatButtonIcon() {
 //function to save the position of a video after closing it
 void MainWindow::savevideoposition(){
   if(currentVideoTitle.size() && player->position() > 5000){
-    std::string LPPPath = (std::filesystem::path(SYSTEMPATHS->cachePath) / "playbackState").string();
+    std::string LPPPath = (SYSTEMPATHS->cachePath / "playbackState").string();
     std::ofstream possavefile(LPPPath,std::ios::app);
     std::string line = currentVideoTitle+" ; "+QString::number(player->position()).toStdString()+'\n';
     possavefile<<line;
@@ -1378,7 +1378,7 @@ void MainWindow::savevideoposition(){
 void MainWindow::getlastsavedposition(){
   if(currentVideoTitle == "") return;
   lastPlaybackPosition = 0;
-  std::string LPPPath = (std::filesystem::path(SYSTEMPATHS->cachePath) / "playbackState").string();
+  std::string LPPPath = (SYSTEMPATHS->cachePath / "playbackState").string();
   std::ifstream possavefile(LPPPath);
   if (possavefile){
     std::string line;
@@ -1501,7 +1501,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event){
 }
 
 void MainWindow::parseSettingsFile(){
-  std::string settingsFilePath = SYSTEMPATHS->configPath + "/settings";
+  std::string settingsFilePath = (SYSTEMPATHS->configPath / "settings").string();
   std::ifstream file(settingsFilePath);
   std::string line;
 
@@ -1532,7 +1532,7 @@ void MainWindow::parseSettingsFile(){
 }
 
 void MainWindow::savingNewSettings(){
-  std::string settingsFilePath = SYSTEMPATHS->configPath + "/settings";
+  std::string settingsFilePath = (SYSTEMPATHS->configPath / "settings").string();
   std::ofstream settingsFile(settingsFilePath);
 
   std::stringstream sstr;

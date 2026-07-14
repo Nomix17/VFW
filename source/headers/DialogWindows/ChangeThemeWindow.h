@@ -24,7 +24,7 @@ class ChangeThemeWindow : public QDialog {
 public:
   std::string changetotheme = "";
 
-  ChangeThemeWindow(std::string ConfigDirectory, std::string ProjectDirectory, std::string StyleDirectory, QWidget *parent=nullptr)
+  ChangeThemeWindow(std::filesystem::path configPath, std::string ProjectDirectory, std::string StyleDirectory, QWidget *parent=nullptr)
       : QDialog(parent) {
     
     this->setWindowTitle("Pick your theme");
@@ -53,7 +53,7 @@ public:
     mainlayout->addLayout(doneButtonHolder);
 
     // Load themes and styles
-    loadthemes(StyleDirectory, ProjectDirectory,ConfigDirectory);
+    loadthemes(StyleDirectory, ProjectDirectory, configPath);
 
     // Connect done button
     connect(doneButton, &QPushButton::clicked, [this]() {
@@ -61,7 +61,7 @@ public:
     });
   }
 
-  void loadthemes(std::string StyleDirectory, std::string ProjectDirectory, std::string ConfigDirectory) {
+  void loadthemes(std::string StyleDirectory, std::string ProjectDirectory, std::filesystem::path configPath) {
     // Load stylesheet
     std::filesystem::path styleFullPath(std::filesystem::path(StyleDirectory) / "ChangeThemeWindow.css");
     std::ifstream stylefile(styleFullPath);
@@ -83,11 +83,11 @@ public:
       Theme_Button->setFocusPolicy(Qt::NoFocus);
       medialayout->addWidget(Theme_Button, counter, 0);
 
-      connect(Theme_Button,&QPushButton::clicked, [this, themename, ConfigDirectory](){
+      connect(Theme_Button,&QPushButton::clicked, [this, themename, configPath](){
         changetotheme = themename;
         if (changetotheme != "") {
-          std::filesystem::path themePath(std::filesystem::path(ConfigDirectory) / "theme");
-          std::ofstream themefile(themePath.string(), std::ofstream::out | std::ofstream::trunc);
+          std::string themePath = (configPath / "theme").string();
+          std::ofstream themefile(themePath, std::ofstream::out | std::ofstream::trunc);
           themefile << changetotheme;
           themefile.close();
         }

@@ -22,7 +22,7 @@ class ShortcutsInst:public QDialog{
     QPushButton *donebutton = new QPushButton("OK");
 
   public:
-    ShortcutsInst(QWidget *parent,std::string StyleDirectory,std::string ConfigDirectory):QDialog(parent){
+    ShortcutsInst(QWidget *parent,std::string StyleDirectory,std::filesystem::path configPath):QDialog(parent){
       this->setWindowTitle("Shortcuts");
 
       //load style file
@@ -37,8 +37,8 @@ class ShortcutsInst:public QDialog{
         stylefile.close();
       }
      
-      std::filesystem::path fullShortcutFilename(std::filesystem::path(ConfigDirectory) / "Shortcuts_Instructions");
-      std::ifstream shortcutfile(fullShortcutFilename.string());
+      std::string fullShortcutFilename = (configPath / "Shortcuts_Instructions").string();
+      std::ifstream shortcutfile(fullShortcutFilename);
       std::string shortcutsfilecontent;
       std::vector <std::string> elements;
 
@@ -52,7 +52,7 @@ class ShortcutsInst:public QDialog{
 
       } else {
         //if it's not found we create a new one 
-        std::ofstream defaultshortcutsfile(fullShortcutFilename.string());
+        std::ofstream defaultshortcutsfile(fullShortcutFilename);
 
         //put the default configs into the vector
         elements = {

@@ -49,15 +49,13 @@ public:
   std::string fullSubConfigPath; 
   QList <QString> fontPaths;
 
-  std::string ConfigsPath;
   std::string FONTSDIRECTORY;
   std::string StyleDirectory;
 
-  SubConfig(std::string ConfigsPath,std::string FONTSDIRECTORY,std::string StyleDirectory){
-    this->ConfigsPath = ConfigsPath;
+  SubConfig(std::filesystem::path configPath,std::string FONTSDIRECTORY,std::string StyleDirectory){
     this->FONTSDIRECTORY = FONTSDIRECTORY;
     this->StyleDirectory = StyleDirectory;
-    fullSubConfigPath = std::filesystem::path(std::filesystem::path(ConfigsPath) / "subconfig.json").string();
+    fullSubConfigPath = (configPath / "subconfig.json").string();
   }
 
   void gui(){

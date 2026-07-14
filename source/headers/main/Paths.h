@@ -24,9 +24,9 @@ class PATHS {
     bool isPortableMode;
 
     // root dirs
-    std::string assetsPath; 
-    std::string cachePath;
-    std::string configPath;
+    std::filesystem::path assetsPath; 
+    std::filesystem::path cachePath;
+    std::filesystem::path configPath;
     std::filesystem::path tmpPath;
 
     // branch dirs
@@ -58,9 +58,9 @@ class PATHS {
 
         if(isPortableMode) {
           std::cout<< "[ LOG ] launching Into Portable Mode\n";
-          this->cachePath = (exeParentPath / "cache").string();
-          this->configPath = (exeParentPath / "configs").string();
-          this->assetsPath = (exeParentPath / "assets").string();
+          this->cachePath = exeParentPath / "cache";
+          this->configPath = exeParentPath / "configs";
+          this->assetsPath = exeParentPath / "assets";
           return;
         }
 
@@ -71,9 +71,9 @@ class PATHS {
           std::filesystem::path localAppData(localAppDataEnv);
           std::filesystem::path appData(appDataEnv);
           
-          this->cachePath = (localAppData / APPNAME / "cache").string();
-          this->configPath = (appData / APPNAME / "configs").string();
-          this->assetsPath = (appData / APPNAME / "assets").string();
+          this->cachePath = localAppData / APPNAME / "cache";
+          this->configPath = appData / APPNAME / "configs";
+          this->assetsPath = appData / APPNAME / "assets";
         }
 
 
@@ -81,32 +81,31 @@ class PATHS {
         HOME = std::getenv("HOME");
         if (!HOME.empty()) {
           std::filesystem::path home(HOME);
-          this->cachePath = (home / "Library" / APPNAME / "cache").string();
-          this->configPath = (home / "Library" / "Application Support" / APPNAME / "configs").string();
-          this->assetsPath = (home / "Library" / "Application Support" / APPNAME / "assets").string();
+          this->cachePath = home / "Library" / APPNAME / "cache";
+          this->configPath = home / "Library" / "Application Support" / APPNAME / "configs";
+          this->assetsPath = home / "Library" / "Application Support" / APPNAME / "assets";
         }
       #else
         HOME = std::getenv("HOME");
         if (!HOME.empty()) {
           std::filesystem::path home(HOME);
-          this->cachePath = (home / ".cache" / APPNAME).string();
-          this->configPath = (home / ".config" / APPNAME).string();
-          this->assetsPath = (home / ".local" / "share" / APPNAME).string();
+          this->cachePath = home / ".cache" / APPNAME;
+          this->configPath = home / ".config" / APPNAME;
+          this->assetsPath = home / ".local" / "share" / APPNAME;
         }
       #endif
       this->tmpPath = std::filesystem::temp_directory_path() / std::filesystem::path(APPNAME);
     }
 
     void defineBranchDirs() {
-      std::filesystem::path assets(assetsPath);
-      fontsDir = (assets / "fonts").string();
-      themesDir = (assets / "themes").string();
+      fontsDir = (assetsPath / "fonts").string();
+      themesDir = (assetsPath / "themes").string();
       
       std::string currentThemeName = getCurrentThemeName();
       
       std::filesystem::path currentTheme(themesDir);
       currentThemeDir = (currentTheme / currentThemeName).string();
-      currentIconsDir = (assets / "icons" / currentThemeName).string();
+      currentIconsDir = (assetsPath / "icons" / currentThemeName).string();
     }
 
     void defineFFmpegBinPaths() {
@@ -121,9 +120,9 @@ class PATHS {
 
     void populateEssentialDirectories() {
       essentialDirectories = {
-        configPath,
-        assetsPath,
-        cachePath,
+        configPath.string(),
+        assetsPath.string(),
+        cachePath.string(),
         tmpPath.string(),
         themesDir,
         fontsDir,
@@ -143,7 +142,7 @@ class PATHS {
     }
     
     std::string getCurrentThemeName() {
-      std::filesystem::path configFile = std::filesystem::path(configPath) / "theme";
+      std::filesystem::path configFile = configPath / "theme";
       std::ifstream themefile(configFile);
       std::string theme = "light";
       if (themefile) {
