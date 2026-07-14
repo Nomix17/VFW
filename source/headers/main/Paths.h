@@ -27,6 +27,7 @@ class PATHS {
     std::string assetsPath; 
     std::string cachePath;
     std::string configPath;
+    std::filesystem::path tmpPath;
 
     // branch dirs
     std::string fontsDir;
@@ -37,7 +38,7 @@ class PATHS {
     std::string ffprobeBinPath;
     std::string ffmpegBinPath;
 
-    std::array<std::string, 7> essentialDirectories;
+    std::array<std::string, 8> essentialDirectories;
 
     PATHS() {
       defineRootDirs();
@@ -93,6 +94,7 @@ class PATHS {
           this->assetsPath = (home / ".local" / "share" / APPNAME).string();
         }
       #endif
+      this->tmpPath = std::filesystem::temp_directory_path() / std::filesystem::path(APPNAME);
     }
 
     void defineBranchDirs() {
@@ -122,6 +124,7 @@ class PATHS {
         configPath,
         assetsPath,
         cachePath,
+        tmpPath.string(),
         themesDir,
         fontsDir,
         currentThemeDir,

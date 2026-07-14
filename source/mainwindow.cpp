@@ -249,13 +249,22 @@ void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
 
   for(int i=0; i < subStreams.size(); i++) {
     std::filesystem::path currentVideoPath(currenturl.toStdString());
-    std::string currentVideoPathWithoutExtension = currentVideoPath.parent_path().generic_string() +"/"+currentVideoPath.stem().generic_string();
+    std::string subPathWithoutExtension = (SYSTEMPATHS->tmpPath / std::filesystem::path(currentVideoPath.stem())).string();
+    if (std::filesystem::exists(SYSTEMPATHS->tmpPath) && std::filesystem::is_directory(SYSTEMPATHS->tmpPath)) {
+      if(!std::filesystem::create_directories(SYSTEMPATHS->tmpPath)) return;
+    }
 
-    QString fileSubPath = QString("%1_Sub%2.srt").arg(QString::fromStdString(currentVideoPathWithoutExtension)).arg(i);
+    QString fileSubPath = QString("%1_Sub%2.srt").arg(QString::fromStdString(subPathWithoutExtension)).arg(i);
     QString subId = QString("0:s:%1").arg(i);
 
     QProcess* ffmpegProcess = new QProcess(this);
-    connect(ffmpegProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), ffmpegProcess, &QProcess::deleteLater); // delete the process when finished
+    connect(
+      ffmpegProcess,
+      QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+      ffmpegProcess,
+      &QProcess::deleteLater
+    ); // delete the process when finished
+
     QString ffmpegPath = QString::fromStdString(SYSTEMPATHS->ffmpegBinPath);
     ffmpegProcess->start(ffmpegPath, {
       "-y",
