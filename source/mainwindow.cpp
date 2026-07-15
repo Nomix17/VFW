@@ -1462,42 +1462,47 @@ bool MainWindow::mouseInsideFloatingPanel(QEvent* event){
 
 //function to detect mouse movement
 bool MainWindow::eventFilter(QObject *obj, QEvent *event){
-  static bool floatingPannelDisplayed = false; //this variable stores if the floating pannel is displayed already or not
-  
-  // this if condition check if the event is a mouse event, and if the element the mouse is moving on top of is not a widget 
+  return
+    !handleFloatingPannelDisplaying(obj, event) &&
+    QMainWindow::eventFilter(obj, event);
+}
+
+bool MainWindow::handleFloatingPannelDisplaying(QObject *obj, QEvent *event) {
   if(event->type() == QEvent::MouseMove &&!static_cast<QWidget* >(obj)->isWidgetType())
-    MouseIsInsideFloatingPanel = mouseInsideFloatingPanel(event); // check if mouse inside the floating panel 
-  
-  
-  if (event->type() == QEvent::MouseMove && !floatingPannelDisplayed && !contextMenuOpened) {
-    if(fullScreenEnabled){
-      //getting the position of the floating pannel
-      int viewheight = view->size().height();
+    MouseIsInsideFloatingPanel = mouseInsideFloatingPanel(event);
 
-      // calculate the targetPosition that we want to move the pannel into, and then calling moveSomethingToPos function
-      QPointF targetPos = QPointF(
-        floatingControlPannel->getXPos(),
-        viewheight - floatingControlPannel->getHeight()
-      );
-      moveSomethingToPos(floatingControlPannel->getPannelProxyObj(),targetPos,200);
+  static bool floatingPannelDisplayed = false;
+  if (
+    event->type() != QEvent::MouseMove ||
+    floatingPannelDisplayed ||
+    contextMenuOpened ||
+    !fullScreenEnabled
+  ) return false;
 
-      // keeping the same subtitles margin
-      subtitlesItem->setSubOffset(floatingControlPannel->getHeight());
+  int viewheight = view->size().height();
+
+  // calculate the targetPosition that we want to move the pannel into
+  QPointF targetPos = QPointF(
+    floatingControlPannel->getXPos(),
+    viewheight - floatingControlPannel->getHeight()
+  );
+  moveSomethingToPos(floatingControlPannel->getPannelProxyObj(),targetPos,200);
+
+  // keeping the same subtitles margin
+  subtitlesItem->setSubOffset(floatingControlPannel->getHeight());
+  subtitlesItem->repositionText();
+  floatingPannelDisplayed = true;
+
+  QTimer::singleShot(800,[this](){
+    if(!MouseIsInsideFloatingPanel && floatingPannelDisplayed){
+      repositionFloatingControllPannel(200);
+      subtitlesItem->setSubOffset(0);
       subtitlesItem->repositionText();
-      floatingPannelDisplayed = true; //the floating pannel is displayed
-
-      QTimer::singleShot(800,[this](){
-        if(!MouseIsInsideFloatingPanel && floatingPannelDisplayed){
-          repositionFloatingControllPannel(200);
-          subtitlesItem->setSubOffset(0);
-          subtitlesItem->repositionText();
-        }
-        floatingPannelDisplayed = false;// the floating pannel is not displayed
-      });
     }
-    return false;
-  }
-  return QMainWindow::eventFilter(obj, event);//return the event if it's not a mouse event
+    floatingPannelDisplayed = false;
+  });
+
+  return true;
 }
 
 void MainWindow::parseSettingsFile(){

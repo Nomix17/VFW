@@ -113,6 +113,7 @@ public:
   void mouseDoubleClickEvent(QMouseEvent * event) override;
   void mousePressEvent(QMouseEvent * event) override;
   bool eventFilter(QObject *obj, QEvent *event) override;
+  bool handleFloatingPannelDisplaying(QObject *obj, QEvent *event);
 
   void handleDoubleLeftClick(QMouseEvent * event);
   void enterFullScreen();
