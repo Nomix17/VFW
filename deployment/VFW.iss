@@ -1,6 +1,6 @@
 ; --- VFW Player Installer ---
 #define MyAppName "VFW"
-#define MyAppVersion "1.2.1"
+#define MyAppVersion "1.3.0"
 #define MyAppPublisher "Nomix17"
 #define MyAppURL "https://github.com/Nomix17/VFW"
 #define MyAppExeName "VFW.exe"
