@@ -1519,6 +1519,10 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
 
 void MainWindow::handleCursorHiding(QEvent* event) {
   QApplication::restoreOverrideCursor();
+  if(MouseIsInsideFloatingPanel || contextMenuOpened) {
+    closeHideMouseTimer();
+    return;
+  }
   if (hideMouseTimer == nullptr) {
     hideMouseTimer = new QTimer(this);
     hideMouseTimer->setSingleShot(true);
