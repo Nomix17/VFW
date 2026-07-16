@@ -910,6 +910,12 @@ void MainWindow::setupShortcuts(){
       controlButtonsHandler(BottomControlPanel::TOGGLE_VOLUME_BUTTON);
     });
 
+    auto displayTitle = new QShortcut(QKeySequence(Qt::Key_T), this);
+    displayTitle->setContext(Qt::ApplicationShortcut);
+    connect(displayTitle, &QShortcut::activated, this, [this]{
+      onToolMenuAction(ToolMenu::TITLE);
+    });
+
     auto reduceDelay = new QShortcut(QKeySequence(Qt::Key_G), this);
     reduceDelay->setContext(Qt::ApplicationShortcut);
     connect(reduceDelay, &QShortcut::activated, this, [this]{
