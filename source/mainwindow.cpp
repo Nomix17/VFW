@@ -1477,13 +1477,13 @@ bool MainWindow::handleTimestampIndicator(QEvent* event) {
   QPoint mouseGlobalPos = mouseEvent->globalPosition().toPoint();
 
   if(controlbuttonslayout->isVideoSliderHovered(mouseGlobalPos) && currentVideoUrl != "") {
-    double bottom_margin = 20;
+    double bottom_margin = 7;
     double width = timestampIndicator->rect().width();
     QPoint windowRelativePos = this->mapFromGlobal(QPoint(
       mouseGlobalPos.rx(),
       controlbuttonslayout->getVideoSliderGlobalPos().ry()
-        - controlbuttonslayout->getVideoSliderRect().height() 
-        - BORDERS_MARGIN 
+        - timestampIndicator->rect().height()
+        - (fullScreenEnabled ? floatingControlPannel->getBordersMargin() : 6) // 6px is a magic number to align the indicator
         - bottom_margin
     ));
 
