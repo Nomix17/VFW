@@ -95,6 +95,7 @@ public:
 
   // chapters logic
   void toggleChaptersIndicators();
+  int findChapterIndexByTime(int time);
   int findCurrentChapterIndex();
   void moveToNextChapter();
   void moveToPrevChapter();

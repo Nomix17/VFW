@@ -963,10 +963,14 @@ void MainWindow::toggleChaptersIndicators(){
 }
 
 int MainWindow::findCurrentChapterIndex() {
+  return findChapterIndexByTime(player->position());
+}
+
+int MainWindow::findChapterIndexByTime(int time) {
   for(size_t i=0;i<ChaptersVectors.size();i++) {
     if(
-      player->position() >= ChaptersVectors[i].startTime * 1000 &&
-      player->position() <= ChaptersVectors[i].endTime * 1000
+      time >= ChaptersVectors[i].startTime * 1000 &&
+      time <= ChaptersVectors[i].endTime * 1000
     ) {
       return i;
     }
@@ -1557,7 +1561,7 @@ bool MainWindow::handleTimestampIndicator(QEvent* event) {
     timestampIndicator->move(windowRelativePos.rx() - width / 2, windowRelativePos.ry());
 
     int timestamp = controlbuttonslayout->sliderValueFromXPos(mouseEvent->pos().rx());
-    int chapterIndex = findCurrentChapterIndex();
+    int chapterIndex = findChapterIndexByTime(timestamp);
     if(ChaptersVectors.size() != 0 && showChaptersIndicators && chapterIndex >= 0) {
       QString chapterName = ChaptersVectors[chapterIndex].title;
       timestampIndicator->setString(QString("%1 %2").arg(chapterName).arg(TextTimer::formatTime(timestamp)));
