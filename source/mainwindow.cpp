@@ -138,7 +138,7 @@ void MainWindow::createBottomLayout() {
 
   controlbuttonslayout=nullptr;
 
-  controlbuttonslayout = new BottomControlPanel(SYSTEMPATHS->currentIconsDir, this);//creating new layout
+  controlbuttonslayout = new BottomControlPanel(SYSTEMPATHS->currentIconsDir);//creating new layout
 
   connect(controlbuttonslayout, &BottomControlPanel::controlButtonsHandler, this, &MainWindow::controlButtonsHandler);
   connect(controlbuttonslayout, &BottomControlPanel::videoSliderMoved, this, &MainWindow::changePlayBackPosition);
