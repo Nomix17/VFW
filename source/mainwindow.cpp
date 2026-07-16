@@ -22,7 +22,6 @@
 
 #include <QFileDialog>
 #include <QTimer>
-#include <QProcess>
 #include <QKeyEvent>
 #include <QStyleHints>
 
@@ -238,25 +237,26 @@ void MainWindow::ExtranctingChapterData(QString currenturl) {
 }
 
 void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
-  QProcess lookForSubs;
   QString ffprobePath = QString::fromStdString(SYSTEMPATHS->ffprobeBinPath);
-  QStringList processArgs = {
+  QProcess lookForSubs;
+  lookForSubs.setProgram(ffprobePath);
+  lookForSubs.setArguments({
     "-v", "error",
     "-select_streams", "s",
     "-show_entries", "stream=index",
     "-of", "csv=p=0",
     currenturl
-  };
-
-  lookForSubs.start(ffprobePath, processArgs);
+  });
+  lookForSubs.start();
   lookForSubs.waitForFinished(-1);
 
   QStringList subStreams = QString(lookForSubs.readAllStandardOutput())
     .split("\n", Qt::SkipEmptyParts);
 
   std::cout<<"[ INFO ] Number Of Subs Detected: "<<subStreams.size()<<"\n";
+  killAllSubtitlesExtractionProcesses();
 
-  for(int i=0; i < subStreams.size(); i++) {
+  for(int i = 0; i < subStreams.size(); i++) {
     std::filesystem::path currentVideoPath(currenturl.toStdString());
     std::string subPathWithoutExtension = (SYSTEMPATHS->tmpPath / std::filesystem::path(currentVideoPath.stem())).string();
     if (!std::filesystem::exists(SYSTEMPATHS->tmpPath) || !std::filesystem::is_directory(SYSTEMPATHS->tmpPath)) {
@@ -266,36 +266,65 @@ void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
     QString fileSubPath = QString("%1_Sub%2.srt").arg(QString::fromStdString(subPathWithoutExtension)).arg(i);
     QString subId = QString("0:s:%1").arg(i);
 
-    QProcess* ffmpegProcess = new QProcess(this);
-    connect(
-      ffmpegProcess,
-      QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-      ffmpegProcess,
-      &QProcess::deleteLater
-    ); // delete the process when finished
-
+    int currentProcessIndex = i;
     QString ffmpegPath = QString::fromStdString(SYSTEMPATHS->ffmpegBinPath);
-    ffmpegProcess->start(ffmpegPath, {
+    QProcess* ffmpegProcess = new QProcess(this);
+    ffmpegProcess->setProgram(ffmpegPath);
+    ffmpegProcess->setArguments({
       "-y",
       "-i", currenturl,
       "-map", subId, fileSubPath
     });
-
-    currentVideoSubtitlePaths.push_back(fileSubPath);
-
-    if(i == 0){
-      currentLoadedSubPath = fileSubPath;
-      // when done extracting the first subtitle in the file parse the subs
-      connect(ffmpegProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), ffmpegProcess,[this](){
-        SubFileParsing(currentLoadedSubPath.toStdString());
-        // change the text of the QAction 
-        QAction * ToggleSubs = toolMenuActionsObjectsList[ToolMenu::TOGGLE_SUB];
-        ToggleSubs->setText("Remove Subtitles");
-      });
-    }
-
-    std::cout <<"[ INFO ] Extract subtitle to: " << fileSubPath.toStdString() <<"\n";
+    connect(
+      ffmpegProcess,
+      QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+      ffmpegProcess,
+      [this, currentProcessIndex, fileSubPath]() {
+        onffmpegProcessFinshed(currentProcessIndex, fileSubPath);
+      }
+    );
+    subExtractionProcessesList.push_back(ffmpegProcess);
   }
+  
+  subExtractionProcessesList[0]->start();
+}
+
+void MainWindow::onffmpegProcessFinshed(int currentProcessIndex, QString fileSubPath) {
+  currentVideoSubtitlePaths.push_back(fileSubPath);
+  std::cout <<"[ INFO ] Extract subtitle to: " << fileSubPath.toStdString() <<"\n";
+
+  if(subExtractionProcessesList[currentProcessIndex] != nullptr) {
+    subExtractionProcessesList[currentProcessIndex]->deleteLater();
+    subExtractionProcessesList[currentProcessIndex] = nullptr;
+  }
+  if(currentProcessIndex == 0)
+    setCurrentLoadedSubPath(fileSubPath);
+  if(subExtractionProcessesList.size() > currentProcessIndex + 1) {
+    if(subExtractionProcessesList[currentProcessIndex + 1] != nullptr)
+      subExtractionProcessesList[currentProcessIndex + 1]->start();
+  } else {
+    clearVector(subExtractionProcessesList);
+  }
+}
+
+void MainWindow::setCurrentLoadedSubPath(QString fileSubPath) {
+  currentLoadedSubPath = fileSubPath;
+  SubFileParsing(currentLoadedSubPath.toStdString());
+  QAction * ToggleSubs = toolMenuActionsObjectsList[ToolMenu::TOGGLE_SUB];
+  ToggleSubs->setText("Remove Subtitles");
+}
+
+void MainWindow::killAllSubtitlesExtractionProcesses() {
+  for(QProcess* process : subExtractionProcessesList) {
+    if(process == nullptr) continue;
+    process->disconnect();
+    process->terminate();
+    if (!process->waitForFinished(1000)) {
+      process->kill();
+    }
+    process->deleteLater();
+  }
+  subExtractionProcessesList.clear();
 }
 
 void MainWindow::setPlayerDefaultState() {
@@ -304,6 +333,7 @@ void MainWindow::setPlayerDefaultState() {
   player->setSource({});
   clearVector(audioTracksMetaDataVector);
   clearVector(subTracksMetaDataVector);
+  killAllSubtitlesExtractionProcesses();
   controlbuttonslayout->hideSkipButton();
   controlbuttonslayout->setDefaultState();
   setVolumeSliderPosition(Settings["defaultVolume"] * 1000);

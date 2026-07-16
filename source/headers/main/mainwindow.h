@@ -12,6 +12,7 @@
 #include <QGraphicsTextItem>
 #include <QGraphicsVideoItem>
 #include <QGraphicsView>
+#include <QProcess>
 
 #include <vector>
 #include <string>
@@ -87,7 +88,10 @@ public:
   void parsingAssSubsFile(std::string subpath);
   void LoadingInDirectorySubtitles(QString currenturl);
   void ExtractingBuiltInSubs(QString currenturl);
+  void setCurrentLoadedSubPath(QString fileSubPath);
   void syncSubtitles(qint64 playbackPosition);
+  void onffmpegProcessFinshed(int currentProcessIndex, QString fileSubPath);
+  void killAllSubtitlesExtractionProcesses();
 
   // chapters logic
   void toggleChaptersIndicators();
@@ -147,7 +151,8 @@ private:
   // Meta Data variables
   std::vector<MetaDataTrack*> subTracksMetaDataVector;
   std::vector<MetaDataTrack*> audioTracksMetaDataVector;
-
+  std::vector<QProcess*> subExtractionProcessesList;
+    
   // playback status variables
   bool videoIsPaused=false;
   bool fullScreenEnabled = false;
