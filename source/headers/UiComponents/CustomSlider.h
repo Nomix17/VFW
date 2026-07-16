@@ -55,13 +55,12 @@ public:
   }
 
   bool isHovered(QPoint mousePos) {
-    int padding = 3;
     bool mouseInsideX =
       (mousePos.rx() >= getSliderGlobalPos().rx()) &&
       (mousePos.rx() <= getRightBoundry());
     bool mouseInsideY =
-      (mousePos.ry() >= getSliderGlobalPos().ry() - padding) &&
-      (mousePos.ry() <= getBottomBoundry() + padding);
+      (mousePos.ry() >= getSliderGlobalPos().ry()) &&
+      (mousePos.ry() <= getBottomBoundry());
     return (mouseInsideX && mouseInsideY);
   }
   QPoint getSliderGlobalPos() { return this->mapToGlobal(QPoint{0,0}); }
