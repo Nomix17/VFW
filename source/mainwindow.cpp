@@ -40,6 +40,8 @@
 #include <algorithm>
 
 #define MAINWINDOW_BORDERS_MARGIN 10
+#define TIME_BEFORE_HIDING_CURSOR 800
+#define TIME_BEFORE_HIDING_FLOATING_PANNEL 800
 
 void moveSomethingToPos(QGraphicsWidget *widget, QPointF targetPos, int animationTime);
 template<typename T>
@@ -1290,6 +1292,7 @@ void MainWindow::resizeEvent(QResizeEvent *event) {
 
 void MainWindow::enterFullScreen() {
   if(fullScreenEnabled) return;
+  QApplication::setOverrideCursor(Qt::BlankCursor);
   setTopbarLayoutVisible(false);
   int currentVolumeSliderPos = controlbuttonslayout->getVolumeValue();
 
@@ -1309,8 +1312,19 @@ void MainWindow::enterFullScreen() {
   updateTimeLabels();
 }
 
+void MainWindow::closeHideMouseTimer() {
+  if(hideMouseTimer != nullptr) {
+    hideMouseTimer->stop();
+    hideMouseTimer->disconnect();
+    hideMouseTimer->deleteLater();
+    hideMouseTimer = nullptr;
+  }
+}
+
 void MainWindow::exitFullScreen() {
   if(!fullScreenEnabled) return;
+  QApplication::restoreOverrideCursor();
+  closeHideMouseTimer();
   setTopbarLayoutVisible(true);
   int currentVolumeSliderPos = controlbuttonslayout->getVolumeValue();
 
@@ -1462,7 +1476,7 @@ void MainWindow::handleDoubleLeftClick(QMouseEvent *event) {
   //making sure the position of the mouse when double clicking is inside the video layout
   bool ClickIsInsideVideoLayout = (
     mousePosition_x > video_start_x &&
-    mousePosition_y > video_start_y  &&
+    mousePosition_y > video_start_y &&
     mousePosition_x < video_end_x &&
     mousePosition_y < video_end_y
   );
@@ -1501,8 +1515,21 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
   if(event->type() == QEvent::MouseMove) {
     if(!handleFloatingPannelDisplaying(obj, event)) res = false;
     if(!handleTimestampIndicator(event)) res = false;
+    if(fullScreenEnabled) handleCursorHiding(event);
   }
   return res;
+}
+
+void MainWindow::handleCursorHiding(QEvent* event) {
+  QApplication::restoreOverrideCursor();
+  if (hideMouseTimer == nullptr) {
+    hideMouseTimer = new QTimer(this);
+    hideMouseTimer->setSingleShot(true);
+    connect(hideMouseTimer, &QTimer::timeout, this, [this]() {
+      QApplication::setOverrideCursor(Qt::BlankCursor);
+    });
+  }
+  hideMouseTimer->start(TIME_BEFORE_HIDING_CURSOR);
 }
 
 bool MainWindow::handleTimestampIndicator(QEvent* event) {
@@ -1567,7 +1594,7 @@ bool MainWindow::handleFloatingPannelDisplaying(QObject *obj, QEvent *event) {
   subtitlesItem->repositionText();
   floatingPannelDisplayed = true;
 
-  QTimer::singleShot(800,[this](){
+  QTimer::singleShot(TIME_BEFORE_HIDING_FLOATING_PANNEL,[this](){
     if(!MouseIsInsideFloatingPanel && floatingPannelDisplayed){
       repositionFloatingControllPannel(200);
       subtitlesItem->setSubOffset(0);

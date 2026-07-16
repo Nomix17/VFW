@@ -121,12 +121,14 @@ public:
   bool eventFilter(QObject *obj, QEvent *event) override;
   bool handleFloatingPannelDisplaying(QObject *obj, QEvent *event);
   bool handleTimestampIndicator(QEvent* event);
-
+  void handleCursorHiding(QEvent* event);
   void handleDoubleLeftClick(QMouseEvent * event);
+
   void enterFullScreen();
   void exitFullScreen();
   void toggleFullScreen();
   bool mouseInsideFloatingPanel(QEvent* event);
+  void closeHideMouseTimer();
 
   void renderOverlayText(std::string textToRender, TextPosition position, int animationduration);
   void setTopbarLayoutVisible(bool visible);
@@ -212,6 +214,8 @@ private:
 
   //default Values
   std::map<std::string,float> Settings;
+
+  QTimer* hideMouseTimer = nullptr;
 
 public:
   PATHS *SYSTEMPATHS = new PATHS();
