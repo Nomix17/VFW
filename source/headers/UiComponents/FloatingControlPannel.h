@@ -20,26 +20,22 @@ class FloatingControlPannel: public QWidget {
 
     bool isHovered(QPoint mousePos) {
       bool mouseInsideX =
-        (mousePos.rx() >= getXPos()) &&
+        (mousePos.rx() >= getSliderGlobalPos().rx()) &&
         (mousePos.rx() <= getRightBoundry());
       bool mouseInsideY =
-        (mousePos.ry() >= getYPos()) &&
+        (mousePos.ry() >= getSliderGlobalPos().ry()) &&
         (mousePos.ry() <= getBottomBoundry());
-
       return (mouseInsideX && mouseInsideY);
     }
+
+    QPoint getSliderGlobalPos() { return this->mapToGlobal(QPoint{0,0}); }
+    int getBottomBoundry() { return getSliderGlobalPos().ry() + this->rect().height(); }
+    int getRightBoundry() { return getSliderGlobalPos().rx() + this->rect().width(); }
 
     int getWidth() { return pannelProxy->boundingRect().width(); }
     int getHeight() { return pannelProxy->boundingRect().height(); }
     int getXPos() { return pannelProxy->pos().rx(); }
     int getYPos() { return pannelProxy->pos().ry(); }
-
-    int getBottomBoundry() {
-      return getYPos() + getHeight();
-    }
-    int getRightBoundry() {
-      return getXPos() + getWidth();
-    }
 
     void addButtonsLayout(QLayout* buttonsLayout) {
       containerLayout->addLayout(buttonsLayout);

@@ -1502,11 +1502,8 @@ void moveSomethingToPos(QGraphicsWidget *widget, QPointF targetPos, int animatio
 //check the mouse is inside the floating panel
 bool MainWindow::mouseInsideFloatingPanel(QEvent* event){
   QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-  
-  QPoint mousePos = mouseEvent->pos();// getting the position of the mouse
-
-  // checking if the mouse is inside the pannel X wise, and Y wise
-  return (floatingControlPannel->isHovered(mousePos));
+  QPoint mouseGlobalPos = mouseEvent->globalPosition().toPoint();
+  return (floatingControlPannel->isHovered(mouseGlobalPos));
 }
 
 //function to detect mouse movement
