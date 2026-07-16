@@ -111,6 +111,7 @@ public:
   void updatePlayPauseButtonIcon();
   void updateVolumeButtonIcon();
   void updateRepeatButtonIcon();
+  void updateFullscreenIcon();
 
   // global functions
   void setupShortcuts();

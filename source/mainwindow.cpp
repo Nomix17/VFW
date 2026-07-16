@@ -1304,10 +1304,9 @@ void MainWindow::enterFullScreen() {
     floatingControlPannel->show();
 
   setVolumeSliderPosition(currentVolumeSliderPos);
+  fullScreenEnabled = true;
   updateButtonsIcon();
   updateTimeLabels();
-
-  fullScreenEnabled = true;
 }
 
 void MainWindow::exitFullScreen() {
@@ -1322,10 +1321,9 @@ void MainWindow::exitFullScreen() {
   setUniformMargins(mainlayout, MAINWINDOW_BORDERS_MARGIN);
 
   setVolumeSliderPosition(currentVolumeSliderPos);
+  fullScreenEnabled = false;
   updateButtonsIcon();
   updateTimeLabels();
-
-  fullScreenEnabled = false;
 }
 
 //function to toggle the fullscreen
@@ -1380,6 +1378,7 @@ void MainWindow::updateButtonsIcon(){
   updatePlayPauseButtonIcon();
   updateVolumeButtonIcon();
   updateRepeatButtonIcon();
+  updateFullscreenIcon();
 }
 
 void MainWindow::updatePlayPauseButtonIcon() {
@@ -1393,6 +1392,10 @@ void MainWindow::updateVolumeButtonIcon() {
 
 void MainWindow::updateRepeatButtonIcon() {
   controlbuttonslayout->updateRepetitionButtonIcon(rep);
+}
+
+void MainWindow::updateFullscreenIcon() {
+  controlbuttonslayout->updateFullscreenIcon(fullScreenEnabled);
 }
 
 //function to save the position of a video after closing it

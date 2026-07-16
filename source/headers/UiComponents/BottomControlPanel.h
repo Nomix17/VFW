@@ -216,6 +216,13 @@ class BottomControlPanel: public QVBoxLayout {
       Repeatition_button->setIcon(QPixmap(QString::fromStdString(newIconFullPath.string())));
     }
 
+    void updateFullscreenIcon(bool isFullscreened) {
+      QPushButton *fullscreen_button = ControlButtonsObjectsList[FULLSCREEN_BUTTON];
+      std::string iconFileName = isFullscreened ? "BUnfullscreen.png" : "BFullscreen.png";
+      std::filesystem::path newIconFullPath(std::filesystem::path(ICONSDIRECTORY.toStdString()) / std::filesystem::path(iconFileName));
+      fullscreen_button->setIcon(QPixmap(QString::fromStdString(newIconFullPath.string())));
+    }
+
     void deletelayout(QLayout* layout){
       if(!layout) return;
 
