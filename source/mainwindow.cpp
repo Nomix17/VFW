@@ -1490,8 +1490,9 @@ bool MainWindow::handleTimestampIndicator(QEvent* event) {
     timestampIndicator->move(windowRelativePos.rx() - width / 2, windowRelativePos.ry());
 
     int timestamp = controlbuttonslayout->sliderValueFromXPos(mouseEvent->pos().rx());
-    if(ChaptersVectors.size() != 0 && showChaptersIndicators) {
-      QString chapterName = ChaptersVectors[findCurrentChapterIndex()].title;
+    int chapterIndex = findCurrentChapterIndex();
+    if(ChaptersVectors.size() != 0 && showChaptersIndicators && chapterIndex >= 0) {
+      QString chapterName = ChaptersVectors[chapterIndex].title;
       timestampIndicator->setString(QString("%1 %2").arg(chapterName).arg(TextTimer::formatTime(timestamp)));
     } else {
       timestampIndicator->setValue(timestamp);
