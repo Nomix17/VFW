@@ -40,11 +40,12 @@
 #include <limits.h>
 #include <algorithm>
 
-#define BORDERS_MARGIN 10
+#define MAINWINDOW_BORDERS_MARGIN 10
 
 void moveSomethingToPos(QGraphicsWidget *widget, QPointF targetPos, int animationTime);
 template<typename T>
 void clearVector(std::vector<T*>&);
+void setUniformMargins(QLayout *layout, int margin);
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   this->setWindowTitle("VFW");
@@ -95,7 +96,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   scene->addItem(subtitlesItem);
 
   // adding margin for style
-  mainlayout->setContentsMargins(BORDERS_MARGIN, BORDERS_MARGIN, BORDERS_MARGIN, BORDERS_MARGIN);
+  setUniformMargins(mainlayout, MAINWINDOW_BORDERS_MARGIN);
 
   // adding widgets to there layouts and the layous to the central widget
   videolayout->addWidget(view);
@@ -1266,7 +1267,7 @@ void MainWindow::enterFullScreen() {
   floatingControlPannel->addButtonsLayout(controlbuttonslayout); 
 
   this->showFullScreen();
-  mainlayout->setContentsMargins(0, 0, 0, 0);
+  setUniformMargins(mainlayout, 0);
   video->setSize(this->size());
 
   if (floatingControlPannel->isHidden())
@@ -1288,7 +1289,7 @@ void MainWindow::exitFullScreen() {
   mainlayout->addLayout(controlbuttonslayout);
 
   this->showMaximized();
-  mainlayout->setContentsMargins(BORDERS_MARGIN, BORDERS_MARGIN, BORDERS_MARGIN, BORDERS_MARGIN);
+  setUniformMargins(mainlayout, MAINWINDOW_BORDERS_MARGIN);
 
   setVolumeSliderPosition(currentVolumeSliderPos);
   updateButtonsIcon();
@@ -1587,6 +1588,10 @@ void MainWindow::savingNewSettings(){
  
   settingsFile << newSettings;
   settingsFile.close();
+}
+
+void setUniformMargins(QLayout *layout, int margin) {
+  layout->setContentsMargins(margin, margin, margin, margin);
 }
 
 //distractor

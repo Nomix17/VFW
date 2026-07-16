@@ -7,10 +7,11 @@
 class FloatingControlPannel: public QWidget {
   QVBoxLayout * containerLayout;
   QGraphicsProxyWidget * pannelProxy;
-
+  int borders_margin = 10;
   public:
     FloatingControlPannel(QGraphicsScene *scene) {
       containerLayout = new QVBoxLayout(this);
+      containerLayout->setContentsMargins(borders_margin, borders_margin, borders_margin, borders_margin);
       pannelProxy = scene->addWidget(this);
       this->hide();
       pannelProxy->setZValue(10);
@@ -42,6 +43,10 @@ class FloatingControlPannel: public QWidget {
 
     void addButtonsLayout(QLayout* buttonsLayout) {
       containerLayout->addLayout(buttonsLayout);
+    }
+
+    int getBordersMargin() {
+      return borders_margin;
     }
 
     QGraphicsProxyWidget* getPannelProxyObj() { return pannelProxy; }

@@ -51,6 +51,7 @@ class BottomControlPanel: public QVBoxLayout {
 
   public:
     BottomControlPanel(std::string ICONSDIRECTORY, QWidget *parent = nullptr):QVBoxLayout(parent){
+      this->setContentsMargins(0, 0, 0, 0);
       this->ICONSDIRECTORY = QString::fromStdString(ICONSDIRECTORY);
       QHBoxLayout *firsthalflayout = new QHBoxLayout();
       QHBoxLayout *secondhalflayout = new QHBoxLayout();
