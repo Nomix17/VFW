@@ -40,6 +40,8 @@
 #include <limits.h>
 #include <algorithm>
 
+#define BORDERS_MARGIN 10
+
 void moveSomethingToPos(QGraphicsWidget *widget, QPointF targetPos, int animationTime);
 template<typename T>
 void clearVector(std::vector<T*>&);
@@ -65,6 +67,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   createTopLayout();
   createBottomLayout();
 
+  timestampIndicator = new TextTimer(this);
+  timestampIndicator->hide();
+  timestampIndicator->setAlignment(Qt::AlignCenter);
+  timestampIndicator->setObjectName("TimestampIndicator");
+
+
   //creating a floating layout to use it when fullscreening
   floatingControlPannel = new FloatingControlPannel(scene);
 
@@ -87,7 +95,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   scene->addItem(subtitlesItem);
 
   // adding margin for style
-  mainlayout->setContentsMargins(10, 10, 10, 10);
+  mainlayout->setContentsMargins(BORDERS_MARGIN, BORDERS_MARGIN, BORDERS_MARGIN, BORDERS_MARGIN);
 
   // adding widgets to there layouts and the layous to the central widget
   videolayout->addWidget(view);
@@ -129,7 +137,7 @@ void MainWindow::createBottomLayout() {
 
   controlbuttonslayout=nullptr;
 
-  controlbuttonslayout = new BottomControlPanel(SYSTEMPATHS->currentIconsDir);//creating new layout
+  controlbuttonslayout = new BottomControlPanel(SYSTEMPATHS->currentIconsDir, this);//creating new layout
 
   connect(controlbuttonslayout, &BottomControlPanel::controlButtonsHandler, this, &MainWindow::controlButtonsHandler);
   connect(controlbuttonslayout, &BottomControlPanel::videoSliderMoved, this, &MainWindow::changePlayBackPosition);
@@ -298,6 +306,7 @@ void MainWindow::setPlayerDefaultState() {
   controlbuttonslayout->hideSkipButton();
   controlbuttonslayout->setDefaultState();
   setVolumeSliderPosition(Settings["defaultVolume"] * 1000);
+  ChaptersVectors.clear();
   updateButtonsIcon();
 }
 
@@ -914,37 +923,32 @@ void MainWindow::toggleChaptersIndicators(){
   controlbuttonslayout->setChaptersMarks(ChaptersVectors, showChaptersIndicators);
 }
 
-void MainWindow::moveToNextChapter(){
-  for(size_t i=0;i<ChaptersVectors.size();i++){
+int MainWindow::findCurrentChapterIndex() {
+  for(size_t i=0;i<ChaptersVectors.size();i++) {
     if(
-      player->position() >= ChaptersVectors[i].startTime*1000 &&
-      player->position() <= ChaptersVectors[i].endTime*1000
+      player->position() >= ChaptersVectors[i].startTime * 1000 &&
+      player->position() <= ChaptersVectors[i].endTime * 1000
     ) {
-      ChapterObject newChapter;
-      if(i == ChaptersVectors.size()-1) newChapter = ChaptersVectors[i];
-      else newChapter = ChaptersVectors[i+1];
-
-      changePlayBackPosition(newChapter.startTime*1000+1);
-      renderOverlayText(newChapter.title.toStdString(), TextPosition::TOP_LEFT, 2000); 
-      break;
+      return i;
     }
   }
+  return -1;
+}
+
+void MainWindow::moveToNextChapter(){
+  int currentChapIndex = findCurrentChapterIndex();
+  if(currentChapIndex < 0) return;
+  ChapterObject newChapter = ChaptersVectors[std::min(static_cast<size_t>(currentChapIndex + 1), ChaptersVectors.size() - 1)];
+  changePlayBackPosition(newChapter.startTime * 1000 + 1);
+  renderOverlayText(newChapter.title.toStdString(), TextPosition::TOP_LEFT, 2000); 
 }
 
 void MainWindow::moveToPrevChapter(){
-  for(size_t i=1;i<ChaptersVectors.size();i++){
-    if(
-      player->position() >= ChaptersVectors[i].startTime*1000 &&
-      player->position() <= ChaptersVectors[i].endTime*1000
-    ) {
-      ChapterObject newChapter = ChaptersVectors[i-1];
-
-      changePlayBackPosition(newChapter.startTime*1000+1);
-      renderOverlayText(newChapter.title.toStdString(), TextPosition::TOP_LEFT, 2000); 
-
-      break;
-    }
-  }
+  int currentChapIndex = findCurrentChapterIndex();
+  if(currentChapIndex < 0) return;
+  ChapterObject newChapter = ChaptersVectors[std::max(0, currentChapIndex - 1)];
+  changePlayBackPosition(newChapter.startTime * 1000 + 1);
+  renderOverlayText(newChapter.title.toStdString(), TextPosition::TOP_LEFT, 2000); 
 } 
 
 
@@ -971,15 +975,12 @@ void MainWindow::syncSubtitles(qint64 playbackPosition) {
 
 // setting the app elements in there relation with the player
 void MainWindow::playbackPositionUpdated(qint64 playbackPosition) {
-
   controlbuttonslayout->setVideoSliderValue(playbackPosition);//syncing the slider with the player position
 
   if (playbackPosition != player->duration()) {
     updateTimeLabels();
-
   } else if (playbackPosition == player->duration()) {
     determineNextVideo();
-
   }
 
   if (segmentLoopEnabled && playbackPosition >= segmentLoopEnd * 1000) {
@@ -1287,7 +1288,7 @@ void MainWindow::exitFullScreen() {
   mainlayout->addLayout(controlbuttonslayout);
 
   this->showMaximized();
-  mainlayout->setContentsMargins(10, 10, 10, 10);
+  mainlayout->setContentsMargins(BORDERS_MARGIN, BORDERS_MARGIN, BORDERS_MARGIN, BORDERS_MARGIN);
 
   setVolumeSliderPosition(currentVolumeSliderPos);
   updateButtonsIcon();
@@ -1461,19 +1462,57 @@ bool MainWindow::mouseInsideFloatingPanel(QEvent* event){
 }
 
 //function to detect mouse movement
-bool MainWindow::eventFilter(QObject *obj, QEvent *event){
-  return
-    !handleFloatingPannelDisplaying(obj, event) &&
-    QMainWindow::eventFilter(obj, event);
+bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
+  bool res = QMainWindow::eventFilter(obj, event);
+  if(event->type() == QEvent::MouseMove) {
+    if(!handleFloatingPannelDisplaying(obj, event)) res = false;
+    if(!handleTimestampIndicator(event)) res = false;
+  }
+  return res;
+}
+
+bool MainWindow::handleTimestampIndicator(QEvent* event) {
+  QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+  QPoint mouseGlobalPos = mouseEvent->globalPosition().toPoint();
+
+  if(controlbuttonslayout->isVideoSliderHovered(mouseGlobalPos) && currentVideoUrl != "") {
+    double bottom_margin = 20;
+    double width = timestampIndicator->rect().width();
+    QPoint windowRelativePos = this->mapFromGlobal(QPoint(
+      mouseGlobalPos.rx(),
+      controlbuttonslayout->getVideoSliderGlobalPos().ry()
+        - controlbuttonslayout->getVideoSliderRect().height() 
+        - BORDERS_MARGIN 
+        - bottom_margin
+    ));
+
+    timestampIndicator->move(windowRelativePos.rx() - width / 2, windowRelativePos.ry());
+
+    int timestamp = controlbuttonslayout->sliderValueFromXPos(mouseEvent->pos().rx());
+    if(ChaptersVectors.size() != 0 && showChaptersIndicators) {
+      QString chapterName = ChaptersVectors[findCurrentChapterIndex()].title;
+      timestampIndicator->setString(QString("%1 %2").arg(chapterName).arg(TextTimer::formatTime(timestamp)));
+    } else {
+      timestampIndicator->setValue(timestamp);
+    }
+
+    timestampIndicator->adjustSize();
+    timestampIndicator->show();
+    return true;
+
+  } else {
+    timestampIndicator->setToDefaultState();
+    timestampIndicator->hide();
+    return false;
+  }
 }
 
 bool MainWindow::handleFloatingPannelDisplaying(QObject *obj, QEvent *event) {
-  if(event->type() == QEvent::MouseMove &&!static_cast<QWidget* >(obj)->isWidgetType())
+  if(!static_cast<QWidget* >(obj)->isWidgetType())
     MouseIsInsideFloatingPanel = mouseInsideFloatingPanel(event);
 
   static bool floatingPannelDisplayed = false;
   if (
-    event->type() != QEvent::MouseMove ||
     floatingPannelDisplayed ||
     contextMenuOpened ||
     !fullScreenEnabled

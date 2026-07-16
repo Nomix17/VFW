@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <iomanip>
 
 class TextTimer: public QLabel {
   public:
@@ -14,14 +15,18 @@ class TextTimer: public QLabel {
   }
 
   void setValue(int position) {
-    this->setText(formatTime(position));
+    this->setText(TextTimer::formatTime(position));
   }
 
-  void setToDefaultState(){
+  void setString(QString text) {
+    this->setText(text);
+  }
+
+  void setToDefaultState() {
     this->setText("--:--:--");
   }
 
-  QString formatTime(int timeInMs){
+  static QString formatTime(int timeInMs){
     int hour = timeInMs / (1000 * 60 * 60);
     int min = (timeInMs / 1000 - hour * 60 * 60) / 60;
     int second = timeInMs / 1000 - min * 60 - hour * 60 * 60;
@@ -32,6 +37,5 @@ class TextTimer: public QLabel {
     return QString::fromStdString(osshour.str() +":"+ ossmin.str() +":"+ osssecond.str());
   }
 };
-
 
 #endif

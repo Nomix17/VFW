@@ -1,6 +1,7 @@
 #ifndef CUSTOMSLIDER 
 #define CUSTOMSLIDER 
 
+#include "qpainter.h"
 #include <iostream>
 #include <QSlider>
 #include <QMouseEvent>
@@ -21,13 +22,10 @@ public:
 
 
   //function to change the sliderposition based on the mouse position and the slider size
-  void movetoposition(int mouse_position){
-    //move only if the cursor is pressing on the slider
-      int slider_range = this->maximum();//the media to slider range
-      int slider_size = size().width();//the size of the slider
-      double target_position = static_cast<double>(mouse_position)*slider_range/slider_size;//calculating where should the slider move relativly to it's size and range
+  void movetoposition(int mousePosX){
+      double target_position = sliderValueFromXPos(mousePosX);
       this->setSliderPosition(target_position);
-      emit sliderMoved(mouse_position);
+      emit sliderMoved(mousePosX);
   }
 
   void mousePressEvent(QMouseEvent * event){
@@ -49,7 +47,27 @@ public:
     buttonpressed = false;
     QSlider::mouseReleaseEvent(event);
   }
-  
+ 
+  int sliderValueFromXPos(int posX) {
+    int slider_range = this->maximum();
+    int slider_size = size().width();
+    return static_cast<double>(posX)*slider_range/slider_size;
+  }
+
+  bool isHovered(QPoint mousePos) {
+    int padding = 3;
+    bool mouseInsideX =
+      (mousePos.rx() >= getSliderGlobalPos().rx()) &&
+      (mousePos.rx() <= getRightBoundry());
+    bool mouseInsideY =
+      (mousePos.ry() >= getSliderGlobalPos().ry() - padding) &&
+      (mousePos.ry() <= getBottomBoundry() + padding);
+    return (mouseInsideX && mouseInsideY);
+  }
+  QPoint getSliderGlobalPos() { return this->mapToGlobal(QPoint{0,0}); }
+  int getBottomBoundry() { return getSliderGlobalPos().ry() + this->rect().height(); }
+  int getRightBoundry() { return getSliderGlobalPos().rx() + this->rect().width(); }
+
   void setChaptersMarks(std::vector <ChapterObject> Chapters, bool displayChapters){
     this->Chapters = Chapters;
     this->displayChapters = displayChapters;

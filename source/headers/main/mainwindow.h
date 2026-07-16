@@ -91,6 +91,7 @@ public:
 
   // chapters logic
   void toggleChaptersIndicators();
+  int findCurrentChapterIndex();
   void moveToNextChapter();
   void moveToPrevChapter();
   void ExtranctingChapterData(QString currenturl);
@@ -114,6 +115,7 @@ public:
   void mousePressEvent(QMouseEvent * event) override;
   bool eventFilter(QObject *obj, QEvent *event) override;
   bool handleFloatingPannelDisplaying(QObject *obj, QEvent *event);
+  bool handleTimestampIndicator(QEvent* event);
 
   void handleDoubleLeftClick(QMouseEvent * event);
   void enterFullScreen();
@@ -175,6 +177,7 @@ private:
   SubtitlesItem *subtitlesItem;
   QGraphicsView *view;
   QGraphicsScene *scene;
+  TextTimer* timestampIndicator;
 
   // floating control pannel ui variables 
   FloatingControlPannel* floatingControlPannel;

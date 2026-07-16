@@ -9,6 +9,8 @@
 #include <QLabel>
 #include "../UiComponents/CustomSlider.h"
 #include "TextTimer.h"
+#include "qevent.h"
+#include "qpoint.h"
 
 class BottomControlPanel: public QVBoxLayout {
   Q_OBJECT
@@ -133,6 +135,19 @@ class BottomControlPanel: public QVBoxLayout {
     void setVideoSliderValue(int position) {
       videoslider->setValue(position);
     }
+    int sliderValueFromXPos(int posX) {
+      return videoslider->sliderValueFromXPos(posX);
+    }
+
+    QRect getVideoSliderRect() {
+      return videoslider->rect();
+    }
+    QPoint getVideoSliderGlobalPos() {
+      return videoslider->getSliderGlobalPos();
+    }
+    bool isVideoSliderHovered(QPoint mousePos) {
+      return videoslider->isHovered(mousePos);
+    }
 
     int getVolumeValue(){
       return volumeslider->value();
@@ -162,6 +177,7 @@ class BottomControlPanel: public QVBoxLayout {
       durationTimer->setToDefaultState();
       playbackPositionTimer->setToDefaultState();
       volumeslider->setRange(0, 1000);
+      videoslider->setRange(0,0);
       hideSkipButton();
     }
 

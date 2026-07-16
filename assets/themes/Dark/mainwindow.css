@@ -135,3 +135,9 @@ QScrollBar::sub-line:vertical {
   height: 0;
   width: 0;
 }
+
+#TimestampIndicator {
+  background-color: rgba(16,16,16,0.6);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+}
