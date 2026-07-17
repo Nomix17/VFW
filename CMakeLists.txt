@@ -39,6 +39,7 @@ target_link_libraries(VFW
 )
 
 if(WIN32)
+    target_compile_definitions(VFW PRIVATE NOMINMAX WIN32_LEAN_AND_MEAN)
     target_link_options(VFW PRIVATE
         $<$<CONFIG:Release>:/SUBSYSTEM:WINDOWS>
         $<$<CONFIG:Release>:/ENTRY:mainCRTStartup>
