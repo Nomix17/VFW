@@ -204,7 +204,7 @@ void MainWindow::LoadingInDirectorySubtitles(QString currenturl){
   }
 }
 
-void MainWindow::ExtranctingChapterData(QString currenturl) {
+void MainWindow::ExtractingChapterData(QString currenturl) {
   ChaptersVectors.clear();
   QProcess *ChaptersProcess = new QProcess(this);
   QString ffprobePath = QString::fromStdString(SYSTEMPATHS->ffprobeBinPath);
@@ -427,7 +427,7 @@ void MainWindow::prepareVideoFile(QString filePath) {
   currentVideoParentDirectory = currentPath.parent_path().generic_string();
 
   std::cout<<"\n";
-  ExtranctingChapterData(filePath);
+  ExtractingChapterData(filePath);
   ExtractingBuiltInSubs(filePath);
   std::cout<<"\n";
   LoadingInDirectorySubtitles(filePath);

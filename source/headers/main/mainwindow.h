@@ -103,7 +103,7 @@ public:
   int findCurrentChapterIndex();
   void moveToNextChapter();
   void moveToPrevChapter();
-  void ExtranctingChapterData(QString currenturl);
+  void ExtractingChapterData(QString currenturl);
 
   // resize stuff
   void resizeMainUiElement();
