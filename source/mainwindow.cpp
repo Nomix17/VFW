@@ -288,8 +288,9 @@ void MainWindow::ExtractingBuiltInSubs(QString currenturl) {
     );
     subExtractionProcessesList.push_back(ffmpegProcess);
   }
-  
-  subExtractionProcessesList[0]->start();
+
+  if(!subExtractionProcessesList.empty())
+    subExtractionProcessesList[0]->start();
 }
 
 void MainWindow::onffmpegProcessFinshed(int currentProcessIndex, QString fileSubPath) {
