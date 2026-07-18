@@ -1,7 +1,12 @@
+#KeyEditInput,
 QLabel{
   border: 1px solid #616161;
   font-size:16px;
   padding:10px 10px 10px 10px;
+}
+#KeyEditInput:focus {
+  border: 1px solid #999999;
+  background-color:#222222;
 }
 QPushButton{
   min-width: 50px;
@@ -11,4 +16,6 @@ QPushButton{
 }
 #tablehead{
   background-color:#4b4b4b;
+  font-weight: 600;
 }
+
