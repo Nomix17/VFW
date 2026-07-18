@@ -217,6 +217,8 @@ private:
   std::map<std::string,float> Settings;
 
   QTimer* hideMouseTimer = nullptr;
+  std::vector<QShortcut*> qShortcutsObjs;
+  std::map<std::string, QKeySequence> currentShortcuts = {};
 
 public:
   PATHS *SYSTEMPATHS = new PATHS();

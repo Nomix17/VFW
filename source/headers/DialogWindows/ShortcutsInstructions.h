@@ -1,7 +1,11 @@
 #ifndef SHORTCUTS_INST
 #define SHORTCUTS_INST
 
+#include "../utils/trim.h"
+#include <cctype>
+#include <ios>
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <fstream>
 #include <vector>
@@ -12,16 +16,28 @@
 #include <QWidget>
 #include <QPushButton>
 #include <QLabel>
+#include <QKeyEvent>
+#include <QLineEdit>
 
-class ShortcutsInst:public QDialog{
+struct ShortcutObj {
+  QString displayName;
+  QString keyMapName;
+  QLineEdit* lineEdit;
+};
+
+class ShortcutsInst:public QDialog {
   Q_OBJECT;
   private:
+    std::filesystem::path shortcutsFilePath;
     QVBoxLayout *mainlayout = new QVBoxLayout(this);
     QGridLayout *tablelayout = new QGridLayout;
-    QHBoxLayout *donebuttonlayout = new QHBoxLayout;
-    QPushButton *donebutton = new QPushButton("OK");
+    QHBoxLayout *btnsLayout = new QHBoxLayout;
+    QPushButton *saveBtn = new QPushButton("Save");
+    QPushButton *cancelBtn = new QPushButton("Cancel");
+    std::vector<ShortcutObj> shortcutObjs = {};
 
   public:
+    std::map<std::string, QKeySequence> currentShortcuts;
     ShortcutsInst(QWidget *parent,std::string StyleDirectory,std::filesystem::path configPath):QDialog(parent){
       this->setWindowTitle("Shortcuts");
 
@@ -36,76 +52,151 @@ class ShortcutsInst:public QDialog{
         this->setStyleSheet(QString::fromStdString(script));
         stylefile.close();
       }
-     
-      std::string fullShortcutFilename = (configPath / "Shortcuts_Instructions").string();
-      std::ifstream shortcutfile(fullShortcutFilename);
-      std::string shortcutsfilecontent;
-      std::vector <std::string> elements;
 
-      //checking if the file exist
+      shortcutsFilePath = (configPath / "Shortcuts_Instructions").string();    
+      std::vector<std::string> shortcutRows = loadShortcutsFromFile(configPath);
+      createShortcutsTable(shortcutRows);
+
+      saveBtn->setFocusPolicy(Qt::NoFocus);
+      cancelBtn->setFocusPolicy(Qt::NoFocus);
+
+      connect(saveBtn,&QPushButton::clicked,[this](){
+        saveCurrentShortcuts();
+        QDialog::accept();
+      });
+      connect(cancelBtn,&QPushButton::clicked,[this](){
+        QDialog::close();
+      });
+
+      btnsLayout->addWidget(saveBtn);
+      btnsLayout->addWidget(cancelBtn);
+
+      mainlayout->addLayout(tablelayout);
+      mainlayout->addLayout(btnsLayout);
+      setLayout(mainlayout);
+    }
+
+    static std::vector <std::string> loadShortcutsFromFile(std::filesystem::path configPath) {
+      std::filesystem::path shortcutsFilePath = (configPath / "Shortcuts_Instructions").string();
+      std::ifstream shortcutfile(shortcutsFilePath);
+      std::string shortcutsfilecontent;
+      std::vector <std::string> shortcutRows;
+
       if (shortcutfile) {
         std::string line;
-        //we read the file line by line and add the configs into the vector 
         while(getline(shortcutfile,line)){
-          elements.push_back(line);
+          shortcutRows.push_back(line);
         }
 
       } else {
-        //if it's not found we create a new one 
-        std::ofstream defaultshortcutsfile(fullShortcutFilename);
-
         //put the default configs into the vector
-        elements = {
-            "Functionality:Shortcut",
-            "FullScreen/Unfullscreen:F",
-            "Unfullscreen:Escape",
-            "Pause/Unpause:Space",
-            "Go Back:LeftArowkey",
-            "Go Forward:RightArowkey",
-            "Mute/Unmute:M",
-            "Volume Up:UpArrowKey",
-            "Volume Down:DownArrowKey",
-            "Reduce Video Delay:G",
-            "Increase Video Delay:H"
+        shortcutRows = {
+          "Pause/Unpause: Space",
+          "Seek Forward (+5s): Right Arrow Key",
+          "Seek Backward (-5s): Left Arrow Key",
+          "Volume Up: Up Arrow Key",
+          "Volume Down: Down Arrow Key",
+          "Toggle Fullscreen: F",
+          "Exit Fullscreen: Escape",
+          "Display Title: T",
+          "Toggle Subtitles: V",
+          "Toggle Chapter Indicators: C",
+          "Next Chapter: N",
+          "Previous Chapter: B",
+          "Mute/Unmute: M",
+          "Reduce Subtitles Delay: G",
+          "Increase Subtitles Delay: H"
         };
-
-        //pushing the default config in the file
-        for(size_t i=0;i<elements.size();i++) defaultshortcutsfile << elements[i]+'\n';
-        defaultshortcutsfile.close();
+        writeShortcusIntoFile(shortcutRows, shortcutsFilePath);
       }
+      return shortcutRows;
+    }
 
-      //looping the elements of the vectore to create widgets based on them
-      for(size_t i=0;i<elements.size();i++) {
-        std::stringstream line(elements[i]);
-        std::string shortcutFunctionality;
-        std::string shortcutKeys;
+    static void writeShortcusIntoFile(std::vector<std::string> shortcutsRows, std::filesystem::path shortcutsFilePath) {
+      std::ofstream defaultshortcutsfile(shortcutsFilePath);
+      for(size_t i=0;i<shortcutsRows.size();i++) 
+        defaultshortcutsfile << shortcutsRows[i]+'\n';
+      defaultshortcutsfile.close();
+    }
 
-        std::getline(line, shortcutFunctionality,':');
-        std::getline(line, shortcutKeys,':');
+    void createShortcutsTable(std::vector<std::string> shortcutRows) {
+      //creating table header 
+      QLabel* functionalitylabel = new QLabel(this);
+      QLabel* shortcutKey = new QLabel(this);
+      functionalitylabel->setObjectName("tablehead");
+      shortcutKey->setObjectName("tablehead");
+      tablelayout->addWidget(functionalitylabel,0,0);
+      tablelayout->addWidget(shortcutKey,0,1);
 
-        QLabel *functionalitylabel = new QLabel(QString::fromStdString(shortcutFunctionality));
-        QLabel *keyslabel = new QLabel(QString::fromStdString(shortcutKeys));
-
-        if (i==0) {
-          functionalitylabel->setObjectName("tablehead");
-          keyslabel->setObjectName("tablehead");
-        }
+      //rest of the table
+      for(int i = 0; i < shortcutRows.size(); i++){
+        auto [shortcutDisplayName, shortcutKeyName, shortcutKey] = parseShortcutRow(shortcutRows[i]);
+        QLabel *functionalitylabel = new QLabel(QString::fromStdString(shortcutDisplayName));
+        QLineEdit *keyLineEdit = new QLineEdit(this);
+        keyLineEdit->setObjectName("KeyEditInput");
+        keyLineEdit->setText(QString::fromStdString(shortcutKey));
+        keyLineEdit->installEventFilter(this);
+        keyLineEdit->setReadOnly(true);
+        keyLineEdit->setAlignment(Qt::AlignCenter);
 
         tablelayout->addWidget(functionalitylabel,i,0);
-        tablelayout->addWidget(keyslabel,i,1);
-      }
-      
-      donebutton->setFocusPolicy(Qt::NoFocus);
-      connect(donebutton,&QPushButton::clicked,[this](){
-        QDialog::accept();
-      });
-      donebuttonlayout->addWidget(donebutton);
+        tablelayout->addWidget(keyLineEdit,i,1);
 
-      mainlayout->addLayout(tablelayout);
-      mainlayout->addLayout(donebuttonlayout);
-      setLayout(mainlayout);
+        ShortcutObj newShortcutObj;
+        newShortcutObj.displayName = QString::fromStdString(shortcutDisplayName);
+        newShortcutObj.keyMapName = QString::fromStdString(shortcutKeyName);
+        newShortcutObj.lineEdit = keyLineEdit;
+        shortcutObjs.push_back(newShortcutObj);
+      }
+    }
+
+    bool eventFilter(QObject *watched, QEvent *event) {
+      if (event->type() == QEvent::KeyPress) {
+        QLineEdit* lineEditObj = static_cast<QLineEdit*>(watched); 
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        lineEditObj->setText(QKeySequence(keyEvent->key()).toString(QKeySequence::PortableText));
+        return true;
+      }
+      return QObject::eventFilter(watched, event);
+    }
+
+    void saveCurrentShortcuts() {
+      std::vector<std::string> stringShortcutRows = {};
+
+      for(ShortcutObj shortcut : shortcutObjs) {
+        std::string shortcutDisplayName = shortcut.displayName.toStdString();
+        std::string shortcutKeyName = shortcut.keyMapName.toStdString();
+        QString shortcutKeyAsString = shortcut.lineEdit->text();
+
+        stringShortcutRows.push_back(shortcutDisplayName + ":" + shortcutKeyName + ":" + shortcutKeyAsString.toStdString());
+        currentShortcuts[shortcutKeyName] = QKeySequence(shortcutKeyAsString, QKeySequence::PortableText);
+      }
+      writeShortcusIntoFile(stringShortcutRows, shortcutsFilePath);
+    }
+
+    static std::array<std::string, 3> parseShortcutRow(std::string row) {
+      std::stringstream line(row);
+      std::string shortcutDisplayName;
+      std::string shortcutKeyName;
+      std::string shortcutKeyAsString;
+      std::getline(line, shortcutDisplayName, ':');
+      std::getline(line, shortcutKeyName, ':');
+      std::getline(line, shortcutKeyAsString, ':');
+      trim(shortcutDisplayName);
+      trim(shortcutKeyName);
+      trim(shortcutKeyAsString);
+      return { shortcutDisplayName, shortcutKeyName, shortcutKeyAsString };
+    }
+
+    static std::map<std::string, QKeySequence> getShortcutMap(std::filesystem::path configPath) {
+      std::map<std::string, QKeySequence> currentShortcuts = {};
+      std::vector<std::string> shortcutRows = loadShortcutsFromFile(configPath);
+      for(int i = 0; i < shortcutRows.size(); i++){
+        auto [shortcutDisplayName, shortcutKeyName, shortcutKeyAsString] = parseShortcutRow(shortcutRows[i]);
+        currentShortcuts[shortcutKeyName] = QKeySequence(QString::fromStdString(shortcutKeyAsString), QKeySequence::PortableText);
+      }
+      return currentShortcuts;
     }
 };
-
 
 #endif

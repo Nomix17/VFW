@@ -52,6 +52,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   this->setWindowTitle("VFW");
   this->resize(750, 550);
   setFocusPolicy(Qt::StrongFocus);
+  currentShortcuts = ShortcutsInst::getShortcutMap(SYSTEMPATHS->configPath);
   setupShortcuts();
 
   // elements definition
@@ -754,7 +755,10 @@ void MainWindow::onToolMenuAction(int actionNumber) {
         SYSTEMPATHS->configPath
       );
       exitFullScreen();
-      win.exec();
+      if(win.exec() == QDialog::Accepted) {
+        currentShortcuts = win.currentShortcuts;
+        setupShortcuts();
+      }
       break;
     }
 
@@ -839,94 +843,110 @@ void MainWindow::controlButtonsHandler(int buttonindex) {
 }
 
 // keyboard event catching function
-void MainWindow::setupShortcuts(){
-    setFocusPolicy(Qt::StrongFocus);
+void MainWindow::setupShortcuts() {
+  setFocusPolicy(Qt::StrongFocus);
+  clearVector(qShortcutsObjs);
 
-    // --- Playback controls ---
-    auto pause = new QShortcut(QKeySequence(Qt::Key_Space), this);
-    pause->setContext(Qt::ApplicationShortcut);
-    connect(pause, &QShortcut::activated, this, [this]{
-        controlButtonsHandler(BottomControlPanel::PAUSE_BUTTON);
-    });
+  // --- Playback controls ---
+  QShortcut* pause = new QShortcut(currentShortcuts["TOGGLE_PAUSE"], this);
+  pause->setContext(Qt::ApplicationShortcut);
+  connect(pause, &QShortcut::activated, this, [this]{
+      controlButtonsHandler(BottomControlPanel::PAUSE_BUTTON);
+  });
+  qShortcutsObjs.push_back(pause);
 
-    auto seekFwd = new QShortcut(QKeySequence(Qt::Key_Right), this);
-    seekFwd->setContext(Qt::ApplicationShortcut);
-    connect(seekFwd, &QShortcut::activated, this, [this]{
-        changePlayBackPosition(player->position() + 5000);
-    });
+  QShortcut* seekFwd = new QShortcut(currentShortcuts["SEEK_FORWARD"], this);
+  seekFwd->setContext(Qt::ApplicationShortcut);
+  connect(seekFwd, &QShortcut::activated, this, [this]{
+      changePlayBackPosition(player->position() + 5000);
+  });
+  qShortcutsObjs.push_back(seekFwd);
 
-    auto seekBack = new QShortcut(QKeySequence(Qt::Key_Left), this);
-    seekBack->setContext(Qt::ApplicationShortcut);
-    connect(seekBack, &QShortcut::activated, this, [this]{
-        changePlayBackPosition(std::max(0,static_cast<int>(player->position() - 5000)));
-    });
+  QShortcut* seekBack = new QShortcut(currentShortcuts["SEEK_BACKWARD"], this);
+  seekBack->setContext(Qt::ApplicationShortcut);
+  connect(seekBack, &QShortcut::activated, this, [this]{
+      changePlayBackPosition(std::max(0, static_cast<int>(player->position() - 5000)));
+  });
+  qShortcutsObjs.push_back(seekBack);
 
-    // --- Volume controls ---
-    auto volUp = new QShortcut(QKeySequence(Qt::Key_Up), this);
-    volUp->setContext(Qt::ApplicationShortcut);
-    connect(volUp, &QShortcut::activated, this, [this]{
-        int volumeSliderValue = controlbuttonslayout->getVolumeValue();
-        setVolumeSliderPosition(volumeSliderValue + 100);
-    });
+  // --- Volume controls ---
+  QShortcut* volUp = new QShortcut(currentShortcuts["VOLUME_UP"], this);
+  volUp->setContext(Qt::ApplicationShortcut);
+  connect(volUp, &QShortcut::activated, this, [this]{
+      int volumeSliderValue = controlbuttonslayout->getVolumeValue();
+      setVolumeSliderPosition(volumeSliderValue + 100);
+  });
+  qShortcutsObjs.push_back(volUp);
 
-    auto volDown = new QShortcut(QKeySequence(Qt::Key_Down), this);
-    volDown->setContext(Qt::ApplicationShortcut);
-    connect(volDown, &QShortcut::activated, this, [this]{
-        int volumeSliderValue = controlbuttonslayout->getVolumeValue();
-        setVolumeSliderPosition(volumeSliderValue - 100);
-    });
+  QShortcut* volDown = new QShortcut(currentShortcuts["VOLUME_DOWN"], this);
+  volDown->setContext(Qt::ApplicationShortcut);
+  connect(volDown, &QShortcut::activated, this, [this]{
+      int volumeSliderValue = controlbuttonslayout->getVolumeValue();
+      setVolumeSliderPosition(volumeSliderValue - 100);
+  });
+  qShortcutsObjs.push_back(volDown);
 
-    // --- Fullscreen ---
-    auto toggleFS = new QShortcut(QKeySequence(Qt::Key_F), this);
-    toggleFS->setContext(Qt::ApplicationShortcut);
-    connect(toggleFS, &QShortcut::activated, this, &MainWindow::toggleFullScreen);
+  // --- Fullscreen ---
+  QShortcut* toggleFS = new QShortcut(currentShortcuts["TOGGLE_FULLSCREEN"], this);
+  toggleFS->setContext(Qt::ApplicationShortcut);
+  connect(toggleFS, &QShortcut::activated, this, &MainWindow::toggleFullScreen);
+  qShortcutsObjs.push_back(toggleFS);
 
-    auto escFS = new QShortcut(QKeySequence(Qt::Key_Escape), this);
-    escFS->setContext(Qt::ApplicationShortcut);
-    connect(escFS, &QShortcut::activated, this, &MainWindow::exitFullScreen);
+  QShortcut* escFS = new QShortcut(currentShortcuts["EXIT_FULLSCREEN"], this);
+  escFS->setContext(Qt::ApplicationShortcut);
+  connect(escFS, &QShortcut::activated, this, &MainWindow::exitFullScreen);
+  qShortcutsObjs.push_back(escFS);
 
-    // --- Subtitles controls ---
-    auto toggleSubs = new QShortcut(QKeySequence(Qt::Key_V),this);
-    toggleSubs->setContext(Qt::ApplicationShortcut);
-    connect(toggleSubs, &QShortcut::activated, this, &MainWindow::toggleSubtitles);
-    
-    // --- Chapters controls ---
-    auto toggleChaptersIndHandler = new QShortcut(QKeySequence(Qt::Key_C),this);
-    toggleChaptersIndHandler->setContext(Qt::ApplicationShortcut);
-    connect(toggleChaptersIndHandler,&QShortcut::activated,this, &MainWindow::toggleChaptersIndicators);
+  // --- Subtitles controls ---
+  QShortcut* toggleSubs = new QShortcut(currentShortcuts["TOGGLE_SUBTITLES"], this);
+  toggleSubs->setContext(Qt::ApplicationShortcut);
+  connect(toggleSubs, &QShortcut::activated, this, &MainWindow::toggleSubtitles);
+  qShortcutsObjs.push_back(toggleSubs);
 
-    auto goToNextChapter = new QShortcut(QKeySequence(Qt::Key_N),this);
-    goToNextChapter->setContext(Qt::ApplicationShortcut);
-    connect(goToNextChapter, &QShortcut::activated, this, &MainWindow::moveToNextChapter);
+  // --- Chapters controls ---
+  QShortcut* toggleChaptersIndHandler = new QShortcut(currentShortcuts["TOGGLE_CHAPTER_INDICATORS"], this);
+  toggleChaptersIndHandler->setContext(Qt::ApplicationShortcut);
+  connect(toggleChaptersIndHandler, &QShortcut::activated, this, &MainWindow::toggleChaptersIndicators);
+  qShortcutsObjs.push_back(toggleChaptersIndHandler);
 
-    auto goToPrevChapter = new QShortcut(QKeySequence(Qt::Key_B),this);
-    goToPrevChapter->setContext(Qt::ApplicationShortcut);
-    connect(goToPrevChapter, &QShortcut::activated, this, &MainWindow::moveToPrevChapter);
+  QShortcut* goToNextChapter = new QShortcut(currentShortcuts["NEXT_CHAPTER"], this);
+  goToNextChapter->setContext(Qt::ApplicationShortcut);
+  connect(goToNextChapter, &QShortcut::activated, this, &MainWindow::moveToNextChapter);
+  qShortcutsObjs.push_back(goToNextChapter);
 
-    // --- Other controls ---
-    auto volPanel = new QShortcut(QKeySequence(Qt::Key_M), this);
-    volPanel->setContext(Qt::ApplicationShortcut);
-    connect(volPanel, &QShortcut::activated, this, [this]{
+  QShortcut* goToPrevChapter = new QShortcut(currentShortcuts["PREVIOUS_CHAPTER"], this);
+  goToPrevChapter->setContext(Qt::ApplicationShortcut);
+  connect(goToPrevChapter, &QShortcut::activated, this, &MainWindow::moveToPrevChapter);
+  qShortcutsObjs.push_back(goToPrevChapter);
+
+  // --- Other controls ---
+  QShortcut* volPanel = new QShortcut(currentShortcuts["TOGGLE_MUTE"], this);
+  volPanel->setContext(Qt::ApplicationShortcut);
+  connect(volPanel, &QShortcut::activated, this, [this]{
       controlButtonsHandler(BottomControlPanel::TOGGLE_VOLUME_BUTTON);
-    });
+  });
+  qShortcutsObjs.push_back(volPanel);
 
-    auto displayTitle = new QShortcut(QKeySequence(Qt::Key_T), this);
-    displayTitle->setContext(Qt::ApplicationShortcut);
-    connect(displayTitle, &QShortcut::activated, this, [this]{
+  QShortcut* displayTitle = new QShortcut(currentShortcuts["DISPLAY_TITLE"], this);
+  displayTitle->setContext(Qt::ApplicationShortcut);
+  connect(displayTitle, &QShortcut::activated, this, [this]{
       onToolMenuAction(ToolMenu::TITLE);
-    });
+  });
+  qShortcutsObjs.push_back(displayTitle);
 
-    auto reduceDelay = new QShortcut(QKeySequence(Qt::Key_G), this);
-    reduceDelay->setContext(Qt::ApplicationShortcut);
-    connect(reduceDelay, &QShortcut::activated, this, [this]{
+  QShortcut* reduceDelay = new QShortcut(currentShortcuts["REDUCE_SUBTITLES_DELAY"], this);
+  reduceDelay->setContext(Qt::ApplicationShortcut);
+  connect(reduceDelay, &QShortcut::activated, this, [this]{
       onToolMenuAction(ToolMenu::REDUCEDELAY);
-    });
+  });
+  qShortcutsObjs.push_back(reduceDelay);
 
-    auto addDelay = new QShortcut(QKeySequence(Qt::Key_H), this);
-    addDelay->setContext(Qt::ApplicationShortcut);
-    connect(addDelay, &QShortcut::activated, this, [this]{
+  QShortcut* addDelay = new QShortcut(currentShortcuts["INCREASE_SUBTITLES_DELAY"], this);
+  addDelay->setContext(Qt::ApplicationShortcut);
+  connect(addDelay, &QShortcut::activated, this, [this]{
       onToolMenuAction(ToolMenu::ADDDELAY);
-    });
+  });
+  qShortcutsObjs.push_back(addDelay);
 }
 
 void MainWindow::increaseSubtitlesDelay() {
