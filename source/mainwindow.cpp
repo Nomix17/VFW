@@ -351,7 +351,7 @@ void MainWindow::playNextVideoInPlaylist() {
   }
 
   QString nextToPlayPath = playlist[currentVideoIndex].toLocalFile();
-  startVideoPlayer(nextToPlayPath);
+  prepareVideoFile(nextToPlayPath);
 }
 
 template<typename T>
@@ -412,36 +412,53 @@ void MainWindow::getAudioTracksFromMetaData() {
   }
 }
 
-void MainWindow::startVideoPlayer(QString path) {
-  currentVideoUrl = path;
-  video->setSize(view->size());
+void MainWindow::cleanSubtitles() {
   QAction * ToggleSubs = toolMenuActionsObjectsList[ToolMenu::TOGGLE_SUB];
   ToggleSubs->setText("Add Subtitles");
   currentVideoSubtitlePaths.clear();
   currentLoadedSubPath = "";
+}
 
-  //getting the path of the video playing as std::string
-  std::filesystem::path currentPath(currentVideoUrl.toStdString());
-
-  // getting the title of the video that is currently playing for later uses
+void MainWindow::prepareVideoFile(QString filePath) {
+  currentVideoUrl = filePath;
+  cleanSubtitles();
+  std::filesystem::path currentPath(filePath.toStdString());
   currentVideoTitle = currentPath.stem().generic_string();
-
-  //get the current path of directory that the video is playing in
   currentVideoParentDirectory = currentPath.parent_path().generic_string();
 
   std::cout<<"\n";
-  ExtranctingChapterData(currentVideoUrl);
-  ExtractingBuiltInSubs(currentVideoUrl);
+  ExtranctingChapterData(filePath);
+  ExtractingBuiltInSubs(filePath);
   std::cout<<"\n";
-  LoadingInDirectorySubtitles(currentVideoUrl);
+  LoadingInDirectorySubtitles(filePath);
   std::cout<<"\n";
 
-  // startVideoPlayer setup (sound and video widget)
-  player->setSource(QUrl::fromLocalFile(currentVideoUrl));
+  startVideoPlayer(
+    QUrl::fromLocalFile(filePath),
+    QString::fromStdString(currentVideoTitle)
+  );
+}
+
+void MainWindow::prepareVideoURL(QString videoUrl) {
+  currentVideoUrl = videoUrl;
+  cleanSubtitles();
+  QUrl url(videoUrl);
+  QString urlPath = url.path();
+  QFileInfo fileInfo(urlPath);
+
+  currentVideoTitle = fileInfo.fileName().toStdString();
+  currentVideoParentDirectory = "";
+
+  startVideoPlayer(url, QString::fromStdString(currentVideoTitle));
+}
+
+void MainWindow::startVideoPlayer(QUrl videoPath, QString videoTitle) {
+  video->setSize(view->size());
+  player->setSource(videoPath);
   player->setVideoOutput(video);
   player->setAudioOutput(audio);
 
-  std::cout<<"Playing: "<<currentVideoUrl.toStdString()<<"\n";
+  std::cout<<"Playing: "<<videoPath.toString().toStdString()<<"\n";
 
   if(Settings.find("defaultVolume") != Settings.end()) {
     setVolumeSliderPosition(Settings["defaultVolume"] * 1000);
@@ -456,7 +473,7 @@ void MainWindow::startVideoPlayer(QString path) {
   updateButtonsIcon();
 
   // displaying the title for a brief of time
-  renderOverlayText(currentVideoTitle, TextPosition::BOTTOM, 2000);
+  renderOverlayText(videoTitle.toStdString(), TextPosition::BOTTOM, 2000);
 
   //load the last saved position if it's availble
   getlastsavedposition();
@@ -487,7 +504,7 @@ void MainWindow::onToolMenuAction(int actionNumber) {
 
       if (!url.isEmpty()) {
         std::cout<<"Loading Video: "<<url.toStdString()<<"\n";
-        startVideoPlayer(url);
+        prepareVideoFile(url);
         currentPlayerMode = PlayerMode::Single;
       }
       playlist.clear();
@@ -531,7 +548,7 @@ void MainWindow::onToolMenuAction(int actionNumber) {
       if (!url.isEmpty()) {
         playlist.clear();
         currentPlayerMode = PlayerMode::Single;
-        startVideoPlayer(url);
+        prepareVideoURL(url);
       }
       break;
     }

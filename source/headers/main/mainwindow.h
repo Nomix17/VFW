@@ -66,7 +66,11 @@ public:
   void setPlayerDefaultState();
   void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
 
-  void startVideoPlayer(QString url);
+  void startVideoPlayer(QUrl videoPath, QString videoTitle);
+  void prepareVideoFile(QString path);
+  void prepareVideoURL(QString videoUrl);
+  void cleanSubtitles();
+
   void determineNextVideo();
   void playNextVideoInPlaylist();
   void changePlayBackPosition(int newpos);
