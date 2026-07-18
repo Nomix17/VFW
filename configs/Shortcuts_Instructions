@@ -1,15 +1,15 @@
-Pause/Unpause: Space
-Seek Forward (+5s): Right Arrow Key
-Seek Backward (-5s): Left Arrow Key
-Volume Up: Up Arrow Key
-Volume Down: Down Arrow Key
-Toggle Fullscreen: F
-Exit Fullscreen: Escape
-Display Title: T
-Toggle Subtitles: V
-Toggle Chapter Indicators: C
-Next Chapter: N
-Previous Chapter: B
-Mute/Unmute: M
-Reduce Subtitles Delay: G
-Increase Subtitles Delay: H
+Pause/Unpause:TOGGLE_PAUSE:Space
+Seek Forward (+5s):SEEK_FORWARD:Right
+Seek Backward (-5s):SEEK_BACKWARD:Left
+Volume Up:VOLUME_UP:Up
+Volume Down:VOLUME_DOWN:Down
+Toggle Fullscreen:TOGGLE_FULLSCREEN:F
+Exit Fullscreen:EXIT_FULLSCREEN:Esc
+Display Title:DISPLAY_TITLE:T
+Toggle Subtitles:TOGGLE_SUBTITLES:V
+Toggle Chapter Indicators:TOGGLE_CHAPTER_INDICATORS:C
+Next Chapter:NEXT_CHAPTER:N
+Previous Chapter:PREVIOUS_CHAPTER:B
+Mute/Unmute:TOGGLE_MUTE:M
+Reduce Subtitles Delay:REDUCE_SUBTITLES_DELAY:G
+Increase Subtitles Delay:INCREASE_SUBTITLES_DELAY:H
