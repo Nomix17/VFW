@@ -121,17 +121,21 @@ class ShortcutsInst:public QDialog {
 
     void createShortcutsTable(std::vector<std::string> shortcutRows) {
       //creating table header 
-      QLabel* functionalitylabel = new QLabel(this);
-      QLabel* shortcutKey = new QLabel(this);
-      functionalitylabel->setObjectName("tablehead");
-      shortcutKey->setObjectName("tablehead");
-      tablelayout->addWidget(functionalitylabel,0,0);
-      tablelayout->addWidget(shortcutKey,0,1);
+      QLabel* headerFunctionalityLabel = new QLabel(this);
+      QLabel* headerShortcutKey = new QLabel(this);
+      headerFunctionalityLabel->setObjectName("tablehead");
+      headerShortcutKey->setObjectName("tablehead");
+      headerFunctionalityLabel->setText("Actions");
+      headerShortcutKey->setText("Shortcuts");
+      headerFunctionalityLabel->setAlignment(Qt::AlignCenter);
+      headerShortcutKey->setAlignment(Qt::AlignCenter);
+      tablelayout->addWidget(headerFunctionalityLabel,0,0);
+      tablelayout->addWidget(headerShortcutKey,0,1);
 
       //rest of the table
-      for(int i = 0; i < shortcutRows.size(); i++){
+      for(int i = 1; i < shortcutRows.size(); i++) {
         auto [shortcutDisplayName, shortcutKeyName, shortcutKey] = parseShortcutRow(shortcutRows[i]);
-        QLabel *functionalitylabel = new QLabel(QString::fromStdString(shortcutDisplayName));
+        QLabel *functionalityLabel = new QLabel(QString::fromStdString(shortcutDisplayName));
         QLineEdit *keyLineEdit = new QLineEdit(this);
         keyLineEdit->setObjectName("KeyEditInput");
         keyLineEdit->setText(QString::fromStdString(shortcutKey));
@@ -139,7 +143,7 @@ class ShortcutsInst:public QDialog {
         keyLineEdit->setReadOnly(true);
         keyLineEdit->setAlignment(Qt::AlignCenter);
 
-        tablelayout->addWidget(functionalitylabel,i,0);
+        tablelayout->addWidget(functionalityLabel,i,0);
         tablelayout->addWidget(keyLineEdit,i,1);
 
         ShortcutObj newShortcutObj;
