@@ -1469,6 +1469,8 @@ void MainWindow::getlastsavedposition(){
 
     if(lastPlaybackPosition){
       controlbuttonslayout->showSkipButton();
+    } else {
+      controlbuttonslayout->hideSkipButton();
     }
   }else{
       std::cerr << "[ WARN ] Failed to open LPP  File: "<<LPPPath<<"\n";
