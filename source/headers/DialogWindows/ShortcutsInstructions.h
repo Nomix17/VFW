@@ -2,6 +2,7 @@
 #define SHORTCUTS_INST
 
 #include "../utils/trim.h"
+#include "qtimer.h"
 #include <cctype>
 #include <ios>
 #include <iostream>
@@ -18,6 +19,8 @@
 #include <QLabel>
 #include <QKeyEvent>
 #include <QLineEdit>
+#include <QStyle>
+#include <QPointer>
 
 struct ShortcutObj {
   QString displayName;
@@ -35,6 +38,17 @@ class ShortcutsInst:public QDialog {
     QPushButton *saveBtn = new QPushButton("Save");
     QPushButton *cancelBtn = new QPushButton("Cancel");
     std::vector<ShortcutObj> shortcutObjs = {};
+    QTimer* timer = nullptr;
+
+  std::vector<QString> bannedKeys = {
+    "Control",
+    "Meta",
+    "Alt",
+    "CapsLock",
+    "Shift",
+    "ScrollLock",
+    "NumLock",
+  };
 
   public:
     std::map<std::string, QKeySequence> currentShortcuts;
@@ -155,10 +169,40 @@ class ShortcutsInst:public QDialog {
     }
 
     bool eventFilter(QObject *watched, QEvent *event) {
+      if (event->type() == QEvent::FocusOut) {
+        QLineEdit* lineEditObj = static_cast<QLineEdit*>(watched); 
+        lineEditObj->setProperty("state", "");
+        lineEditObj->style()->unpolish(lineEditObj);
+        lineEditObj->style()->polish(lineEditObj);
+      }
+
       if (event->type() == QEvent::KeyPress) {
         QLineEdit* lineEditObj = static_cast<QLineEdit*>(watched); 
         QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
-        lineEditObj->setText(QKeySequence(keyEvent->key()).toString(QKeySequence::PortableText));
+        QString stringfiedKey = QKeySequence(keyEvent->key()).toString(QKeySequence::PortableText);
+
+        if(std::find(bannedKeys.begin(), bannedKeys.end(), stringfiedKey) == bannedKeys.end()) {
+          lineEditObj->setText(stringfiedKey);
+        } else {
+          lineEditObj->setProperty("state", "error");
+          if (timer != nullptr) delete timer;
+          timer = new QTimer(this);
+          timer->setSingleShot(true);
+
+          QPointer<QLineEdit> safeLineEdit(lineEditObj);
+          connect(timer, &QTimer::timeout, this, [this, lineEditObj, safeLineEdit]() {
+            if(safeLineEdit) {
+              safeLineEdit->setProperty("state", "");
+              safeLineEdit->style()->unpolish(safeLineEdit);
+              safeLineEdit->style()->polish(safeLineEdit);
+            }
+          });
+
+          timer->start(200);
+          lineEditObj->style()->unpolish(lineEditObj);
+          lineEditObj->style()->polish(lineEditObj);
+        }
+
         return true;
       }
       return QObject::eventFilter(watched, event);

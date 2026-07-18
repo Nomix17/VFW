@@ -4,9 +4,14 @@ QLabel{
   font-size:16px;
   padding:10px 10px 10px 10px;
 }
-#KeyEditInput {
-  background-color: #111111;
+
+#KeyEditInput[state="error"]:focus {
+  border-color: red;
 }
+#KeyEditInput[state="error"] {
+  border-color: red;
+}
+
 #KeyEditInput:focus {
   border: 1px solid #cccccc;
   background-color:#111111;
