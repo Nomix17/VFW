@@ -450,6 +450,11 @@ void MainWindow::prepareVideoURL(QString videoUrl) {
   currentVideoTitle = fileInfo.fileName().toStdString();
   currentVideoParentDirectory = "";
 
+  std::cout<<"\n";
+  ExtractingChapterData(videoUrl);
+  ExtractingBuiltInSubs(videoUrl);
+  std::cout<<"\n";
+
   startVideoPlayer(url, QString::fromStdString(currentVideoTitle));
 }
 
