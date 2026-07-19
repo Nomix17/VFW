@@ -10,7 +10,7 @@ QLabel {
   padding: 10px;
 }
 
-QTextEdit {
+QLineEdit {
   border-radius: 5px;        
   padding: 5px;
   font-size: 20px;

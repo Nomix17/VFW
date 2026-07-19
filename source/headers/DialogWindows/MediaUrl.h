@@ -10,7 +10,7 @@
 #include <QHBoxLayout>
 #include <QString>
 #include <QLabel>
-#include <QTextEdit>
+#include <QLineEdit>
 #include <QPushButton>
 
 class UrlWindow : public QDialog {
@@ -38,7 +38,7 @@ public:
     firstlayout = new QHBoxLayout;
     secondlayout = new QHBoxLayout;
     urllabel = new QLabel("URL: ");
-    urlentry = new QTextEdit;
+    urlentry = new QLineEdit;
 
     donebutton = new QPushButton("OK");
     donebutton->setFocusPolicy(Qt::NoFocus);
@@ -48,7 +48,7 @@ public:
     cancelbutton->setFocusPolicy(Qt::NoFocus);
 
     connect(donebutton,&QPushButton::clicked,[this](){
-      url = urlentry->toPlainText();
+      url = urlentry->text();
       QDialog::accept();
     });
     connect(cancelbutton,&QPushButton::clicked,[this](){
@@ -67,7 +67,7 @@ public:
 public:
   QString url="";
 private:
-  QTextEdit *urlentry;
+  QLineEdit *urlentry;
   QVBoxLayout *mainlayout;
   QHBoxLayout *firstlayout;
   QHBoxLayout *secondlayout;
