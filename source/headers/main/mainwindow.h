@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QApplication>
 #include <QMainWindow>
 #include <QMediaPlayer>
 #include <QUrl>
@@ -13,6 +14,7 @@
 #include <QGraphicsVideoItem>
 #include <QGraphicsView>
 #include <QProcess>
+#include <QFileDialog>
 
 #include <vector>
 #include <string>
@@ -33,6 +35,8 @@
 #include "../UiComponents/BottomControlPanel.h"
 #include "../UiComponents/FloatingControlPannel.h"
 #include "../UiComponents/SubtitlesItem.h"
+#include "../utils/clearVector.h"
+#include "../utils/stringTreatment.h"
 
 struct MetaDataTrack;
 
@@ -41,194 +45,207 @@ struct SubObject{
   std::string textContent;
   float endTime;
 };
-// main window class
-class MainWindow: public QMainWindow{
+
+class MainWindow: public QMainWindow {
   Q_OBJECT
-public:
+  static inline int MAINWINDOW_BORDERS_MARGIN = 10;
+  static inline int TIME_BEFORE_HIDING_CURSOR = 800;
+  static inline int TIME_BEFORE_HIDING_FLOATING_PANNEL = 800;
 
-  enum PlayerMode {
-    Single,
-    Playlist
-  };
+  public:
+    enum PlayerMode {
+      Single,
+      Playlist
+    };
 
-  MainWindow(QWidget *parent=nullptr);
-  ~MainWindow();
+    MainWindow(QWidget *parent=nullptr);
+    ~MainWindow();
+    void setPlayerDefaultState();
+    void playNextVideoInPlaylist();
 
-  // top bottom layouts
-  void createTopLayout();
-  void createBottomLayout();
-  void onToolMenuAction(int buttonindex);
-  void controlButtonsHandler(int buttonindex);
+  // ui creation
+  private:
+    void setupWindow();
+    void initMediaElements();
+    void setupMainLayout();
+    void createTopLayout();
+    void setupSceneAndView();
+    void createBottomLayout();
+    void connectPlayerSignals();
+    void createTimestampIndicator();
 
-  void setVideoSliderRange(qint64 playbackPosition);
-  void playbackPositionUpdated(qint64 playbackPosition);
-  void updateTimeLabels();
-  void setPlayerDefaultState();
-  void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
+    void onToolMenuAction(int buttonindex);
+    void controlButtonsHandler(int buttonindex);
 
-  void startVideoPlayer(QUrl videoPath, QString videoTitle);
-  void prepareVideoFile(QString path);
-  void prepareVideoURL(QString videoUrl);
-  void cleanSubtitles();
+    void setVideoSliderRange(qint64 playbackPosition);
+    void playbackPositionUpdated(qint64 playbackPosition);
+    void updateTimeLabels();
+    void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
 
-  void determineNextVideo();
-  void playNextVideoInPlaylist();
-  void changePlayBackPosition(int newpos);
-  void closeVideo();
+    void startVideoPlayer(QUrl videoPath, QString videoTitle);
+    void prepareVideoFile(QString path);
+    void prepareVideoURL(QString videoUrl);
+    void cleanSubtitles();
 
-  void setVolumeSliderPosition(qreal position);
-  void toggleVolume();
+    void determineNextVideo();
+    void changePlayBackPosition(int newpos);
+    void closeVideo();
 
-  // Meta Data logic
-  void getSubtitleTracksFromMetaData();
-  void getAudioTracksFromMetaData();
+    void setVolumeSliderPosition(qreal position);
+    void toggleVolume();
 
-  // subtiles logic
-  void toggleSubtitles();
-  void increaseSubtitlesDelay();
-  void decreaseSubtitlesDelay();
-  void SubFileParsing(std::string subpath);
-  void parsingSrtLikeSubsFile(std::string subpath);
-  void parsingAssSubsFile(std::string subpath);
-  void LoadingInDirectorySubtitles(QString currenturl);
-  void ExtractingBuiltInSubs(QString currenturl);
-  void setCurrentLoadedSubPath(QString fileSubPath);
-  void syncSubtitles(qint64 playbackPosition);
-  void onffmpegProcessFinshed(int currentProcessIndex, QString fileSubPath);
-  void killAllSubtitlesExtractionProcesses();
+    // Meta Data logic
+    void getSubtitleTracksFromMetaData();
+    void getAudioTracksFromMetaData();
 
-  // chapters logic
-  void toggleChaptersIndicators();
-  int findChapterIndexByTime(int time);
-  int findCurrentChapterIndex();
-  void moveToNextChapter();
-  void moveToPrevChapter();
-  void ExtractingChapterData(QString currenturl);
+    // subtiles logic
+    void loadSubtitleStyle();
+    void toggleSubtitles();
+    void increaseSubtitlesDelay();
+    void decreaseSubtitlesDelay();
+    void SubFileParsing(std::string subpath);
+    void parsingSrtLikeSubsFile(std::string subpath);
+    void parsingAssSubsFile(std::string subpath);
+    void LoadingInDirectorySubtitles(QString currenturl);
+    void ExtractingBuiltInSubs(QString currenturl);
+    void setCurrentLoadedSubPath(QString fileSubPath);
+    void syncSubtitles(qint64 playbackPosition);
+    void onffmpegProcessFinshed(int currentProcessIndex, QString fileSubPath);
+    void killAllSubtitlesExtractionProcesses();
 
-  // resize stuff
-  void resizeMainUiElement();
-  void resizeVideoContainers();
-  void repositionFloatingControllPannel(int animationTime=0);
-  void repositionSubtitles();
+    // chapters logic
+    void toggleChaptersIndicators();
+    int findChapterIndexByTime(int time);
+    int findCurrentChapterIndex();
+    void moveToNextChapter();
+    void moveToPrevChapter();
+    void ExtractingChapterData(QString currenturl);
 
-  // update icons
-  void updateButtonsIcon();
-  void updatePlayPauseButtonIcon();
-  void updateVolumeButtonIcon();
-  void updateRepeatButtonIcon();
-  void updateFullscreenIcon();
+    // resize stuff
+    void resizeMainUiElement();
+    void resizeVideoContainers();
+    void repositionFloatingControllPannel(int animationTime=0);
+    void repositionSubtitles();
 
-  // global functions
-  void setupShortcuts();
-  void resizeEvent(QResizeEvent * event) override;
-  void mouseDoubleClickEvent(QMouseEvent * event) override;
-  void mousePressEvent(QMouseEvent * event) override;
-  bool eventFilter(QObject *obj, QEvent *event) override;
-  bool handleFloatingPannelDisplaying(QObject *obj, QEvent *event);
-  bool handleTimestampIndicator(QEvent* event);
-  void handleCursorHiding(QEvent* event);
-  void handleDoubleLeftClick(QMouseEvent * event);
+    // update icons
+    void updateButtonsIcon();
+    void updatePlayPauseButtonIcon();
+    void updateVolumeButtonIcon();
+    void updateRepeatButtonIcon();
+    void updateFullscreenIcon();
 
-  void enterFullScreen();
-  void exitFullScreen();
-  void toggleFullScreen();
-  bool mouseInsideFloatingPanel(QEvent* event);
-  void closeHideMouseTimer();
+    // global functions
+    void setupShortcuts();
+    void resizeEvent(QResizeEvent * event) override;
+    void mouseDoubleClickEvent(QMouseEvent * event) override;
+    void mousePressEvent(QMouseEvent * event) override;
+    bool eventFilter(QObject *obj, QEvent *event) override;
+    bool handleFloatingPannelDisplaying(QObject *obj, QEvent *event);
+    bool handleTimestampIndicator(QEvent* event);
+    void handleCursorHiding(QEvent* event);
+    void handleDoubleLeftClick(QMouseEvent * event);
 
-  void renderOverlayText(std::string textToRender, TextPosition position, int animationduration);
-  void setTopbarLayoutVisible(bool visible);
+    void enterFullScreen();
+    void exitFullScreen();
+    void toggleFullScreen();
+    bool mouseInsideFloatingPanel(QEvent* event);
+    void closeHideMouseTimer();
 
-  // caching and stuff
-  void savevideoposition();
-  void getlastsavedposition();
-  void parseSettingsFile();
-  void savingNewSettings();
+    void renderOverlayText(std::string textToRender, TextPosition position, int animationduration);
+    void setTopbarLayoutVisible(bool visible);
+    void moveSomethingToPos(QGraphicsWidget *widget, QPointF targetPos, int animationTime);
+    void setUniformMargins(QLayout *layout, int margin);
 
-  //turnning off the tab focusing
-  bool focusNextPrevChild(bool next) override{
-    if(next){}
-    return false;
-  }
+    // caching and stuff
+    void savevideoposition();
+    void getlastsavedposition();
+    void parseSettingsFile();
+    void savingNewSettings();
 
-private:
-  // media player variables
-  QMediaPlayer *player;
-  QGraphicsVideoItem *video;
-  QAudioOutput *audio;
+    //turnning off the tab focusing
+    bool focusNextPrevChild(bool next) override{
+      if(next){}
+      return false;
+    }
 
-  // Meta Data variables
-  std::vector<MetaDataTrack*> subTracksMetaDataVector;
-  std::vector<MetaDataTrack*> audioTracksMetaDataVector;
-  std::vector<QProcess*> subExtractionProcessesList;
-    
-  // playback status variables
-  bool videoIsPaused=false;
-  bool fullScreenEnabled = false;
-  size_t currentVideoIndex=0;
+    // media player variables
+    QMediaPlayer *player;
+    QGraphicsVideoItem *video;
+    QAudioOutput *audio;
 
-  bool segmentLoopEnabled = false;
-  int segmentLoopStart;
-  int segmentLoopEnd;
+    // Meta Data variables
+    std::vector<MetaDataTrack*> subTracksMetaDataVector;
+    std::vector<MetaDataTrack*> audioTracksMetaDataVector;
+    std::vector<QProcess*> subExtractionProcessesList;
 
-  Qt::AspectRatioMode CurrentAspectMode = Qt::KeepAspectRatio;
-  BottomControlPanel::RepeatMode  rep = BottomControlPanel::PlaylistRepeat;
+    // playback status variables
+    bool videoIsPaused=false;
+    bool fullScreenEnabled = false;
+    size_t currentVideoIndex=0;
 
-  // ui Status variables
-  bool ShowSubs = true;
-  bool showChaptersIndicators = true;
-  bool MouseIsInsideFloatingPanel = false;
-  bool contextMenuOpened = false;
+    bool segmentLoopEnabled = false;
+    int segmentLoopStart;
+    int segmentLoopEnd;
 
-  // ui variables
-  QLabel* image;
-  QWidget *mainwidget;
-  QStackedLayout *stackedlayout;
-  QVBoxLayout *mainlayout;
-  TopBar *topbarlayout=nullptr;
-  QGridLayout *videolayout;
-  BottomControlPanel *controlbuttonslayout=nullptr;
-  SubtitlesItem *subtitlesItem;
-  QGraphicsView *view;
-  QGraphicsScene *scene;
-  TextTimer* timestampIndicator;
+    Qt::AspectRatioMode CurrentAspectMode = Qt::KeepAspectRatio;
+    BottomControlPanel::RepeatMode  rep = BottomControlPanel::PlaylistRepeat;
 
-  // floating control pannel ui variables 
-  FloatingControlPannel* floatingControlPannel;
+    // ui Status variables
+    bool ShowSubs = true;
+    bool showChaptersIndicators = true;
+    bool MouseIsInsideFloatingPanel = false;
+    bool contextMenuOpened = false;
 
-  // running video variables
-  std::string currentVideoParentDirectory;
-  QString currentVideoUrl = "";
-  std::string currentVideoTitle="";
+    // ui variables
+    QLabel* image;
+    QWidget *mainwidget;
+    QStackedLayout *stackedlayout;
+    QVBoxLayout *mainlayout;
+    TopBar *topbarlayout=nullptr;
+    QGridLayout *videolayout;
+    BottomControlPanel *controlbuttonslayout=nullptr;
+    SubtitlesItem *subtitlesItem;
+    QGraphicsView *view;
+    QGraphicsScene *scene;
+    TextTimer* timestampIndicator;
 
-  // buttons Objects
-  std::vector <QAction*> toolMenuActionsObjectsList= {};
+    // floating control pannel ui variables 
+    FloatingControlPannel* floatingControlPannel;
 
-  // subtiles ui variables
-  int subpadding;
-  int subBottomMargin;
-  QString htmlstyle;
-  TextItem *overlayTextItem = nullptr;
+    // running video variables
+    std::string currentVideoParentDirectory;
+    QString currentVideoUrl = "";
+    std::string currentVideoTitle="";
 
-  // subtiles logic variables
-  int currentSubDelay=0;
-  std::vector <SubObject*> currentLoadedSubList;
-  QString currentLoadedSubPath = "";
+    // buttons Objects
+    std::vector <QAction*> toolMenuActionsObjectsList= {};
 
-  int lastPlaybackPosition=0;
-  std::vector <ChapterObject> ChaptersVectors = {};
+    // subtiles ui variables
+    int subpadding;
+    int subBottomMargin;
+    QString htmlstyle;
+    TextItem *overlayTextItem = nullptr;
 
-  //default Values
-  std::map<std::string,float> Settings;
+    // subtiles logic variables
+    int currentSubDelay=0;
+    std::vector <SubObject*> currentLoadedSubList;
+    QString currentLoadedSubPath = "";
 
-  QTimer* hideMouseTimer = nullptr;
-  std::vector<QShortcut*> qShortcutsObjs;
-  std::map<std::string, QKeySequence> currentShortcuts = {};
+    int lastPlaybackPosition=0;
+    std::vector <ChapterObject> ChaptersVectors = {};
 
-public:
-  PATHS *SYSTEMPATHS = new PATHS();
-  std::vector<QUrl> playlist;
-  std::vector <QString> currentVideoSubtitlePaths = {};
-  PlayerMode currentPlayerMode;
+    //default Values
+    std::map<std::string,float> Settings;
+
+    QTimer* hideMouseTimer = nullptr;
+    std::vector<QShortcut*> qShortcutsObjs;
+    std::map<std::string, QKeySequence> currentShortcuts = {};
+
+  public:
+    PATHS *SYSTEMPATHS = new PATHS();
+    std::vector<QUrl> playlist;
+    std::vector <QString> currentVideoSubtitlePaths = {};
+    PlayerMode currentPlayerMode;
 };
 
 #endif

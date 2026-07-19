@@ -22,4 +22,11 @@ inline void trim(std::string &str) {
   rtrim(str);
 }
 
+inline std::string lowerCase(std::string text) {
+  std::transform(text.begin(), text.end(), text.begin(), [](unsigned char c){
+    return std::tolower(c); 
+  });
+  return text;
+}
+
 #endif

@@ -1,7 +1,6 @@
 #ifndef SHORTCUTS_INST
 #define SHORTCUTS_INST
 
-#include "../utils/trim.h"
 #include "qtimer.h"
 #include <cctype>
 #include <ios>
@@ -21,6 +20,8 @@
 #include <QLineEdit>
 #include <QStyle>
 #include <QPointer>
+
+#include "../utils/stringTreatment.h"
 
 struct ShortcutObj {
   QString displayName;

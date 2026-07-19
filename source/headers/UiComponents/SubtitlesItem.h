@@ -1,6 +1,6 @@
 #include <QGraphicsTextItem>
 #include <QFont>
-#include "../main/TextItem.h"
+#include "TextItem.h"
 
 class SubtitlesItem: public TextItem {
   public:
