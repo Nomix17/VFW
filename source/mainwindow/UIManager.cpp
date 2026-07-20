@@ -8,11 +8,12 @@
 #include <QPoint>
 #include <QPointF>
 
-void MainWindow::updateButtonsIcon(){
+void MainWindow::updateButtonsIcon() {
   updatePlayPauseButtonIcon();
   updateVolumeButtonIcon();
   updateRepeatButtonIcon();
   updateFullscreenIcon();
+  updatePlaybackSpeedIcon();
 }
 
 void MainWindow::updatePlayPauseButtonIcon() {
@@ -36,6 +37,11 @@ void MainWindow::updateTimeLabels() {
   if(currentVideoUrl == "") return;
   controlbuttonslayout->updatePlayBackTimer(player->position());
   controlbuttonslayout->updateDurationTimer(player->duration());
+}
+
+void MainWindow::updatePlaybackSpeedIcon() {
+  float currentPlaybackSpeed = player->playbackRate();
+  controlbuttonslayout->updatePlaybackSpeedIcon(currentPlaybackSpeed);
 }
 
 void MainWindow::setTopbarLayoutVisible(bool visible) {

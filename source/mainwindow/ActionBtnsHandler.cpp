@@ -368,6 +368,14 @@ void MainWindow::controlButtonsHandler(int buttonindex) {
 
       break;
     }
+    case BottomControlPanel::SPEED_CONTROL_BUTTON:{
+      float playbackSpeed = player->playbackRate();
+      playbackSpeed = std::max(0.25, (playbackSpeed + 0.25));
+      if(playbackSpeed > 2) playbackSpeed = 0.25;
+      player->setPlaybackRate(playbackSpeed);
+      updatePlaybackSpeedIcon();
+      break;
+    }
 
     case BottomControlPanel::CONTINUE_FROM_LAST_POS_BUTTON:{
       changePlayBackPosition(lastPlaybackPosition);

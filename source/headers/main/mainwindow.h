@@ -143,6 +143,7 @@ class MainWindow: public QMainWindow {
     void updateVolumeButtonIcon();
     void updateRepeatButtonIcon();
     void updateFullscreenIcon();
+    void updatePlaybackSpeedIcon();
 
     // global functions
     void setupShortcuts();

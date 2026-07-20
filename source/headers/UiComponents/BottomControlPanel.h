@@ -38,6 +38,7 @@ class BottomControlPanel: public QVBoxLayout {
       FULLSCREEN_BUTTON,
       PLAYLIST_BUTTON,
       REPETITION_BUTTON,
+      SPEED_CONTROL_BUTTON,
       CONTINUE_FROM_LAST_POS_BUTTON,
       TOGGLE_VOLUME_BUTTON
     };
@@ -48,7 +49,7 @@ class BottomControlPanel: public QVBoxLayout {
      void controlButtonsHandler(int buttonNumber);
 
   private:
-    QList<QString> mcbuttons = {"BPause","BBack","BStop","BNext","BFullscreen","BPlaylist","BRepeating","BContinueFLP","BVolumeControl"};
+    QList<QString> mcbuttons = {"BPause","BBack","BStop","BNext","BFullscreen","BPlaylist","BRepeating","","BContinueFLP","BVolumeControl"};
     std::vector <QPushButton*> ControlButtonsObjectsList = {};
     QString ICONSDIRECTORY;
 
@@ -95,7 +96,7 @@ class BottomControlPanel: public QVBoxLayout {
     void createControlButtons(QHBoxLayout *parentLayout) {
       for (int j = 0; j < mcbuttons.size(); j++) {
         // adding space for the style
-        if (j == BACK_BUTTON || j == FULLSCREEN_BUTTON || j == CONTINUE_FROM_LAST_POS_BUTTON) {
+        if (j == BACK_BUTTON || j == FULLSCREEN_BUTTON || j == SPEED_CONTROL_BUTTON) {
           parentLayout->addSpacing(20);
         } else if (j == TOGGLE_VOLUME_BUTTON) {
           // adding space for the style between buttons and volume parameters
@@ -229,6 +230,11 @@ class BottomControlPanel: public QVBoxLayout {
       std::string iconFileName = isFullscreened ? "BUnfullscreen.png" : "BFullscreen.png";
       std::filesystem::path newIconFullPath(std::filesystem::path(ICONSDIRECTORY.toStdString()) / std::filesystem::path(iconFileName));
       fullscreen_button->setIcon(QPixmap(QString::fromStdString(newIconFullPath.string())));
+    }
+
+    void updatePlaybackSpeedIcon(float speed) {
+      QPushButton *playbackSpeedIcon = ControlButtonsObjectsList[SPEED_CONTROL_BUTTON];
+      playbackSpeedIcon->setText(QString::number(speed) + "x");
     }
 
     void deletelayout(QLayout* layout){
