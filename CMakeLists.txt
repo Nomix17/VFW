@@ -8,6 +8,13 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+    set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
+endif()
+
+set(CMAKE_UNITY_BUILD ON)
+
 find_package(Qt6 REQUIRED COMPONENTS
     Core
     Widgets
@@ -29,6 +36,35 @@ add_executable(VFW
     ${SRC_FILES}
     ${HEADER_FILES}
     assets/app_icon.rc
+)
+
+target_precompile_headers(VFW PRIVATE
+    <QVBoxLayout>
+    <QPushButton>
+    <QString>
+    <QDialog>
+    <QLabel>
+    <QUrl>
+    <QHBoxLayout>
+    <QGridLayout>
+    <QScrollArea>
+    <QMenu>
+    <QApplication>
+    <QWidget>
+    <QToolButton>
+    <QPixmap>
+    <QLineEdit>
+    <QGraphicsView>
+    <QGraphicsTextItem>
+    <QMainWindow>
+    <QMediaPlayer>
+    <QAudioOutput>
+    <QGraphicsVideoItem>
+    <QProcess>
+    <QFileDialog>
+    <vector>
+    <string>
+    <filesystem>
 )
 
 target_link_libraries(VFW

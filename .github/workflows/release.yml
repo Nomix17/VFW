@@ -31,7 +31,7 @@ jobs:
 
       - name: Configure & build
         run: |
-          cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=OFF
           cmake --build build --parallel $(nproc)
 
       - name: Download linuxdeploy + Qt plugin
@@ -223,7 +223,7 @@ jobs:
 
       - name: Configure & build
         run: |
-          cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -G "NMake Makefiles"
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=OFF -G "NMake Makefiles"
           cmake --build build --config Release
 
       - name: Deploy Qt runtime
