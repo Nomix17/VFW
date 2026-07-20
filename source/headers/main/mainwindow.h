@@ -85,6 +85,7 @@ class MainWindow: public QMainWindow {
     void connectPlayerSignals();
     void createTimestampIndicator();
     void setupVideoDropConnector();
+    void setupContextMenuConnector();
 
     void onToolMenuAction(int buttonindex);
     void controlButtonsHandler(int buttonindex);
@@ -152,7 +153,6 @@ class MainWindow: public QMainWindow {
     void setupShortcuts();
     void resizeEvent(QResizeEvent * event) override;
     void mouseDoubleClickEvent(QMouseEvent * event) override;
-    void mousePressEvent(QMouseEvent * event) override;
     bool eventFilter(QObject *obj, QEvent *event) override;
     bool handleFloatingPannelDisplaying(QObject *obj, QEvent *event);
     bool handleTimestampIndicator(QEvent* event);

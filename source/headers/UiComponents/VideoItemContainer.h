@@ -15,6 +15,7 @@ class VideoItemContainer : public QGraphicsVideoItem {
 
   signals:
     void videoDropped(const QList<QUrl> &urls);
+    void openContextMenu(QPointF pos);
 
 
   protected:
@@ -38,6 +39,11 @@ class VideoItemContainer : public QGraphicsVideoItem {
         return;
       }
       event->ignore();
+    }
+
+    void contextMenuEvent(QGraphicsSceneContextMenuEvent* event) override {
+      event->accept();
+      emit openContextMenu(event->screenPos());
     }
 
 };

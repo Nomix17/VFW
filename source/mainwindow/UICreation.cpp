@@ -53,7 +53,6 @@ void MainWindow::setupSceneAndView() {
   view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   scene->addItem(video);
   scene->addItem(subtitlesItem);
-  setupVideoDropConnector();
 }
 
 void MainWindow::setupVideoDropConnector() {
@@ -62,16 +61,26 @@ void MainWindow::setupVideoDropConnector() {
     int firstNewVideoIndex = playlist.size();
     for(QUrl url : urls) {
       std::filesystem::path filePath(url.toLocalFile().toStdString());
-      if(isVideoSupported(filePath)) {
-        playlist.push_back(url);
-        videoAdded = true;
-        std::cout<<"Loading Video: "<<url.toString().toStdString()<<"\n";
-      }
+      if(!isVideoSupported(filePath)) continue;
+      playlist.push_back(url);
+      videoAdded = true;
+      std::cout<<"Loading Video: "<<url.toString().toStdString()<<"\n";
     }
     if(videoAdded) {
       currentPlayerMode = PlayerMode::Playlist;
       playVideoInPlaylist(firstNewVideoIndex);
     }
+  });
+}
+
+void MainWindow::setupContextMenuConnector() {
+  connect(video, &VideoItemContainer::openContextMenu, this, [this](QPointF pos) {
+    ContextMenu* menu = new ContextMenu(this);
+    connect(menu, &ContextMenu::handleButtonsClick, this, &MainWindow::onToolMenuAction);
+    connect(menu, &QMenu::aboutToHide, [this]() { contextMenuOpened = false; });
+    contextMenuOpened = true;
+    menu->exec(pos.toPoint());
+    delete menu;
   });
 }
 

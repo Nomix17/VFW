@@ -17,17 +17,6 @@ void MainWindow::resizeEvent(QResizeEvent *event) {
   resizeMainUiElement();
 }
 
-void MainWindow::mousePressEvent(QMouseEvent* event) {
-  if (event->button() == Qt::RightButton) {
-    ContextMenu* menu = new ContextMenu(this);
-    connect(menu, &ContextMenu::handleButtonsClick, this, &MainWindow::onToolMenuAction);
-    connect(menu, &QMenu::aboutToHide, [this]() { contextMenuOpened = false; });
-    contextMenuOpened = true;
-    menu->exec(event->globalPosition().toPoint());
-    delete menu;
-  }
-}
-
 void MainWindow::mouseDoubleClickEvent(QMouseEvent * event) {
   if(event->button() == Qt::LeftButton)
     handleDoubleLeftClick(event);

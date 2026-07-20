@@ -17,6 +17,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   connectPlayerSignals();
   setupSceneAndView();
   setupMainLayout();
+  setupVideoDropConnector();
+  setupContextMenuConnector();
 
   parseSettingsFile();
   setPlayerDefaultState();
