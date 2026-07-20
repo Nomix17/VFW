@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
 
   // Run playlist or set default state
   if (!mainWindow.playlist.empty()) {
-    mainWindow.playNextVideoInPlaylist();
+    mainWindow.playVideoInPlaylist(0);
   } else {
     mainWindow.setPlayerDefaultState();
   }

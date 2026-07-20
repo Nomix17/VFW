@@ -59,7 +59,7 @@ void MainWindow::onToolMenuAction(int actionNumber) {
 
         if (playlist.size()) {
           currentPlayerMode = PlayerMode::Playlist;
-          playNextVideoInPlaylist();
+          playVideoInPlaylist(currentPlayerMode);
         }
       }
       break;
@@ -320,8 +320,7 @@ void MainWindow::controlButtonsHandler(int buttonindex) {
 
     case BottomControlPanel::BACK_BUTTON: {
       if (currentPlayerMode == PlayerMode::Playlist && currentVideoIndex > 0) {
-        currentVideoIndex--;
-        playNextVideoInPlaylist();
+        playVideoInPlaylist(currentVideoIndex-1);
       }
       break;
     }
@@ -334,7 +333,9 @@ void MainWindow::controlButtonsHandler(int buttonindex) {
 
     case BottomControlPanel::NEXT_BUTTON: {
       if (currentPlayerMode == PlayerMode::Playlist) {
-        player->setPosition(player->duration());
+        int nextIndex = determineNextVideoIndex();
+        if(nextIndex >= 0)
+          playVideoInPlaylist(nextIndex);
       }
       break;
     }
@@ -354,8 +355,7 @@ void MainWindow::controlButtonsHandler(int buttonindex) {
       exitFullScreen();
       win.exec();
       if (win.new_video_index != (int)currentVideoIndex && win.new_video_index != -1) {
-        currentVideoIndex = win.new_video_index;
-        playNextVideoInPlaylist();
+        playVideoInPlaylist(win.new_video_index);
       }
       break;
     }

@@ -74,34 +74,35 @@ void MainWindow::startVideoPlayer(QUrl videoPath, QString videoTitle) {
   savevideoposition();
 }
 
-void MainWindow::playNextVideoInPlaylist() {
-  if (currentVideoIndex > playlist.size()) {
+void MainWindow::playVideoInPlaylist(int index) {
+  if (index >= playlist.size()) {
     setPlayerDefaultState();
     return;
   }
-  QString nextToPlayPath = playlist[currentVideoIndex].toLocalFile();
+  currentVideoIndex = index;
+  QString nextToPlayPath = playlist[index].toLocalFile();
   prepareVideoFile(nextToPlayPath);
 }
 
-void MainWindow::determineNextVideo() {
+int MainWindow::determineNextVideoIndex() {
+  int index = -1;
   if (rep == BottomControlPanel::PlaylistRepeat) {
     if (playlist.size()) {
-      if (currentVideoIndex == playlist.size() - 1) currentVideoIndex = 0;
-      else currentVideoIndex++;
-      playNextVideoInPlaylist();
+      if (currentVideoIndex == playlist.size() - 1) index = 0;
+      else index = currentVideoIndex + 1;
 
     } else {
       closeVideo();
     }
 
   } else if(rep == BottomControlPanel::VideoRepeat) {
-     changePlayBackPosition(0);
+    changePlayBackPosition(0);
 
   } else if (rep == BottomControlPanel::Shuffle) {
-    currentVideoIndex = rand() % playlist.size();
-    playNextVideoInPlaylist();
+    index = rand() % playlist.size();
   }
   controlbuttonslayout->setVideoSliderValue(0);
+  return index;
 }
 
 void MainWindow::playbackPositionUpdated(qint64 playbackPosition) {
@@ -110,7 +111,9 @@ void MainWindow::playbackPositionUpdated(qint64 playbackPosition) {
   if (playbackPosition != player->duration()) {
     updateTimeLabels();
   } else if (playbackPosition == player->duration()) {
-    determineNextVideo();
+    int nextVideoIndex = determineNextVideoIndex();
+    if(nextVideoIndex >= 0)
+      playVideoInPlaylist(nextVideoIndex);
   }
 
   if (segmentLoopEnabled && playbackPosition >= segmentLoopEnd * 1000) {

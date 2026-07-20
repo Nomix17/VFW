@@ -71,7 +71,7 @@ class MainWindow: public QMainWindow {
     MainWindow(QWidget *parent=nullptr);
     ~MainWindow();
     void setPlayerDefaultState();
-    void playNextVideoInPlaylist();
+    void playVideoInPlaylist(int index);
 
   // ui creation
   private:
@@ -97,7 +97,7 @@ class MainWindow: public QMainWindow {
     void prepareVideoURL(QString videoUrl);
     void cleanSubtitles();
 
-    void determineNextVideo();
+    int determineNextVideoIndex();
     void changePlayBackPosition(int newpos);
     void closeVideo();
 
@@ -192,7 +192,7 @@ class MainWindow: public QMainWindow {
     // playback status variables
     bool videoIsPaused=false;
     bool fullScreenEnabled = false;
-    size_t currentVideoIndex=0;
+    size_t currentVideoIndex = 0;
 
     bool segmentLoopEnabled = false;
     int segmentLoopStart;
