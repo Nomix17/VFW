@@ -49,3 +49,11 @@ void MainWindow::getAudioTracksFromMetaData() {
     }
   }
 }
+
+bool MainWindow::isVideoSupported(std::filesystem::path videoPath) {
+  return std::find(
+    supportedMediaFormats.begin(),
+    supportedMediaFormats.end(),
+    videoPath.extension().string()
+  ) != supportedMediaFormats.end();
+}

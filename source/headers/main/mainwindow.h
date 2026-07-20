@@ -27,6 +27,7 @@
 #include "../UiComponents/BottomControlPanel.h"
 #include "../UiComponents/FloatingControlPannel.h"
 #include "../UiComponents/SubtitlesItem.h"
+#include "../UiComponents/VideoItemContainer.h"
 #include "../utils/clearVector.h"
 #include "../utils/stringTreatment.h"
 
@@ -34,7 +35,7 @@ class QLabel;
 class QStackedLayout;
 class QVBoxLayout;
 class QGridLayout;
-class QGraphicsVideoItem;
+class VideoItemContainer;
 class QGraphicsView;
 class QGraphicsScene;
 class QShortcut;
@@ -83,6 +84,7 @@ class MainWindow: public QMainWindow {
     void createBottomLayout();
     void connectPlayerSignals();
     void createTimestampIndicator();
+    void setupVideoDropConnector();
 
     void onToolMenuAction(int buttonindex);
     void controlButtonsHandler(int buttonindex);
@@ -105,6 +107,7 @@ class MainWindow: public QMainWindow {
     void toggleVolume();
 
     // Meta Data logic
+    bool isVideoSupported(std::filesystem::path videoPath);
     void getSubtitleTracksFromMetaData();
     void getAudioTracksFromMetaData();
 
@@ -181,7 +184,7 @@ class MainWindow: public QMainWindow {
 
     // media player variables
     QMediaPlayer *player;
-    QGraphicsVideoItem *video;
+    VideoItemContainer *video;
     QAudioOutput *audio;
 
     // Meta Data variables

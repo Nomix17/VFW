@@ -50,10 +50,10 @@ void MainWindow::onToolMenuAction(int actionNumber) {
         playlist.clear();
         // saving all the urls in a list
         std::cout<<"\n"; 
-        for (auto i : std::filesystem::directory_iterator(url.toStdString())) {
-          if(std::find(supportedMediaFormats.begin(), supportedMediaFormats.end(),i.path().extension().string()) != supportedMediaFormats.end()){
-            playlist.push_back(QUrl::fromLocalFile(QString::fromStdString(i.path().generic_string())));
-            std::cout<<"Loading Video: "<<i.path().generic_string()<<"\n";
+        for (auto filePath : std::filesystem::directory_iterator(url.toStdString())) {
+          if(isVideoSupported(filePath.path())){
+            playlist.push_back(QUrl::fromLocalFile(QString::fromStdString(filePath.path().generic_string())));
+            std::cout<<"Loading Video: "<<filePath.path().generic_string()<<"\n";
           }
         }
 

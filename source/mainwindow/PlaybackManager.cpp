@@ -155,6 +155,7 @@ void MainWindow::closeVideo() {
 
 void MainWindow::setPlayerDefaultState() {
   currentVideoUrl = "";
+  currentVideoIndex = 0;
   videoIsPaused = true;
   player->setSource({});
   clearVector(audioTracksMetaDataVector);
@@ -163,6 +164,7 @@ void MainWindow::setPlayerDefaultState() {
   controlbuttonslayout->hideSkipButton();
   controlbuttonslayout->setDefaultState();
   setVolumeSliderPosition(Settings["defaultVolume"] * 1000);
+  playlist.clear();
   ChaptersVectors.clear();
   updateButtonsIcon();
 }

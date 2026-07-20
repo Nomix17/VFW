@@ -18,7 +18,7 @@ void MainWindow::setupWindow() {
 void MainWindow::initMediaElements() {
   player = new QMediaPlayer(this);
   audio = new QAudioOutput(this);
-  video = new QGraphicsVideoItem();
+  video = new VideoItemContainer();
   scene = new QGraphicsScene(this);
   view = new QGraphicsView(scene, this);
   mainwidget = new QWidget(this);
@@ -53,6 +53,26 @@ void MainWindow::setupSceneAndView() {
   view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   scene->addItem(video);
   scene->addItem(subtitlesItem);
+  setupVideoDropConnector();
+}
+
+void MainWindow::setupVideoDropConnector() {
+  connect(video, &VideoItemContainer::videoDropped, video, [this](const QList<QUrl> &urls) {
+    bool videoAdded = false;
+    int firstNewVideoIndex = playlist.size();
+    for(QUrl url : urls) {
+      std::filesystem::path filePath(url.toLocalFile().toStdString());
+      if(isVideoSupported(filePath)) {
+        playlist.push_back(url);
+        videoAdded = true;
+        std::cout<<"Loading Video: "<<url.toString().toStdString()<<"\n";
+      }
+    }
+    if(videoAdded) {
+      currentPlayerMode = PlayerMode::Playlist;
+      playVideoInPlaylist(firstNewVideoIndex);
+    }
+  });
 }
 
 void MainWindow::createBottomLayout() {
