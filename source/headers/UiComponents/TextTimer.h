@@ -1,8 +1,8 @@
 #ifndef TEXTTIMER
 #define TEXTTIMER
 
-#include "qlabel.h"
-#include <iostream>
+#include <QLabel>
+#include <QString>
 #include <string>
 #include <sstream>
 #include <iomanip>

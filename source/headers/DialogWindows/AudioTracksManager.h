@@ -10,11 +10,14 @@
 
 #include <QDialog>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGridLayout>
+#include <QLayout>
 #include <QScrollArea>
 #include <QPushButton>
 #include <QString>
-#include <QUrl>
 #include <QPixmap>
+#include <QSizePolicy>
 
 struct MetaDataTrack{
   std::string title;

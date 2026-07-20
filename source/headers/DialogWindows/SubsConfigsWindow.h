@@ -7,6 +7,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <string>
+#include <vector>
 
 #include <QDialog>
 #include <QGridLayout>
@@ -19,9 +21,12 @@
 #include <QMenu>
 #include <QAction>
 #include <QColorDialog>
+#include <QColor>
+#include <QPalette>
 #include <QList>
 #include <QIntValidator>
 #include <QFontDatabase>
+#include <QString>
 
 using namespace nlohmann;
 

@@ -1,20 +1,12 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QApplication>
 #include <QMainWindow>
 #include <QMediaPlayer>
 #include <QUrl>
 #include <QString>
-#include <QLabel>
-#include <QStackedLayout>
-#include <QVBoxLayout>
-#include <QGridLayout>
-#include <QGraphicsTextItem>
-#include <QGraphicsVideoItem>
-#include <QGraphicsView>
-#include <QProcess>
-#include <QFileDialog>
+#include <QKeySequence>
+#include <QPointF>
 
 #include <vector>
 #include <string>
@@ -37,6 +29,24 @@
 #include "../UiComponents/SubtitlesItem.h"
 #include "../utils/clearVector.h"
 #include "../utils/stringTreatment.h"
+
+class QLabel;
+class QStackedLayout;
+class QVBoxLayout;
+class QGridLayout;
+class QGraphicsVideoItem;
+class QGraphicsView;
+class QGraphicsScene;
+class QShortcut;
+class QProcess;
+class QAction;
+class QTimer;
+class QGraphicsWidget;
+class QLayout;
+class QResizeEvent;
+class QMouseEvent;
+class QEvent;
+class QAudioOutput;
 
 struct MetaDataTrack;
 

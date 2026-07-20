@@ -1,4 +1,7 @@
 #include "../headers/main/mainwindow.h"
+#include <fstream>
+#include <sstream>
+#include <iostream>
 
 void MainWindow::parseSettingsFile() {
   std::string settingsFilePath = (SYSTEMPATHS->configPath / "settings").string();

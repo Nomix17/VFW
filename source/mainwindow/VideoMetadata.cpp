@@ -1,5 +1,4 @@
 #include "../headers/main/mainwindow.h"
-
 #include <QMediaMetaData>
 
 void MainWindow::getSubtitleTracksFromMetaData() {

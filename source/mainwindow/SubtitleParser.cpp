@@ -1,5 +1,12 @@
 #include "../headers/main/mainwindow.h"
+#include <QString>
+#include <QStringList>
 #include <iostream>
+#include <fstream>
+#include <filesystem>
+#include <algorithm>
+#include <cctype>
+#include <sstream>
 
 std::pair<double,double> parseTimeString(std::string stringTimeInterval);
 double formatStringTime(const std::string& stringTimer);

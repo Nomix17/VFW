@@ -1,16 +1,24 @@
 #ifndef BOTTOMCONTROLPANEL
 #define BOTTOMCONTROLPANEL
 
-#include "qboxlayout.h"
-#include <iomanip>
-#include <filesystem>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QPushButton>
 #include <QLabel>
+#include <QList>
+#include <QString>
+#include <QPixmap>
+#include <QSize>
+#include <QRect>
+#include <QPoint>
+#include <QLayout>
+#include <iomanip>
+#include <filesystem>
+#include <string>
+#include <vector>
+
 #include "../UiComponents/CustomSlider.h"
 #include "TextTimer.h"
-#include "qevent.h"
-#include "qpoint.h"
 
 class BottomControlPanel: public QVBoxLayout {
   Q_OBJECT

@@ -1,4 +1,5 @@
 #include "../headers/main/mainwindow.h"
+#include <QApplication>
 
 void MainWindow::toggleFullScreen() {
   fullScreenEnabled ? exitFullScreen() : enterFullScreen();

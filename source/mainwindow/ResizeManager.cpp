@@ -1,4 +1,5 @@
 #include "../headers/main/mainwindow.h"
+#include <QSize>
 
 void MainWindow::resizeMainUiElement() {
   resizeVideoContainers();

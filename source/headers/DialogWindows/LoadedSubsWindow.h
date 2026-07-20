@@ -2,6 +2,7 @@
 #define SUBWINDOW_H
 
 #include <iostream>
+#include <string>
 #include <vector>
 #include <fstream>
 #include <sstream>
@@ -9,11 +10,14 @@
 
 #include <QDialog>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QGridLayout>
+#include <QLayout>
 #include <QScrollArea>
 #include <QPushButton>
 #include <QString>
-#include <QUrl>
 #include <QPixmap>
+#include <QSizePolicy>
 
 class subWindow:public QDialog{
   Q_OBJECT

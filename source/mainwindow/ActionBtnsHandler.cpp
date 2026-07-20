@@ -1,4 +1,13 @@
 #include "../headers/main/mainwindow.h"
+#include <QFileDialog>
+#include <QApplication>
+#include <QAction>
+#include <QDialog>
+#include <QString>
+#include <sstream>
+#include <filesystem>
+#include <algorithm>
+#include <iostream>
 
 void MainWindow::onToolMenuAction(int actionNumber) {
   QString url;

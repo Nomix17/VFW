@@ -1,5 +1,9 @@
+#ifndef TEXTITEM_H
+#define TEXTITEM_H
+
 #include <QGraphicsTextItem>
 #include <QGraphicsView>
+#include <QString>
 
 enum TextPosition {
   TOP_LEFT,
@@ -62,3 +66,5 @@ class TextItem: public QGraphicsTextItem {
       }
     }
 };
+
+#endif

@@ -1,17 +1,18 @@
 #ifndef LOOPSEGMENT_WINDOW
 #define LOOPSEGMENT_WINDOW
 
+#include <string>
 #include <fstream>
 #include <sstream>
 #include <filesystem>
 
-#include<QDialog>
+#include <QDialog>
 #include <QVBoxLayout>
-#include<QHBoxLayout>
-
+#include <QHBoxLayout>
 #include <QPushButton>
 #include <QLabel>
 #include <QSpinBox>
+#include <QString>
 
 class SRepeatWindow :public QDialog{
   Q_OBJECT;

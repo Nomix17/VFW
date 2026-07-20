@@ -2,6 +2,10 @@
 #define TOOLMENU
 
 #include <functional>
+#include <vector>
+#include <QAction>
+#include <QList>
+#include <QString>
 #include "MenuButton.h"
 
 class ToolMenu {

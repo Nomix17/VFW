@@ -1,11 +1,16 @@
 #ifndef CUSTOMSLIDER 
 #define CUSTOMSLIDER 
 
-#include "qpainter.h"
-#include <iostream>
 #include <QSlider>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QPen>
+#include <QColor>
+#include <QPalette>
+#include <QPoint>
+#include <QPaintEvent>
+#include <iostream>
+#include <vector>
 
 struct ChapterObject{
   QString id;

@@ -1,17 +1,21 @@
 #ifndef SHORTCUTS_INST
 #define SHORTCUTS_INST
 
-#include "qtimer.h"
+#include <algorithm>
+#include <array>
 #include <cctype>
 #include <ios>
 #include <iostream>
 #include <map>
 #include <sstream>
 #include <fstream>
+#include <string>
 #include <vector>
 #include <filesystem>
 
 #include <QDialog>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QGridLayout>
 #include <QWidget>
 #include <QPushButton>
@@ -20,6 +24,9 @@
 #include <QLineEdit>
 #include <QStyle>
 #include <QPointer>
+#include <QTimer>
+#include <QString>
+#include <QKeySequence>
 
 #include "../utils/stringTreatment.h"
 

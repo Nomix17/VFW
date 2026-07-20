@@ -1,15 +1,18 @@
 #ifndef JUMPTIME
 #define JUMPTIME
 
+#include <string>
 #include <fstream>
 #include <sstream>
 #include <filesystem>
 
 #include <QDialog>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QPushButton>
 #include <QLabel>
 #include <QSpinBox>
+#include <QString>
 
 class JumpTime : public QDialog{
   Q_OBJECT;

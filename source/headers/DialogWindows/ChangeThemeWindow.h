@@ -1,15 +1,19 @@
 #ifndef CHANGETHEME_W
 #define CHANGETHEME_W
 
+#include <string>
 #include <fstream>
 #include <sstream>
 #include <filesystem>
 
 #include <QDialog>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QGridLayout>
-#include <QPushButton>
 #include <QScrollArea>
+#include <QPushButton>
+#include <QString>
+#include <QSizePolicy>
 
 class ChangeThemeWindow : public QDialog {
   Q_OBJECT;

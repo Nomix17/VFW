@@ -2,6 +2,10 @@
 #define TOPBARBUTTON
 
 #include <iostream>
+#include <vector>
+#include <QAction>
+#include <QList>
+#include <QString>
 #include <QToolButton>
 #include <QMenu>
 #include <QWidget>

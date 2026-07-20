@@ -1,4 +1,9 @@
 #include "../headers/main/mainwindow.h"
+#include <QAction>
+#include <QString>
+#include <filesystem>
+#include <algorithm>
+#include <iostream>
 
 void MainWindow::syncSubtitles(qint64 playbackPosition) {
   for(const SubObject* subObj : currentLoadedSubList){

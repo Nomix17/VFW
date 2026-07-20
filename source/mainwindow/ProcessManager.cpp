@@ -1,6 +1,9 @@
 #include "../headers/main/mainwindow.h"
-
 #include <QString>
+#include <QStringList>
+#include <QProcess>
+#include <filesystem>
+#include <iostream>
 
 void MainWindow::ExtractingChapterData(QString currenturl) {
   ChaptersVectors.clear();

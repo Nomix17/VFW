@@ -1,6 +1,6 @@
 #include "../headers/main/mainwindow.h"
-
 #include <QShortcut>
+#include <algorithm>
 
 void MainWindow::setupShortcuts() {
   setFocusPolicy(Qt::StrongFocus);

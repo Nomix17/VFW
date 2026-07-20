@@ -1,4 +1,5 @@
 #include "../headers/main/mainwindow.h"
+#include <algorithm>
 
 void MainWindow::moveToNextChapter(){
   int currentChapIndex = findCurrentChapterIndex();

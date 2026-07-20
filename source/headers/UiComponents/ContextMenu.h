@@ -2,6 +2,7 @@
 #define CONTEXTMENU
 
 #include <QMenu>
+#include <QAction>
 #include "ToolMenu.h"
 #include "MenuButton.h"
 

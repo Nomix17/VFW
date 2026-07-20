@@ -1,8 +1,12 @@
-#include "qgraphicsproxywidget.h"
+#ifndef FLOATINGCONTROLPANNEL_H
+#define FLOATINGCONTROLPANNEL_H
+
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QGraphicsScene>
 #include <QGraphicsProxyWidget>
+#include <QLayout>
+#include <QPoint>
 
 class FloatingControlPannel: public QWidget {
   QVBoxLayout * containerLayout;
@@ -47,3 +51,5 @@ class FloatingControlPannel: public QWidget {
 
     QGraphicsProxyWidget* getPannelProxyObj() { return pannelProxy; }
 };
+
+#endif

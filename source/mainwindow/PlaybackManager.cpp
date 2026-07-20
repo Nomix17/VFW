@@ -1,4 +1,10 @@
 #include "../headers/main/mainwindow.h"
+#include <QUrl>
+#include <QString>
+#include <QFileInfo>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
 
 void MainWindow::prepareVideoFile(QString filePath) {
   currentVideoUrl = filePath;

@@ -1,5 +1,13 @@
 #include "../headers/main/mainwindow.h"
 #include <QAudioOutput>
+#include <QMediaPlayer>
+#include <QGraphicsVideoItem>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QVBoxLayout>
+#include <QGridLayout>
+#include <QSizePolicy>
+#include <iostream>
 
 void MainWindow::setupWindow() {
   this->setWindowTitle("VFW");

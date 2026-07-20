@@ -1,4 +1,6 @@
 #include "../headers/main/mainwindow.h"
+#include <QMouseEvent>
+#include <QResizeEvent>
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
   bool res = QMainWindow::eventFilter(obj, event);

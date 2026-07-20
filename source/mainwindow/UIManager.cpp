@@ -1,8 +1,12 @@
 #include "../headers/main/mainwindow.h"
-
 #include <QApplication>
 #include <QGraphicsOpacityEffect>
+#include <QGraphicsWidget>
 #include <QPropertyAnimation>
+#include <QTimer>
+#include <QMouseEvent>
+#include <QPoint>
+#include <QPointF>
 
 void MainWindow::updateButtonsIcon(){
   updatePlayPauseButtonIcon();
