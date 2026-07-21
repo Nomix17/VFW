@@ -307,7 +307,7 @@ void MainWindow::onToolMenuAction(int actionNumber) {
   }
 }
 
-void MainWindow::controlButtonsHandler(int buttonindex) {
+void MainWindow::leftClickControlButtonsHandler(int buttonindex) {
   switch (buttonindex) {
 
     case BottomControlPanel::PAUSE_BUTTON: {
@@ -389,6 +389,9 @@ void MainWindow::controlButtonsHandler(int buttonindex) {
     }
 
   }
+}
+
+void MainWindow::rightClickControlButtonsHandler(int buttonindex) {
 }
 
 void MainWindow::toggleVolume() {

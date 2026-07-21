@@ -10,7 +10,7 @@ void MainWindow::setupShortcuts() {
   QShortcut* pause = new QShortcut(currentShortcuts["TOGGLE_PAUSE"], this);
   pause->setContext(Qt::ApplicationShortcut);
   connect(pause, &QShortcut::activated, this, [this]{
-      controlButtonsHandler(BottomControlPanel::PAUSE_BUTTON);
+      leftClickControlButtonsHandler(BottomControlPanel::PAUSE_BUTTON);
   });
   qShortcutsObjs.push_back(pause);
 
@@ -82,7 +82,7 @@ void MainWindow::setupShortcuts() {
   QShortcut* volPanel = new QShortcut(currentShortcuts["TOGGLE_MUTE"], this);
   volPanel->setContext(Qt::ApplicationShortcut);
   connect(volPanel, &QShortcut::activated, this, [this]{
-      controlButtonsHandler(BottomControlPanel::TOGGLE_VOLUME_BUTTON);
+      leftClickControlButtonsHandler(BottomControlPanel::TOGGLE_VOLUME_BUTTON);
   });
   qShortcutsObjs.push_back(volPanel);
 

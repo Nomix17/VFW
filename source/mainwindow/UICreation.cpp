@@ -90,7 +90,8 @@ void MainWindow::createBottomLayout() {
   }
   controlbuttonslayout=nullptr;
   controlbuttonslayout = new BottomControlPanel(SYSTEMPATHS->currentIconsDir);//creating new layout
-  connect(controlbuttonslayout, &BottomControlPanel::controlButtonsHandler, this, &MainWindow::controlButtonsHandler);
+  connect(controlbuttonslayout, &BottomControlPanel::leftClickControlButtons, this, &MainWindow::leftClickControlButtonsHandler);
+  connect(controlbuttonslayout, &BottomControlPanel::rightClickControlButtons, this, &MainWindow::rightClickControlButtonsHandler);
   connect(controlbuttonslayout, &BottomControlPanel::videoSliderMoved, this, &MainWindow::changePlayBackPosition);
   connect(controlbuttonslayout, &BottomControlPanel::volumeSliderMoved,[this](int value) {
     audio->setVolume((float)value / 1000);

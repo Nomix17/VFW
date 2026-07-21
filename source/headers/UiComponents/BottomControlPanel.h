@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "../UiComponents/CustomSlider.h"
+#include "../UiComponents/CustomPushButton.h"
 #include "TextTimer.h"
 
 class BottomControlPanel: public QVBoxLayout {
@@ -44,9 +45,10 @@ class BottomControlPanel: public QVBoxLayout {
     };
 
   signals:
-     void volumeSliderMoved(int value);
-     void videoSliderMoved(int value);
-     void controlButtonsHandler(int buttonNumber);
+   void volumeSliderMoved(int value);
+   void videoSliderMoved(int value);
+   void leftClickControlButtons(int buttonNumber);
+   void rightClickControlButtons(int buttonNumber);
 
   private:
     QList<QString> mcbuttons = {"BPause","BBack","BStop","BNext","BFullscreen","BPlaylist","BRepeating","","BContinueFLP","BVolumeControl"};
@@ -103,7 +105,7 @@ class BottomControlPanel: public QVBoxLayout {
           parentLayout->addStretch(1);
         }
 
-        QPushButton *newButton = new QPushButton();
+        CustomPushButton * newButton = new CustomPushButton();
         newButton->setObjectName(mcbuttons[j]);
         newButton->setFocusPolicy(Qt::NoFocus);
 
@@ -119,13 +121,14 @@ class BottomControlPanel: public QVBoxLayout {
         if(mcbuttons[j] == "BContinueFLP"){
           newButton->hide();
         }
-
-        connect(newButton, &QPushButton::clicked, [this, j]() {
-          controlButtonsHandler(j);
+        connect(newButton, &CustomPushButton::leftClick, [this, j]() {
+          leftClickControlButtons(j);
+        });
+        connect(newButton, &CustomPushButton::rightClick, [this, j]() {
+          rightClickControlButtons(j);
         });
 
         ControlButtonsObjectsList.push_back(newButton);
-
         parentLayout->addWidget(newButton);
       }
     }

@@ -88,7 +88,8 @@ class MainWindow: public QMainWindow {
     void setupContextMenuConnector();
 
     void onToolMenuAction(int buttonindex);
-    void controlButtonsHandler(int buttonindex);
+    void leftClickControlButtonsHandler(int buttonindex);
+    void rightClickControlButtonsHandler(int buttonindex);
 
     void setVideoSliderRange(qint64 playbackPosition);
     void playbackPositionUpdated(qint64 playbackPosition);
