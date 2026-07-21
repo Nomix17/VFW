@@ -4,6 +4,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
+#include <QSpacerItem>
 #include <QLabel>
 #include <QList>
 #include <QString>
@@ -51,7 +52,7 @@ class BottomControlPanel: public QVBoxLayout {
    void rightClickControlButtons(int buttonNumber);
 
   private:
-    QList<QString> mcbuttons = {"BPause","BBack","BStop","BNext","BFullscreen","BPlaylist","BRepeating","","BContinueFLP","BVolumeControl"};
+    QList<QString> mcbuttons = {"BPause","BBack","BStop","BNext","BFullscreen","BPlaylist","BRepeating","BPlaybackSpeed","BContinueFLP","BVolumeControl"};
     std::vector <QPushButton*> ControlButtonsObjectsList = {};
     QString ICONSDIRECTORY;
 
@@ -102,6 +103,7 @@ class BottomControlPanel: public QVBoxLayout {
           parentLayout->addSpacing(20);
         } else if (j == TOGGLE_VOLUME_BUTTON) {
           // adding space for the style between buttons and volume parameters
+          parentLayout->addSpacing(20);
           parentLayout->addStretch(1);
         }
 
@@ -194,10 +196,9 @@ class BottomControlPanel: public QVBoxLayout {
       hideSkipButton();
     }
 
-    std::vector <QPushButton*> getControlButtonsObjects() {
-      return ControlButtonsObjectsList;
+    QPushButton* getControlPushButton(int index) {
+      return ControlButtonsObjectsList[index];
     }
-
     void updatePausePlayButtonIcon(bool videoIsPaused) {
       QPushButton *Pause_button = ControlButtonsObjectsList[PAUSE_BUTTON];
       if (videoIsPaused) Pause_button->setIcon(QPixmap(ICONSDIRECTORY + "/BPause.png"));

@@ -368,12 +368,8 @@ void MainWindow::leftClickControlButtonsHandler(int buttonindex) {
 
       break;
     }
-    case BottomControlPanel::SPEED_CONTROL_BUTTON:{
-      float playbackSpeed = player->playbackRate();
-      playbackSpeed = std::max(0.25, (playbackSpeed + 0.25));
-      if(playbackSpeed > 2) playbackSpeed = 0.25;
-      player->setPlaybackRate(playbackSpeed);
-      updatePlaybackSpeedIcon();
+    case BottomControlPanel::SPEED_CONTROL_BUTTON: {
+      createSpeedControlPopup(); 
       break;
     }
 
@@ -392,6 +388,16 @@ void MainWindow::leftClickControlButtonsHandler(int buttonindex) {
 }
 
 void MainWindow::rightClickControlButtonsHandler(int buttonindex) {
+  switch(buttonindex) {
+    case BottomControlPanel::SPEED_CONTROL_BUTTON:{
+      float playbackSpeed = player->playbackRate();
+      playbackSpeed = std::max(0.25, (playbackSpeed + 0.25));
+      if(playbackSpeed > 2) playbackSpeed = 0.25;
+      player->setPlaybackRate(playbackSpeed);
+      updatePlaybackSpeedIcon();
+      break;
+    }
+  }
 }
 
 void MainWindow::toggleVolume() {

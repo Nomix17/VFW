@@ -84,6 +84,7 @@ class MainWindow: public QMainWindow {
     void createBottomLayout();
     void connectPlayerSignals();
     void createTimestampIndicator();
+    void createSpeedControlPopup();
     void setupVideoDropConnector();
     void setupContextMenuConnector();
 

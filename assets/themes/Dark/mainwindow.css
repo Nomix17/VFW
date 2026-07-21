@@ -143,3 +143,7 @@ QScrollBar::sub-line:vertical {
   border-radius: 6px;
   padding: 8px;
 }
+
+#BPlaybackSpeed {
+  width: 40px;
+}

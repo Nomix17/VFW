@@ -1,4 +1,5 @@
 #include "../headers/main/mainwindow.h"
+#include "../headers/UiComponents/CustomSlider.h"
 #include <QAudioOutput>
 #include <QMediaPlayer>
 #include <QGraphicsVideoItem>
@@ -120,4 +121,32 @@ void MainWindow::createTimestampIndicator() {
   timestampIndicator->hide();
   timestampIndicator->setAlignment(Qt::AlignCenter);
   timestampIndicator->setObjectName("TimestampIndicator");
+}
+
+void MainWindow::createSpeedControlPopup() {
+  QMenu* speedMenu = new QMenu(this);
+  speedMenu->setAttribute(Qt::WA_DeleteOnClose);
+  double currentSpeed = player->playbackRate();
+
+  for (int step = 8; step >= 1; --step) {
+    double speed = step * 0.25;
+    QString label = QString::number(speed, 'f', 2) + "x";
+
+    QAction* action = speedMenu->addAction(label);
+    action->setCheckable(true);
+    action->setChecked(qFuzzyCompare(speed, currentSpeed));
+
+    connect(action, &QAction::triggered, this, [this, speed]() {
+      player->setPlaybackRate(speed);
+      updatePlaybackSpeedIcon();
+    });
+  }
+
+  QPushButton* speedButton = controlbuttonslayout->getControlPushButton(BottomControlPanel::SPEED_CONTROL_BUTTON);
+  QRect buttonGlobalRect(speedButton->mapToGlobal(QPoint(0, 0)), speedButton->size());
+
+  QSize menuSize = speedMenu->sizeHint();
+  int x = buttonGlobalRect.center().x() - menuSize.width() / 2;
+  int y = buttonGlobalRect.top() - menuSize.height() - 6;
+  speedMenu->popup(QPoint(x, y));
 }
