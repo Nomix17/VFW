@@ -83,7 +83,7 @@ bool MainWindow::handleFloatingPannelDisplaying(QObject *obj, QEvent *event) {
   floatingPannelDisplayed = true;
 
   QTimer::singleShot(TIME_BEFORE_HIDING_FLOATING_PANNEL,[this]() {
-    if(!MouseIsInsideFloatingPanel && floatingPannelDisplayed){
+    if(!MouseIsInsideFloatingPanel && floatingPannelDisplayed && !speedMenuOpened){
       repositionFloatingControllPannel(200);
       subtitlesItem->setSubOffset(0);
       subtitlesItem->repositionText();

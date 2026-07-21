@@ -1,5 +1,6 @@
 #include "../headers/main/mainwindow.h"
 #include "../headers/UiComponents/CustomSlider.h"
+#include <QApplication>
 #include <QAudioOutput>
 #include <QMediaPlayer>
 #include <QGraphicsVideoItem>
@@ -140,6 +141,15 @@ void MainWindow::createSpeedControlPopup() {
       player->setPlaybackRate(speed);
       updatePlaybackSpeedIcon();
     });
+    connect(speedMenu, &QMenu::aboutToHide, this, [this]() { 
+      speedMenuOpened = false;
+      // nudging event system
+      QPoint globalPos = QCursor::pos();
+      QPoint localPos = this->mapFromGlobal(globalPos);
+      QMouseEvent moveEvent(QEvent::MouseMove, localPos, globalPos, Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+      QApplication::sendEvent(this, &moveEvent);
+    });
+    speedMenuOpened = true;
   }
 
   QPushButton* speedButton = controlbuttonslayout->getControlPushButton(BottomControlPanel::SPEED_CONTROL_BUTTON);

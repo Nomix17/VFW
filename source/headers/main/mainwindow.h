@@ -211,6 +211,7 @@ class MainWindow: public QMainWindow {
     bool showChaptersIndicators = true;
     bool MouseIsInsideFloatingPanel = false;
     bool contextMenuOpened = false;
+    bool speedMenuOpened = false;
 
     // ui variables
     QLabel* image;
