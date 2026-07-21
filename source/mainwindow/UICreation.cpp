@@ -77,6 +77,7 @@ void MainWindow::setupVideoDropConnector() {
 
 void MainWindow::setupContextMenuConnector() {
   connect(video, &VideoItemContainer::openContextMenu, this, [this](QPointF pos) {
+    if(floatingControlPannel->isHovered(pos.toPoint())) return;
     ContextMenu* menu = new ContextMenu(this);
     connect(menu, &ContextMenu::handleButtonsClick, this, &MainWindow::onToolMenuAction);
     connect(menu, &QMenu::aboutToHide, [this]() { contextMenuOpened = false; });
